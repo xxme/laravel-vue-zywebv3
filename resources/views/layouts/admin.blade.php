@@ -163,12 +163,7 @@
         <!-- Main content -->
         <section class="content" id="app">
           <!-- Main row -->
-          <div class="row">
-            @include('admin.public.universe_nav', ['is_this_month' => $is_this_month])
-
-            <router-view></router-view>
-            <router-link to="/events/2018-04">Login.aaaa</router-link>
-          </div>
+          <router-view></router-view>
           <!-- /.row (main row) -->
         </section>
         <!-- /.content -->
@@ -226,30 +221,6 @@
 <!-- AdminLTE for demo purposes -->
 <script>
   $(function () {
-    $('#topcalendardiv').fullCalendar({
-        defaultView: 'month',
-        defaultDate: '{{ $showdate }}',
-        // 日付クリックイベント
-        dayClick: function(date, jsEvent, view) {
-        alert('Clicked on: ' + date.format());
-        },
-        // イベントクリック
-        eventClick: function(calEvent, jsEvent, view) {
-        alert('Event: ' + calEvent.title);
-        },
-        events: [
-        {
-            title: 'Event1',
-            start: '2018-03-14',
-            color: 'green',     // an option!
-            textColor: 'white'  // an option!
-        },
-        {
-            title: 'Event2',
-            start: '2018-03-22',
-        },
-        ],
-    });
     $('.fc-today-button').on('click', function(){
       location.href = '/admin';
     });
