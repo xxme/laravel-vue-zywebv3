@@ -24,6 +24,3 @@ Route::namespace('Admin')->group(function () {
     Route::get('/admin/{showdate}', 'AdminController@dashboard');
     Route::get('/admin', 'AdminController@dashboard')->name('adminmain');
 });
-Route::get('/{any}', function () {
-    return view('app');
-})->where('any', '.*');

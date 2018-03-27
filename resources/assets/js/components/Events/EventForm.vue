@@ -2,7 +2,7 @@
   <div class="col-md-12">
     <div class="box box-primary">
       <div class="box-header">
-        <h3 class="box-title">Date picker</h3>
+        <h3 class="box-title">add event</h3>
       </div>
       <div class="box-body">
         <!-- Date -->

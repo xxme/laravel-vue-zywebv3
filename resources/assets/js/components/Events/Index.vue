@@ -12,7 +12,7 @@
             </div>
             <div class="box-header with-border">
                 <a name="2018-03-06"></a>
-                <h4>{{ $route.params.ym }} {{ $t('topmenu.quicknav') }} 星期四(木)<small class="pull-right">日程: 3 <router-link :to="/events/add/">Add Event</router-link></small></h4>
+                <h4>{{ $route.params.ym }} {{ $t('topmenu.quicknav') }} 星期四(木)<small class="pull-right">日程: 3 <router-link to="/event/add/">add event</router-link></small></h4>
             </div>
             
             <!-- box -->
@@ -92,7 +92,7 @@
             <!-- /.box -->
         </div>
         <!-- /.col-md-12 -->
-        <router-link to="/events/2018-04">Login.aaaa</router-link>
+        <router-link to="/events/2018-04">go to 2018-04</router-link>
     </div>
     
 </template>
@@ -108,13 +108,11 @@ export default {
     }
   },
   created() {
-    // Json取得
     this.get_events('', 'events_list');
   },
   components: {
     'UniverseNav': UniverseNav
   },
-//   components: { UniverseNav },
   methods: {
     get_events(url, name) {
         this.$http({
