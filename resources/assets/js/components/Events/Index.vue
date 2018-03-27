@@ -12,7 +12,7 @@
             </div>
             <div class="box-header with-border">
                 <a name="2018-03-06"></a>
-                <h4>{{ $route.params.ym }} {{ $t('topmenu.quicknav') }} 星期四(木)<small class="pull-right">日程: 3</small></h4>
+                <h4>{{ $route.params.ym }} {{ $t('topmenu.quicknav') }} 星期四(木)<small class="pull-right">日程: 3 <router-link :to="/events/add/">Add Event</router-link></small></h4>
             </div>
             
             <!-- box -->

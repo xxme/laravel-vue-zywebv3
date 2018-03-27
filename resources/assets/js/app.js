@@ -12,6 +12,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueI18n from 'vue-i18n';
 import EventsIndex from './components/Events/Index.vue';
+import EventForm from './components/Events/EventForm.vue';
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -29,6 +30,7 @@ const router = new VueRouter({
     routes: [
         // TOPページ
         { path: '/admin', component: EventsIndex },
+        { path: '/events/add', component: EventForm },
         { path: '/events/:ym', component: EventsIndex },
     ]
 });
