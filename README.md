@@ -1,8 +1,8 @@
 # laravel-vue-zywebv3
 
-laravel5.5 vuejs vuejs-route fullcalendar
+use laravel5.5, vuejs, vuejs-route and fullcalendar
 
-
-composer dump-autoload
-php artisan migrate
-php artisan db:seed --class=GroupDatasSeeder
+## Install
+composer dump-autoload  
+php artisan migrate  
+php artisan db:seed --class=GroupDatasSeeder  
