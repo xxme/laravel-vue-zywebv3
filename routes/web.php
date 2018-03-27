@@ -23,4 +23,11 @@ Route::namespace('Admin')->group(function () {
     // "App\Http\Controllers\Admin"名前空間下のコントローラ
     Route::get('/admin/{showdate}', 'AdminController@dashboard');
     Route::get('/admin', 'AdminController@dashboard')->name('adminmain');
+    Route::get('/event/add', function () {
+        return redirect('/admin');
+    });
+    Route::get('/events/{ym}', function () {
+        return redirect('/admin');
+    });
+
 });

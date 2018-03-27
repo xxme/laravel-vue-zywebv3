@@ -1,5 +1,5 @@
 <template>
-  <div class="col-md-12">
+  <div>
     <div class="box box-primary">
       <div class="box-header">
         <h3 class="box-title">add event</h3>
@@ -63,6 +63,10 @@
         <!-- /.form group -->
       </div>
       <!-- /.box-body -->
+      <div class="box-footer">
+        <router-link to="/admin"><button type="submit" class="btn btn-default">{{ $t('Cancel') }}</button></router-link>
+        <button type="submit" class="btn btn-primary pull-right">{{ $t('Submit') }}</button>
+      </div>
     </div>
   </div>
 </template>

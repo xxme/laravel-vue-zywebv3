@@ -1,5 +1,10 @@
 {
     "cn": {
+        "global": {
+            "addEvent": "添加",
+            "Submit": "提交",
+            "Cancel": "取消"
+        },
         "topmenu": {
             "quicknav" : "宇宙导航",
             "eventcalendar" : "占领星球",

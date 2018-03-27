@@ -12,7 +12,7 @@
             </div>
             <div class="box-header with-border">
                 <a name="2018-03-06"></a>
-                <h4>{{ $route.params.ym }} {{ $t('topmenu.quicknav') }} 星期四(木)<small class="pull-right">日程: 3 <router-link to="/event/add/">add event</router-link></small></h4>
+                <h4> 星期四(木) <router-link to="/event/add"><i class="fa fa-plus-square pull-right"></i><span class="pull-right text-muted"> 日程: 3</span></router-link></h4>
             </div>
             
             <!-- box -->
@@ -99,6 +99,7 @@
 <script>
 
 import Vue from 'vue'
+import moment from 'moment';
 import UniverseNav from '../Public/UniverseNav.vue'
 
 export default {
@@ -108,15 +109,23 @@ export default {
     }
   },
   created() {
-    this.get_events('', 'events_list');
+    this.get_events();
   },
   components: {
     'UniverseNav': UniverseNav
   },
+  watch: {
+    '$route': 'get_events'
+  },
   methods: {
-    get_events(url, name) {
+    get_events() {
+        if(this.$route.params.ym != undefined){
+            var ym = moment(this.$route.params.ym).format('YYYY-MM');
+        } else {
+            var ym = moment().format('YYYY-MM');
+        }
         this.$http({
-            url: '/api/events',
+            url: '/api/events/' + ym,
             method: 'GET'
         }).then(res =>  {
             this.events_list =  res.data;

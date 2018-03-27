@@ -1,6 +1,6 @@
 <template>
   <!-- universe_nav -->
-    <div class="col-md-12">
+    <div class="margin">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#quicknav" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.quicknav') }}</a></li>
