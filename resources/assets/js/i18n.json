@@ -3,7 +3,8 @@
         "global": {
             "addEvent": "添加",
             "Submit": "提交",
-            "Cancel": "取消"
+            "Cancel": "取消",
+            "workType": "工作类型"
         },
         "topmenu": {
             "quicknav" : "宇宙导航",

@@ -20,8 +20,6 @@ Auth::routes();
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::namespace('Admin')->group(function () {
-    // "App\Http\Controllers\Admin"名前空間下のコントローラ
-    Route::get('/admin/{showdate}', 'AdminController@dashboard');
     Route::get('/admin', 'AdminController@dashboard')->name('adminmain');
     Route::get('/user/edit/{id}', 'UserController@edit');
     Route::get('/user/edit', function () {
