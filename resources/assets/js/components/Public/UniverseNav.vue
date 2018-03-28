@@ -227,7 +227,7 @@ Vue.component('todo', {
             // defaultDate: '{{ $showdate }}',
             // 日付クリックイベント
             dayClick: function(date, jsEvent, view) {
-                alert('Clicked on: ' + date.format());
+                window.location.hash = date.format();
             },
             // イベントクリック
             eventClick: function(calEvent, jsEvent, view) {

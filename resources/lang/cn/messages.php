@@ -34,5 +34,9 @@ return [
     'staffs' => '员工',
     'registeredusers' => '注册用户',
     // nav / page titles and sub titles end
+    
+    'profile' => 'Profile',
+    'signOut' => 'Sign out',
+    'useredit' => 'User edit'
 
 ];

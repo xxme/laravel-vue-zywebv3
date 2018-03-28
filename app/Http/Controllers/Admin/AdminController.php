@@ -25,13 +25,6 @@ class AdminController extends Controller
         if($user->group_id > 2){
             return redirect('home');
         }
-        if(is_null($showdate)){
-            $showdate = Carbon::now()->format('Y-m');
-            $data['is_this_month'] = 1;
-        } else {
-            $data['is_this_month'] = 0;
-        }
-        $data['showdate'] = $showdate;
         $data['pageTitle'] = __('messages.events');
         $data['subTitle'] = __('messages.eventsSubTitle');
         return view('admin.dashboard', $data);

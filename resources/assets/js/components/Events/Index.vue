@@ -20,7 +20,7 @@
                 <!-- box-header -->
                 <div class="box-header with-border">
                     <div class="user-block">
-                        <img class="img-circle" src="" alt="User Image">
+                        <img class="img-circle" src="../../../images/user1-128x128.jpg" alt="User Image">
                         <span class="username">Jonathan Burke Jr.</span>
                         <span class="description">7:30 PM Today</span>
                     </div>

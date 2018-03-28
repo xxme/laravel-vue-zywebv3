@@ -40,6 +40,7 @@
       window.Laravel = window.Laravel || {};
       window.Laravel.csrfToken = "{{csrf_token()}}";
   </script>
+  <script src="{{ mix('js/app.js') }}"></script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
     <div class="wrapper">
@@ -109,37 +110,13 @@
                   <span class="hidden-xs">Alexander Pierce</span>
                 </a>
                 <ul class="dropdown-menu">
-                  <!-- User image -->
-                  <li class="user-header">
-                    <img src="/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
-
-                    <p>
-                      Alexander Pierce - Web Developer
-                      <small>Member since Nov. 2012</small>
-                    </p>
-                  </li>
-                  <!-- Menu Body -->
-                  <li class="user-body">
-                    <div class="row">
-                      <div class="col-xs-4 text-center">
-                        <a href="#">Followers</a>
-                      </div>
-                      <div class="col-xs-4 text-center">
-                        <a href="#">Sales</a>
-                      </div>
-                      <div class="col-xs-4 text-center">
-                        <a href="#">Friends</a>
-                      </div>
-                    </div>
-                    <!-- /.row -->
-                  </li>
                   <!-- Menu Footer-->
                   <li class="user-footer">
                     <div class="pull-left">
-                      <a href="#" class="btn btn-default btn-flat">Profile</a>
+                      <a href="{{ url('/user/edit') }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
                     </div>
                     <div class="pull-right">
-                      <a href="#" class="btn btn-default btn-flat">Sign out</a>
+                      <a href="#" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>
                     </div>
                   </li>
                 </ul>
@@ -163,6 +140,7 @@
         <!-- Main content -->
         <section class="content" id="app">
           <!-- Main row -->
+          @yield('content')
           <router-view></router-view>
           <!-- /.row (main row) -->
         </section>
@@ -184,9 +162,6 @@
 
 
     </div>
-<!-- jQuery 3 -->
-
-<script src="{{ mix('js/app.js') }}"></script>
 <!-- jQuery UI 1.11.4 -->
 <script src="/bower_components/jquery-ui/jquery-ui.min.js"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -204,7 +179,6 @@
 <!-- jQuery Knob Chart -->
 <script src="/bower_components/jquery-knob/dist/jquery.knob.min.js"></script>
 <!-- daterangepicker -->
-<script src="/bower_components/moment/min/moment.min.js"></script>
 <script src="/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
 <!-- datepicker -->
 <script src="/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
