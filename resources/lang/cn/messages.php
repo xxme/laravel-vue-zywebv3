@@ -37,6 +37,8 @@ return [
     
     'profile' => 'Profile',
     'signOut' => 'Sign out',
-    'useredit' => 'User edit'
+    'useredit' => 'User edit',
+    'cancel' => 'Cancel',
+    'submit' => 'Submit'
 
 ];

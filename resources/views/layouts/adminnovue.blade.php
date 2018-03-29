@@ -40,6 +40,8 @@
       window.Laravel = window.Laravel || {};
       window.Laravel.csrfToken = "{{csrf_token()}}";
   </script>
+  <script src="{{ asset('/js/jquery/jquery.min.js') }}"></script>
+  <script src="{{ asset('/js/bootstrap/bootstrap.min.js') }}"></script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
     <div class="wrapper">
@@ -105,11 +107,7 @@
               <!-- User Account: style can be found in dropdown.less -->
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  @if($user->profileimg)
-                  <img src="{{ asset("uploads/profiles") }}/{{ $user->profileimg }}" class="user-image" alt="User Image">
-                  @else
-                  <img src="{{ asset("uploads/profiles") }}/noimg.png" class="user-image" alt="User Image">
-                  @endif
+                  <img src="/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
                   <span class="hidden-xs">Alexander Pierce</span>
                 </a>
                 <ul class="dropdown-menu">
@@ -144,7 +142,6 @@
         <section class="content" id="app">
           <!-- Main row -->
           @yield('content')
-          <router-view></router-view>
           <!-- /.row (main row) -->
         </section>
         <!-- /.content -->
@@ -160,7 +157,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}"></script>
+    <div class="LockOn"><div class="loadingicon"><i class="fa fa-rocket fa-spin fa-3x"></i> <span>Loading</span></div></div>
     <!-- jQuery UI 1.11.4 -->
     <script src="/bower_components/jquery-ui/jquery-ui.min.js"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -192,21 +189,5 @@
     <script src="/dist/js/adminlte.min.js"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <!-- AdminLTE for demo purposes -->
-    <script>
-      $(function () {
-        $('.fc-today-button').on('click', function(){
-          location.href = '/admin';
-        });
-        $('.fc-prev-button').on('click', function(){
-          var date_str = moment($('#topcalendardiv').fullCalendar('getDate')).format("YYYY-MM");
-          location.href = '/admin/' + date_str;
-        });
-        $('.fc-next-button').on('click', function(){
-          var date_str = moment($('#topcalendardiv').fullCalendar('getDate')).format("YYYY-MM");;
-          location.href = '/admin/' + date_str;
-        });
-      });
-      
-    </script>
   </body>
 </html>

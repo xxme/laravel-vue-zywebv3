@@ -27,6 +27,7 @@ class AdminController extends Controller
         }
         $data['pageTitle'] = __('messages.events');
         $data['subTitle'] = __('messages.eventsSubTitle');
+        $data['user'] = $user;
         return view('admin.dashboard', $data);
     }
 
