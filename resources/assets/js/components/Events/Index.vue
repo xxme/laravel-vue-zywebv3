@@ -1,6 +1,6 @@
 <template>
     <div class="row">
-        <universe-nav></universe-nav>
+        <universe-nav :otherMonth="otherMonth" :showYm="showYm" :events="events_list" v-on:update-events="get_events"></universe-nav>
         <div class="col-md-12">
             <div v-for="event in events_list" :key="event.id">
                 <h1>
@@ -92,38 +92,31 @@
             <!-- /.box -->
         </div>
         <!-- /.col-md-12 -->
-        <router-link to="/events/2018-04">go to 2018-04</router-link>
     </div>
-    
+
 </template>
 <script>
 
 import Vue from 'vue'
-import moment from 'moment';
-import UniverseNav from '../Public/UniverseNav.vue'
+import moment from 'moment'
+import UniverseNav from '../Public/UniverseNav'
 
 export default {
   data() {
     return {
-      events_list: []
+      events_list: [],
+      otherMonth: false,
+      showYm: moment().format('YYYY-MM')
     }
   },
   created() {
-    this.get_events();
+    
   },
   components: {
-    'UniverseNav': UniverseNav
-  },
-  watch: {
-    '$route': 'get_events'
+    UniverseNav
   },
   methods: {
-    get_events() {
-        if(this.$route.params.ym != undefined){
-            var ym = moment(this.$route.params.ym).format('YYYY-MM');
-        } else {
-            var ym = moment().format('YYYY-MM');
-        }
+    get_events(ym) {
         this.$http({
             url: '/api/events/' + ym,
             method: 'GET'

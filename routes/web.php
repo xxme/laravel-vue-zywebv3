@@ -21,17 +21,12 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::namespace('Admin')->group(function () {
     Route::get('/admin', 'AdminController@dashboard')->name('adminmain');
+    Route::get('/event/add', 'AdminController@dashboard');
     Route::get('/user/edit/{id}', 'UserController@edit');
     Route::post('/user/uploadprofile', 'UserController@updateprofile');
     Route::post('/user/update', 'UserController@update');
     Route::get('/user/edit', function () {
         return redirect('/user/edit/' . Auth::user()->id);
-    });
-    Route::get('/event/add', function () {
-        return redirect('/admin');
-    });
-    Route::get('/events/{ym}', function () {
-        return redirect('/admin');
     });
     Route::get('/logout', function () {
         Auth::logout();

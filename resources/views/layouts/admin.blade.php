@@ -27,6 +27,7 @@
   <!-- bootstrap wysihtml5 - text editor -->
   <link rel="stylesheet" href="/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
   <!-- admin main -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="/css/adminmain.css">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -110,7 +111,7 @@
                   @else
                   <img src="{{ asset("uploads/profiles") }}/noimg.png" class="user-image" alt="User Image">
                   @endif
-                  <span class="hidden-xs">Alexander Pierce</span>
+                <span class="hidden-xs">{{ $user->name }}</span>
                 </a>
                 <ul class="dropdown-menu">
                   <!-- Menu Footer-->
@@ -192,21 +193,5 @@
     <script src="/dist/js/adminlte.min.js"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <!-- AdminLTE for demo purposes -->
-    <script>
-      $(function () {
-        $('.fc-today-button').on('click', function(){
-          location.href = '/admin';
-        });
-        $('.fc-prev-button').on('click', function(){
-          var date_str = moment($('#topcalendardiv').fullCalendar('getDate')).format("YYYY-MM");
-          location.href = '/admin/' + date_str;
-        });
-        $('.fc-next-button').on('click', function(){
-          var date_str = moment($('#topcalendardiv').fullCalendar('getDate')).format("YYYY-MM");;
-          location.href = '/admin/' + date_str;
-        });
-      });
-      
-    </script>
   </body>
 </html>

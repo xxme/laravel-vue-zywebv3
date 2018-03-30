@@ -5,6 +5,7 @@
         <h3 class="box-title">add event</h3>
       </div>
       <div class="box-body">
+        <select2 :options="options" :value="value"></select2>
         <!-- Date -->
         <div class="form-group">
           <label>Date:</label>
@@ -70,3 +71,25 @@
     </div>
   </div>
 </template>
+<script>
+import Vue from 'vue'
+import Select2 from './Select2'
+
+export default {
+  components: {
+    Select2
+  },
+  data() {
+    return {
+      options: [
+        { id: 1, text: 'Hello' },
+        { id: 2, text: 'World' }
+      ],
+      value: "1"
+    }
+  },
+  created() {
+    
+  }
+}
+</script>

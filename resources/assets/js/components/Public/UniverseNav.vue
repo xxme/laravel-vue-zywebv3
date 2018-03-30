@@ -3,13 +3,13 @@
     <div class="margin">
         <div class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-                <li class="active"><a href="#quicknav" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.quicknav') }}</a></li>
-                <li class=""><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
+                <li :class="[otherMonth ? '' : 'active']"><a href="#quicknav" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.quicknav') }}</a></li>
+                <li :class="[otherMonth ? 'active' : '']"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
                 <li class=""><a href="#timeline" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.timeline') }}</a></li>
                 <li class=""><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane active" id="quicknav">
+                <div :class="[otherMonth ? '' : 'active', 'tab-pane']" id="quicknav">
                     <!-- quicknav -->
                     <div class="row margin">
                         <button type="button" class="btn bg-olive"><i class="fa fa-list-alt"></i> {{ $t('nav.shoppinglist') }}</button>
@@ -20,8 +20,8 @@
                     <!-- ./quicknav -->
                 </div>
                 <!-- /.tab-pane -->
-                <div class="tab-pane" id="topcalendar">
-                    <todo :events="events"></todo>
+                <div :class="[otherMonth ? 'active' : '', 'tab-pane']" id="topcalendar">
+                    <todo :events="events" :showYm="showYm" id="calendartodo"></todo>
                 </div>
                 <!-- /.tab-pane -->
                 <div class="tab-pane" id="timeline">
@@ -203,15 +203,11 @@
 </template>
 <script>
 import Vue from 'vue'
+import moment from 'moment'
 
 Vue.component('todo', {
     template: '<div></div>',
-    props: {
-        events: {
-            type: Array, 
-            required: true
-        },
-    },
+    props: ['events', 'showYm'],
     data () {
         return {
             cal: null
@@ -224,7 +220,7 @@ Vue.component('todo', {
         var args = {
             defaultView: 'month',
             events: self.events,
-            // defaultDate: '{{ $showdate }}',
+            defaultDate: self.showYm,
             // 日付クリックイベント
             dayClick: function(date, jsEvent, view) {
                 window.location.hash = date.format();
@@ -233,7 +229,10 @@ Vue.component('todo', {
             eventClick: function(calEvent, jsEvent, view) {
                 alert('Event: ' + calEvent.title);
             },
-            
+            viewRender: function(view, element){
+                var showdate = $('#calendartodo').fullCalendar('getDate');
+                self.$parent.$emit('update-events', moment(showdate).format('YYYY-MM'));
+            }
         }
         
         this.cal.fullCalendar(args)
@@ -241,24 +240,6 @@ Vue.component('todo', {
 })
 
 export default {
-  created() {
-    this.get_cal();
-  },
-  methods: {
-    get_cal() {
-        this.events = [
-        {
-            title: 'Event1',
-            start: '2018-03-14',
-            color: 'green',     // an option!
-            textColor: 'white'  // an option!
-        },
-        {
-            title: 'Event2',
-            start: '2018-03-22',
-        },
-        ];
-    }
-  }
+  props: ['otherMonth', 'showYm', 'events']
 }
 </script>
