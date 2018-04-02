@@ -16,7 +16,7 @@
         <ul class="treeview-menu">
           @if($typegroups)
           @foreach ($typegroups as $typegroup)
-            <li><a href="{{ url('/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
+            <li><a href="{{ url('admin/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
           @endforeach
           @endif
         </ul>

@@ -8,6 +8,9 @@
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
+  <link href="{{ asset('/css/select2/select2.min.css') }}" rel="stylesheet" /> 
+  <link href="{{ asset('/css/datetimepicker/jquery.datetimepicker.min.css') }}" rel="stylesheet">
+
   <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
   <!-- Ionicons -->
   <link rel="stylesheet" href="/bower_components/Ionicons/css/ionicons.min.css">
@@ -27,7 +30,6 @@
   <!-- bootstrap wysihtml5 - text editor -->
   <link rel="stylesheet" href="/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
   <!-- admin main -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="/css/adminmain.css">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -106,21 +108,21 @@
               <!-- User Account: style can be found in dropdown.less -->
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  @if($user->profileimg)
-                  <img src="{{ asset("uploads/profiles") }}/{{ $user->profileimg }}" class="user-image" alt="User Image">
+                  @if($currentUser->profileimg)
+                  <img src="{{ asset("uploads/profiles") }}/{{ $currentUser->profileimg }}" class="user-image" alt="User Image">
                   @else
-                  <img src="{{ asset("uploads/profiles") }}/noimg.png" class="user-image" alt="User Image">
+                  <img src="{{ asset("images") }}/no-image-available.jpeg" class="user-image" alt="User Image">
                   @endif
-                <span class="hidden-xs">{{ $user->name }}</span>
+                  <span class="hidden-xs">{{ $currentUser->name }}</span>
                 </a>
                 <ul class="dropdown-menu">
                   <!-- Menu Footer-->
                   <li class="user-footer">
                     <div class="pull-left">
-                      <a href="{{ url('/user/edit') }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
+                      <a href="{{ url('/admin/user/edit/.$currentUser->id') }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
                     </div>
                     <div class="pull-right">
-                      <a href="{{ url('/logout') }}" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>
+                      <a href="{{ url('/admin/logout') }}" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>
                     </div>
                   </li>
                 </ul>
@@ -165,6 +167,8 @@
     <!-- jQuery UI 1.11.4 -->
     <script src="/bower_components/jquery-ui/jquery-ui.min.js"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
+    <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 
     <script>
       $.widget.bridge('uibutton', $.ui.button);
     </script>

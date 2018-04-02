@@ -107,17 +107,21 @@
               <!-- User Account: style can be found in dropdown.less -->
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  <img src="/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
-                  <span class="hidden-xs">Alexander Pierce</span>
+                  @if($currentUser->profileimg)
+                  <img src="{{ asset("uploads/profiles") }}/{{ $currentUser->profileimg }}" class="user-image" alt="User Image">
+                  @else
+                  <img src="{{ asset("images") }}/no-image-available.jpeg" class="user-image" alt="User Image">
+                  @endif
+                  <span class="hidden-xs">{{ $currentUser->name }}</span>
                 </a>
                 <ul class="dropdown-menu">
                   <!-- Menu Footer-->
                   <li class="user-footer">
                     <div class="pull-left">
-                      <a href="{{ url('/user/edit') }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
+                      <a href="{{ url('/admin/user/edit/'.$currentUser->id) }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
                     </div>
                     <div class="pull-right">
-                      <a href="{{ url('/logout') }}" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>
+                      <a href="{{ url('/admin/logout') }}" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>
                     </div>
                   </li>
                 </ul>

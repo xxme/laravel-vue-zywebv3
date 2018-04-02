@@ -10,10 +10,6 @@ use Input;
 
 class UserController extends Controller
 {
-	public function __construct()
-    {
-        $this->middleware('auth');
-    }
     /**
      * Display a listing of the resource.
      *
@@ -125,7 +121,7 @@ class UserController extends Controller
         $obj_user->profileimg = $inputs['profileimg'];
         $obj_user->save();
 
-        return redirect()->route('adminmain');
+        return redirect()->route('admin.main');
     }
 
     /**

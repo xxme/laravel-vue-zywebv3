@@ -9,10 +9,7 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+
     /**
      * Display a listing of the resource.
      *
@@ -21,13 +18,12 @@ class AdminController extends Controller
      */
     public function dashboard($showdate = null)
     {
-        $user = Auth::user();
-        if($user->group_id > 2){
-            return redirect('home');
-        }
+        // $user = Auth::user();
+        // if($user->group_id > 2){
+        //     return redirect('home');
+        // }
         $data['pageTitle'] = __('messages.events');
         $data['subTitle'] = __('messages.eventsSubTitle');
-        $data['user'] = $user;
         return view('admin.dashboard', $data);
     }
 
