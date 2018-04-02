@@ -4,7 +4,7 @@
   <section class="sidebar">
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-menu" data-widget="tree">
-      <li class="active treeview"><a href="/admin"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
+      <li class="active"><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
       <li class="treeview">
         <a href="#">
           <i class="fa fa-book"></i> 
@@ -14,15 +14,11 @@
           </span>
         </a>
         <ul class="treeview-menu">
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeofwork') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeofcareful') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeoftotal') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeofstructure') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeoffragmented') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeoflarge') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeofhanger') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeofquilt') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.typeoftruck') }}</a></li>
+          @if($typegroups)
+          @foreach ($typegroups as $typegroup)
+            <li><a href="{{ url('/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
+          @endforeach
+          @endif
         </ul>
       </li>
       <li class="treeview">

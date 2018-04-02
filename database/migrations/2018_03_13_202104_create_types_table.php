@@ -18,6 +18,7 @@ class CreateTypesTable extends Migration
             $table->integer('group_id')->unsigned();
             $table->string('name');
             $table->tinyInteger('listorder')->default(0);
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
             $table->foreign('group_id')->references('id')->on('type_groups');
         });

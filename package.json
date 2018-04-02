@@ -23,7 +23,7 @@
   "dependencies": {
     "font-awesome": "^4.7.0",
     "fullcalendar": "^3.9.0",
-    "moment": "^2.21.0",
+    "moment": "^2.22.0",
     "vue-i18n": "^7.6.0",
     "vue-router": "^3.0.1"
   }

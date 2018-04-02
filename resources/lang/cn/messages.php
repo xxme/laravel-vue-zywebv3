@@ -39,6 +39,10 @@ return [
     'signOut' => 'Sign out',
     'useredit' => 'User edit',
     'cancel' => 'Cancel',
-    'submit' => 'Submit'
+    'submit' => 'Submit',
+    'listorder' => 'Order',
+    'name' => 'Name',
+    'status' => 'Status',
+    'create' => 'Create'
 
 ];

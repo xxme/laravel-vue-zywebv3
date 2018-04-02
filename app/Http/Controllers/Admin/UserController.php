@@ -69,10 +69,10 @@ class UserController extends Controller
         $data['subTitle'] = "";
         
     	if($loginuser->group_id == 1 && isset($id)){
-    		$data['user'] = \app\User::findOrFail($id);
+    		$data['user'] = \App\User::findOrFail($id);
     		return view('admin.user.edit', $data);
     	}
-    	$data['user'] = \app\User::findOrFail($loginuser->id);
+    	$data['user'] = \App\User::findOrFail($loginuser->id);
         return view('admin.user.edit', $data);
     }
     
@@ -116,7 +116,7 @@ class UserController extends Controller
             $password = \Hash::make($inputs['password']);
         }
 
-        $obj_user = \app\User::find($userid)->first();
+        $obj_user = \App\User::find($userid)->first();
         if(isset($password)){
             $obj_user->password = $password;
         }
