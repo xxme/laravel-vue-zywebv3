@@ -4,8 +4,8 @@
   <section class="sidebar">
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-menu" data-widget="tree">
-      <li class="active"><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
-      <li class="treeview">
+      <li @if(Request::is('admin')) class="active" @endif><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
+      <li class="treeview @if(Request::is('admin/typegroup/*') || Request::is('admin/type/create/*')) active @endif">
         <a href="#">
           <i class="fa fa-book"></i> 
           <span>{{ __('messages.typemanage') }}</span>
@@ -16,7 +16,7 @@
         <ul class="treeview-menu">
           @if($typegroups)
           @foreach ($typegroups as $typegroup)
-            <li><a href="{{ url('admin/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
+            <li @if(Request::is('admin/typegroup/'.$typegroup->id) || Request::is('admin/type/create/'.$typegroup->id)) class="active" @endif><a href="{{ url('admin/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
           @endforeach
           @endif
         </ul>

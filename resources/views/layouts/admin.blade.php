@@ -119,7 +119,7 @@
                   <!-- Menu Footer-->
                   <li class="user-footer">
                     <div class="pull-left">
-                      <a href="{{ url('/admin/user/edit/.$currentUser->id') }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
+                      <a href="{{ url('/admin/user/edit/'.$currentUser->id) }}" class="btn btn-default btn-flat">{{ __('messages.profile') }}</a>
                     </div>
                     <div class="pull-right">
                       <a href="{{ url('/admin/logout') }}" class="btn btn-default btn-flat">{{ __('messages.signOut') }}</a>

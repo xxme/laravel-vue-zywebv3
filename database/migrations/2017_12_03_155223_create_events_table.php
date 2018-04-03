@@ -15,12 +15,12 @@ class CreateEventsTable extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id');
-            $table->integer('order_id')->nullable();  // 見積もりid
-            $table->integer('shopping_id')->nullable();  // 购物单id
-            $table->integer('agent_id')->nullable();  // 推广人id
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('order_id')->nullable();  // 見積もりid
+            $table->unsignedInteger('shopping_id')->nullable();  // 购物单id
+            $table->unsignedInteger('agent_id')->nullable();  // 推广人id
             $table->dateTime('event_date');
-            $table->tinyInteger('apm');
+            $table->unsignedTinyInteger('apm');
             $table->string('types');
             $table->string('truck_ids');
             $table->string('quotation')->nullable();  // 报价
@@ -28,7 +28,7 @@ class CreateEventsTable extends Migration
             // from / fromfloor / frombuildingtype / to / tofloor / tobuildingtype / stime(开始时间)
             $table->text('details')->nullable();
             $table->text('description')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->unsignedTinyInteger('status')->default(1);
             $table->softDeletes();
             $table->timestamps();
         });

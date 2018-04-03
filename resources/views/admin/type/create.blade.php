@@ -12,7 +12,7 @@
         </div>
         <!-- /.box-header -->
         <!-- form start -->
-        <form role="form" method="POST" action="{{ url('/type/create_do') }}">
+        <form role="form" method="POST" action="{{ url('admin/type/create_do') }}">
             {{ csrf_field() }}
             <input type="hidden" name="group_id" value="{{ $group_id }}" />
             <div class="box-body">

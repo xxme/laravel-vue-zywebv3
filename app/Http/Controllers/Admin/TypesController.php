@@ -43,7 +43,7 @@ class TypesController extends Controller
 
         //rules
         $rules = [
-            'name'=>'required|min:4|max:30',
+            'name'=>'required|min:4|max:32',
         ];
 
         //validation
@@ -58,7 +58,7 @@ class TypesController extends Controller
         $obj->name = $inputs['name'];
         $obj->group_id = $inputs['group_id'];
         $obj->save();
-        return redirect()->route('typegroup', ['id' => $inputs['group_id']]);
+        return redirect()->route('type.group', ['id' => $inputs['group_id']]);
     }
 
     /**
@@ -106,6 +106,31 @@ class TypesController extends Controller
         //
     }
 
+
+    public function updatetypes(Request $request)
+    {
+        $inputs = $request->all();
+        //rules
+        $rules = [
+            'listorder.*'=>'required|integer|min:0|max:127',
+            'name.*'=>'required|min:1|max:32',
+        ];
+        //validation
+        $validation = \Validator::make($inputs, $rules);
+        //if fails
+        if($validation->fails())
+        {
+            return \Response::json(array('success' => false, 'message' => json_encode($validation->errors())), 200);
+        }
+        foreach($inputs['listorder'] as $key => $v){
+            $obj = \App\Type::where('id', $key)->first();
+            $obj->listorder = $v;
+            $obj->name = $inputs['name'][$key];
+            $obj->save();
+        }
+        
+        return \Response::json(array('success' => true, 'message' => "ok"), 200);
+    }
     /**
      * Remove the specified resource from storage.
      *

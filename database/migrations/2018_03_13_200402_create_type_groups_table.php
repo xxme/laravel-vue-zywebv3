@@ -16,7 +16,8 @@ class CreateTypeGroupsTable extends Migration
         Schema::create('type_groups', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->tinyInteger('status')->default(1);
+            $table->unsignedTinyInteger('status')->default(1);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

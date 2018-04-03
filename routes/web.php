@@ -35,6 +35,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/typegroup/{id}', 'TypeGroupsController@show')->name('type.group');
         Route::get('/type/create/{id}', 'TypesController@create');
         Route::post('/type/create_do', 'TypesController@create_do');
+        Route::post('/type/updatetypes', 'TypesController@updatetypes');
         Route::get('/user/edit', function () {
             return redirect('/user/edit/' . Auth::user()->id);
         });
