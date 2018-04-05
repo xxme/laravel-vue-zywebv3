@@ -15,9 +15,15 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($group_id)
     {
-        //
+        $userGroup = \App\UserGroup::findOrFail($group_id);
+        $data['pageTitle'] = __('messages.usermanage');
+        $data['subTitle'] = $userGroup->name;
+        $data['group_id'] = $userGroup->id;
+        $data['users'] = \App\UserGroup::find($userGroup->id)->users;
+
+        return view('admin.user.index', $data);
     }
 
     /**
@@ -25,9 +31,13 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($group_id)
     {
-        //
+        $userGroup = \App\UserGroup::findOrFail($group_id);
+        $data['pageTitle'] = __('messages.usermanage');
+        $data['subTitle'] = $userGroup->name;
+        $data['group_id'] = $userGroup->id;
+        return view('admin.user.create', $data);
     }
 
     /**
