@@ -43,6 +43,8 @@ return [
     'listorder' => 'Order',
     'name' => 'Name',
     'status' => 'Status',
-    'create' => 'Create'
+    'create' => 'Create',
+    'success' => 'Success',
+    'error' => 'Error'
 
 ];

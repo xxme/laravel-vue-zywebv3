@@ -47,7 +47,7 @@
     <div class="wrapper">
         <header class="main-header">
         <!-- Logo -->
-        <a href="index2.html" class="logo">
+        <a href="#" class="logo">
           <!-- mini logo for sidebar mini 50x50 pixels -->
           <span class="logo-mini"><b>A</b>LT</span>
           <!-- logo for regular state and mobile devices -->
@@ -130,11 +130,20 @@
           </div>
         </nav>
       </header>
-
+      
       @include('admin.public.menu')
 
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
+        <div class="alert alert-success alert-dismissible is-hide">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+          <h4><i class="icon fa fa-check"></i> {{ __('messages.success') }}</h4>
+        </div>
+        <div class="alert alert-danger alert-dismissible is-hide">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+          <h4><i class="icon fa fa-ban"></i> {{ __('messages.error') }}</h4>
+          <span></span>
+        </div>
         <!-- Content Header (Page header) -->
         <section class="content-header">
           <h1>
@@ -193,5 +202,13 @@
     <script src="/dist/js/adminlte.min.js"></script>
     <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
     <!-- AdminLTE for demo purposes -->
+    <script>
+      function hidealert(){
+        setTimeout(function(){
+          $('.alert').hide();
+          $('.alert-danger').find('span').html('');
+        },5000);
+      }
+    </script>
   </body>
 </html>

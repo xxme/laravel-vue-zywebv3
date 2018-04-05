@@ -8,7 +8,7 @@
 <div>
   <div class="box box-primary">
     <!-- form start -->
-    <form role="form" method="post" action="{{ url('user/update') }}">
+    <form role="form" method="post" action="{{ url('admin/user/update') }}">
       {{ csrf_field() }}
       <div class="box-body">
         <div class="form-group @if(!empty($errors->first('name'))) has-error @endif">

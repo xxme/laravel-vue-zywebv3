@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTypesTable extends Migration
+class CreateAdminLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,16 @@ class CreateTypesTable extends Migration
      */
     public function up()
     {
-        Schema::create('types', function (Blueprint $table) {
+        Schema::create('admin_logs', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('group_id');
-            $table->string('name');
-            $table->unsignedSmallInteger('listorder')->default(0);
-            $table->unsignedTinyInteger('status')->default(1);
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('obj_id');
+            // 1 add 2 update 3 delete(soft) 4 comment
+            $table->unsignedTinyInteger('type');
+            $table->string('details')->nullable();
             $table->softDeletes();
             $table->timestamps();
-            $table->foreign('group_id')->references('id')->on('type_groups');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
@@ -32,6 +33,6 @@ class CreateTypesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('types');
+        Schema::dropIfExists('admin_logs');
     }
 }
