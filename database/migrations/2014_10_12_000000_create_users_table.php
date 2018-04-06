@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('profileimg')->nullable();
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
             $table->foreign('group_id')->references('id')->on('user_groups');
         });

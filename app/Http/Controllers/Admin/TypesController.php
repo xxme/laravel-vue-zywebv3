@@ -14,11 +14,18 @@ class TypesController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($group_id)
     {
-        //
+        $typeGroup = \App\TypeGroup::findOrFail($group_id);
+        $data['pageTitle'] = __('messages.typemanage');
+        $data['subTitle'] = $typeGroup->name;
+        $data['group_id'] = $typeGroup->id;
+        $data['types'] = \App\TypeGroup::where('status', 1)->find($typeGroup->id)->types;
+
+        return view('admin.type.index', $data);
     }
 
     /**
@@ -57,8 +64,10 @@ class TypesController extends Controller
         $obj = new \App\Type();
         $obj->name = $inputs['name'];
         $obj->group_id = $inputs['group_id'];
-        $obj->save();
-        return redirect()->route('type.group', ['id' => $inputs['group_id']]);
+        \AdminLog::saveWithLog($obj, 1);
+        // dd('log insert successfully.');
+        // $obj->save();
+        return redirect()->route('type.index', ['id' => $inputs['group_id']]);
     }
 
     /**

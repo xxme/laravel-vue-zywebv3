@@ -19,10 +19,16 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         $view->composer('*', 'App\Http\ViewComposers\GlobalComposer');
+        // get typegroups for menu
         if (Schema::hasTable('type_groups')){
             $typegroups = DB::table('type_groups')->where('status', 1)->get();
 
             View::share('typegroups', $typegroups);
+        }
+        // get usergroups for menu
+        if (Schema::hasTable('user_groups')){
+            $usergroups = DB::table('user_groups')->get();
+            View::share('usergroups', $usergroups);
         }
     }
 

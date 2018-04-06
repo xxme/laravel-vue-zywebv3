@@ -9,17 +9,39 @@
   <div class="box">
     <div class="box-header">
       <div class="box-tools">
-        <a href="{{ url('/user/create/'.$group_id) }}" class=""><i class="fa fa-plus-square fa-2x pull-right"></i></a>
+        <a href="{{ url('admin/user/create/'.$group_id) }}" class=""><i class="fa fa-plus-square fa-2x pull-right"></i></a>
       </div>
     </div>
     <div class="box-body">
       <table class="table table-bordered">
         <tbody><tr>
-          <th style="width: 10px">{{__('messages.listorder')}}</th>
-          <th>{{__('messages.name')}}</th>
-          <th style="width: 40px">{{__('messages.status')}}</th>
+          <th style="width: 80px">{{__('messages.profile')}}</th>
+          <th style="width: 150px">{{__('messages.name')}}</th>
+          <th>{{__('messages.email')}}</th>
+          <th style="width: 50px">{{__('messages.action')}}</th>
         </tr>
-        
+        @if($users)
+          @foreach ($users as $user)
+            <tr>
+              <td align="center">
+                @if($user->profileimg)
+                <img src="{{ asset("uploads/profiles") }}/{{ $user->profileimg }}" class="user-listimage" alt="User Image">
+                @else
+                <img src="{{ asset("images") }}/no-image-available.jpeg" class="user-listimage" alt="User Image">
+                @endif
+              </td>
+              <td>
+                {{ $user->name }}
+              </td>
+              <td>
+                {{ $user->email }}
+              </td>
+              <td>
+                <a href="{{ url('admin/user/edit/'.$user->id) }}"><button class="btn btn-block btn-primary btn-xs">{{ __('messages.edit') }}</button></a>
+              </td>
+            </tr>
+          @endforeach
+        @endif
       </tbody></table>
     </div>
     <!-- /.box-body -->

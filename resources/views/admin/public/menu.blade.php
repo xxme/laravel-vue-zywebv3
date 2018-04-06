@@ -5,7 +5,7 @@
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-menu" data-widget="tree">
       <li @if(Request::is('admin')) class="active" @endif><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
-      <li class="treeview @if(Request::is('admin/typegroup/*') || Request::is('admin/type/create/*')) active @endif">
+      <li class="treeview @if(Request::is('admin/type/*')) active @endif">
         <a href="#">
           <i class="fa fa-book"></i> 
           <span>{{ __('messages.typemanage') }}</span>
@@ -16,23 +16,25 @@
         <ul class="treeview-menu">
           @if($typegroups)
           @foreach ($typegroups as $typegroup)
-            <li @if(Request::is('admin/typegroup/'.$typegroup->id) || Request::is('admin/type/create/'.$typegroup->id)) class="active" @endif><a href="{{ url('admin/typegroup/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
+            <li @if(Request::is('admin/type/index/'.$typegroup->id) || Request::is('admin/type/create/'.$typegroup->id)) class="active" @endif><a href="{{ url('admin/type/index/'.$typegroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $typegroup->name }}</a></li>
           @endforeach
           @endif
         </ul>
       </li>
-      <li class="treeview">
+      <li class="treeview @if(Request::is('admin/user/*')) active @endif">
         <a href="#">
           <i class="fa fa-laptop"></i> 
-          <span>{{ __('messages.authmanagement') }}</span>
+          <span>{{ __('messages.usermanage') }}</span>
           <span class="pull-right-container">
             <i class="fa fa-angle-left pull-right"></i>
           </span>
         </a>
         <ul class="treeview-menu">
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.administrators') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.staffs') }}</a></li>
-          <li><a href="#"><i class="fa fa-angle-double-right"></i> {{ __('messages.registeredusers') }}</a></li>
+          @if($usergroups)
+          @foreach ($usergroups as $usergroup)
+            <li @if(Request::is('admin/user/index/'.$usergroup->id) || Request::is('admin/user/create/'.$usergroup->id)) class="active" @endif><a href="{{ url('admin/user/index/'.$usergroup->id) }}"><i class="fa fa-angle-double-right"></i> {{ $usergroup->name }}</a></li>
+          @endforeach
+          @endif
         </ul>
       </li>
       <li>

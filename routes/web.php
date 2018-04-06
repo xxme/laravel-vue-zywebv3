@@ -34,7 +34,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/user/edit/{id}', 'UserController@edit');
         Route::post('/user/uploadprofile', 'UserController@updateprofile');
         Route::post('/user/update', 'UserController@update');
-        Route::get('/typegroup/{id}', 'TypeGroupsController@show')->name('type.group');
+        Route::get('/type/index/{id}', 'TypesController@index')->name('type.index');
         Route::get('/type/create/{id}', 'TypesController@create');
         Route::post('/type/create_do', 'TypesController@create_do');
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
