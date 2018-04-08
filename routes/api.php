@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use App\Event;
+use App\Type;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,5 +22,9 @@ Route::group(['middleware' => 'api'], function() {
     Route::get('events/{ym}',  function() {
         $events = Event::all()->take(5);
         return $events;
+    });
+    Route::get('get_types',  function() {
+        $rs = Type::whereNull('deleted_at')->orderBy('listorder', 'asc')->get();
+        return $rs;
     });
 });

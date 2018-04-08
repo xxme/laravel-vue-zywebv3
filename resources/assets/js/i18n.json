@@ -36,8 +36,19 @@
             "registeredusers" : "注册用户"
         }, 
         "event": { 
+            "addEvent": "添加日程",
+            "editEvent": "编辑日程",
             "workType": "工作类型", 
-            "scheduledDatetime": "约定时间" 
+            "scheduledDatetime": "约定时间",
+            "typeofcareful": "特别注意",
+            "typeoftotal": "物品总量",
+            "typeofstructure": "物品结构",
+            "typeoffragmented": "散件数量",
+            "typeoflarge": "无法装箱",
+            "typeofhanger": "带挂衣量",
+            "typeofquilt": "被子套数",
+            "typeoftruck": "车辆信息",
+            "aboutgoods": "物品情况"
         }
     }
 }

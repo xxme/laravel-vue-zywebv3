@@ -1,5 +1,5 @@
 <template> 
-    <select :multiple="multiple" class="form-control"> 
+    <select :multiple="multiple" class="form-control select2x"> 
     </select> 
 </template> 
  
@@ -28,7 +28,7 @@ export default {
           // this.$emit('input', parseInt(event.target.value, 10)) 
           this.$emit('input', selecions); 
           this.selected = selecions; 
-          console.log(this.selected); 
+          // console.log(this.selected); 
       }) 
       .trigger('change'); 
   }, 
@@ -38,6 +38,16 @@ export default {
       multiple: true 
     } 
   }, 
+  watch: {
+      value: function (value) {
+          $(this.$el).val(value).trigger('change');
+      },
+      options: function (options) {
+          if(this.options.length > 0) {
+            $(this.$el).select2({ data: this.options })
+          }
+      }
+  },
   destroyed: function () { 
     $(this.$el).off().select2('destroy') 
   } 

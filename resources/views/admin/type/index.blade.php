@@ -34,7 +34,7 @@
               <td>
                 <input type="text" class="form-control" name="name[{{ $type->id }}]" value="{{ $type->name }}" />
               </td>
-              <td>@if($type->status == 1)<span class="label label-success" onclick="changestatus('{{ $type->id }}')">Available @else <span class="label label-danger" onclick="'{{ $type->id }}'">Unavailable @endif</span></td>
+              <td>@empty($type->deleted_at)<span class="label label-success" onclick="changestatus('{{ $type->id }}')">Available @else <span class="label label-danger" onclick="'{{ $type->id }}'">Unavailable @endempty</span></td>
             </tr>
           @endforeach
         @endif

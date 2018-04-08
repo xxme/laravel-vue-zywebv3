@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
         $view->composer('*', 'App\Http\ViewComposers\GlobalComposer');
         // get typegroups for menu
         if (Schema::hasTable('type_groups')){
-            $typegroups = DB::table('type_groups')->where('status', 1)->get();
+            $typegroups = DB::table('type_groups')->whereNull('deleted_at')->get();
 
             View::share('typegroups', $typegroups);
         }

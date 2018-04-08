@@ -2,13 +2,32 @@
   <div>
     <div class="box box-primary">
       <div class="box-header">
-        <h3 class="box-title">add event</h3>
+        <h3 class="box-title">{{ $t('event.addEvent') }}</h3>
       </div>
       <div class="box-body">
         <div class="form-group"> 
           <label>{{ $t('event.workType') }}:</label> 
- 
-          <select2 :options="options"></select2> 
+          <select2 :options="options1"></select2> 
+          <!-- /.input group --> 
+        </div> 
+        <div class="form-group"> 
+          <label>{{ $t('event.typeofcareful') }}:</label> 
+          <select2 :options="options2"></select2> 
+          <!-- /.input group --> 
+        </div> 
+        <div class="form-group"> 
+          <label>{{ $t('event.typeoftotal') }}:</label> 
+          <select2 :options="options3"></select2> 
+          <!-- /.input group --> 
+        </div>
+        <div class="form-group"> 
+          <label>{{ $t('event.aboutgoods') }}:</label> 
+          <select2 :options="options4"></select2> 
+          <!-- /.input group --> 
+        </div> 
+        <div class="form-group"> 
+          <label>{{ $t('event.typeoftruck') }}:</label> 
+          <select2 :options="options9"></select2> 
           <!-- /.input group --> 
         </div> 
         <div class="form-group"> 
@@ -25,65 +44,14 @@
               <div class="input-group-addon"> 
                 <input type="checkbox" id="timeckbox" name="timeckbox" /> 
               </div> 
-              <input type="text" name="stime" class="form-control datepickertime" disabled v-model="eventtime" /> 
+              <input type="text" name="stime" class="form-control datepickertime" disabled v-model="eventfromtime" /> 
+              <div class="input-group-addon"> 
+                〜
+              </div> 
+              <input type="text" name="ttime" class="form-control datepickertime" disabled v-model="eventtotime" /> 
             </div> 
           </div> 
         </div> 
-        <!-- Date -->
-        <div class="form-group">
-          <label>Date:</label>
-
-          <div class="input-group date">
-            <div class="input-group-addon">
-              <i class="fa fa-calendar"></i>
-            </div>
-            <input type="text" class="form-control pull-right" id="datepicker">
-          </div>
-          <!-- /.input group -->
-        </div>
-        <!-- /.form group -->
-
-        <!-- Date range -->
-        <div class="form-group">
-          <label>Date range:</label>
-
-          <div class="input-group">
-            <div class="input-group-addon">
-              <i class="fa fa-calendar"></i>
-            </div>
-            <input type="text" class="form-control pull-right" id="reservation">
-          </div>
-          <!-- /.input group -->
-        </div>
-        <!-- /.form group -->
-
-        <!-- Date and time range -->
-        <div class="form-group">
-          <label>Date and time range:</label>
-
-          <div class="input-group">
-            <div class="input-group-addon">
-              <i class="fa fa-clock-o"></i>
-            </div>
-            <input type="text" class="form-control pull-right" id="reservationtime">
-          </div>
-          <!-- /.input group -->
-        </div>
-        <!-- /.form group -->
-
-        <!-- Date and time range -->
-        <div class="form-group">
-          <label>Date range button:</label>
-
-          <div class="input-group">
-            <button type="button" class="btn btn-default pull-right" id="daterange-btn">
-              <span>
-                <i class="fa fa-calendar"></i> Date range picker
-              </span>
-              <i class="fa fa-caret-down"></i>
-            </button>
-          </div>
-        </div>
         <!-- /.form group -->
       </div>
       <!-- /.box-body -->
@@ -112,6 +80,7 @@ export default {
         $('input[name="stime"]').val("");
       }
     })
+    this.get_types()
   },
   components: {
     Select2
@@ -119,12 +88,18 @@ export default {
   data() {
     return {
       options: [
-        { id: 1, text: 'Hello' },
-        { id: 2, text: 'World' }
+        {id: 1, text: "t1"},
+        {id: 2, text: "t2"}
       ],
+      options1: [],
+      options2: [],
+      options3: [],
+      options4: [],
+      options9: [],
       value: [],
       eventdate: "",
-      eventtime: ""
+      eventfromtime: "",
+      eventtotime: ""
     }
   },
   methods: {
@@ -137,13 +112,46 @@ export default {
       // $('.datepicker').on('change', (e) => {
       //   self.eventdate = moment($(e.target).val()).format('YYYY-MM-DD')
       // })
-      // $('.datepickertime').on('change', (e) => {
-      //   self.eventtime = moment($(e.target).val()).format('h:mm')
-      // })
+    },
+    get_types() {
+        this.$http({
+            url: '/api/get_types/',
+            method: 'GET'
+        }).then(res =>  {
+            for (let index = 0; index < res.data.length; index++) {
+              var group_id = res.data[index].group_id;
+              var option = {};
+              option.id = res.data[index].id;
+              option.text = res.data[index].name;
+              switch (group_id) {
+                case 1:
+                  this.options1.push(option);
+                  break;
+                case 2:
+                  this.options2.push(option);
+                  break;
+                case 3:
+                  this.options3.push(option);
+                  break;
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                  this.options4.push(option);
+                  break;
+                case 9:
+                  this.options9.push(option);
+                  break;
+                default:
+                  break;
+              }
+            };
+        })
     }
   },
   created() {
-    
+
   }
 }
 </script>

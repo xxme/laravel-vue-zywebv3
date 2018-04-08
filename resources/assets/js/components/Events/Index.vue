@@ -12,7 +12,7 @@
             </div>
             <div class="box-header with-border">
                 <a name="2018-03-06"></a>
-                <h4> 星期四(木) <router-link to="/event/add"><i class="fa fa-plus-square pull-right"></i><span class="pull-right text-muted"> 日程: 3</span></router-link></h4>
+                <h4> 星期四(木) <router-link to="/admin/event/add"><i class="fa fa-plus-square pull-right"></i><span class="pull-right text-muted"> 日程: 3</span></router-link></h4>
             </div>
             
             <!-- box -->

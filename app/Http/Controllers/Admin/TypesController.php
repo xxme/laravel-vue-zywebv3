@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Type;
+use App\TypeGroup;
 
 class TypesController extends Controller
 {
@@ -19,11 +21,11 @@ class TypesController extends Controller
      */
     public function index($group_id)
     {
-        $typeGroup = \App\TypeGroup::findOrFail($group_id);
+        $typeGroup = TypeGroup::findOrFail($group_id);
         $data['pageTitle'] = __('messages.typemanage');
         $data['subTitle'] = $typeGroup->name;
         $data['group_id'] = $typeGroup->id;
-        $data['types'] = \App\TypeGroup::where('status', 1)->find($typeGroup->id)->types;
+        $data['types'] = TypeGroup::whereNull('deleted_at')->find($typeGroup->id)->types;
 
         return view('admin.type.index', $data);
     }
@@ -36,7 +38,7 @@ class TypesController extends Controller
      */
     public function create($id)
     {
-        $typeGroup = \App\TypeGroup::findOrFail($id);
+        $typeGroup = TypeGroup::findOrFail($id);
         $data['pageTitle'] = __('messages.typemanage');
         $data['subTitle'] = $typeGroup->name;
         $data['group_id'] = $typeGroup->id;
@@ -46,11 +48,11 @@ class TypesController extends Controller
     public function create_do(Request $request) {
         //inputs
         $inputs = $request->all();
-        $typeGroup = \App\TypeGroup::findOrFail($inputs['group_id']);
+        $typeGroup = TypeGroup::findOrFail($inputs['group_id']);
 
         //rules
         $rules = [
-            'name'=>'required|min:4|max:32',
+            'name'=>'required|min:0|max:32',
         ];
 
         //validation
@@ -61,12 +63,10 @@ class TypesController extends Controller
         {
             return redirect()->back()->withErrors($validation->errors())->withInput();
         }
-        $obj = new \App\Type();
+        $obj = new Type();
         $obj->name = $inputs['name'];
         $obj->group_id = $inputs['group_id'];
         \AdminLog::saveWithLog($obj, 1);
-        // dd('log insert successfully.');
-        // $obj->save();
         return redirect()->route('type.index', ['id' => $inputs['group_id']]);
     }
 
@@ -132,7 +132,7 @@ class TypesController extends Controller
             return \Response::json(array('success' => false, 'message' => json_encode($validation->errors())), 200);
         }
         foreach($inputs['listorder'] as $key => $v){
-            $obj = \App\Type::where('id', $key)->first();
+            $obj = Type::where('id', $key)->first();
             $obj->listorder = $v;
             $obj->name = $inputs['name'][$key];
             $obj->save();

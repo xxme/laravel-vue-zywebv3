@@ -16,9 +16,10 @@
             {{ csrf_field() }}
             <input type="hidden" name="group_id" value="{{ $group_id }}" />
             <div class="box-body">
-                <div class="form-group">
+                <div class="form-group @if(!empty($errors->first('name'))) has-error @endif">
                     <label for="name">{{ __('messages.name') }}</label>
-                    <input type="text" class="form-control" name="name" placeholder="Enter name">
+                    <input type="text" class="form-control" name="name" placeholder="Enter name" value="@if(!empty(old('name'))){{ old('name') }}@endif">
+                    <span class="help-block">{{ $errors->first('name') }}</span>
                 </div>
             </div>
             <!-- /.box-body -->
