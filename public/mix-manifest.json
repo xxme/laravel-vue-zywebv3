@@ -1,4 +1,7 @@
 {
     "/js/app.js": "/js/app.js",
-    "/css/app.css": "/css/app.css"
+    "/css/app.css": "/css/app.css",
+    "/js/datetimepicker/jquery.datetimepicker.full.min.js": "/js/datetimepicker/jquery.datetimepicker.full.min.js",
+    "/js/datetimepicker/jquery.datetimepicker.min.js": "/js/datetimepicker/jquery.datetimepicker.min.js",
+    "/css/datetimepicker/jquery.datetimepicker.min.css": "/css/datetimepicker/jquery.datetimepicker.min.css"
 }

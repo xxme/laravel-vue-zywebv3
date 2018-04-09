@@ -27,7 +27,6 @@ class CreateEventsTable extends Migration
             $table->text('images')->nullable();
             // from / fromfloor / frombuildingtype / to / tofloor / tobuildingtype / stime(开始时间)
             $table->text('details')->nullable();
-            $table->text('description')->nullable();
             $table->unsignedTinyInteger('status')->default(1);
             $table->softDeletes();
             $table->timestamps();

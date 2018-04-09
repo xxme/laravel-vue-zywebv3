@@ -27,21 +27,23 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         return redirect('/admin/login');
     });
     Route::group(['middleware' => 'auth.admin'], function () {
+        // get
         Route::get('/', 'AdminController@dashboard')->name('admin.main');
         Route::get('/event/add', 'AdminController@dashboard');
         Route::get('/user/index/{id}', 'UserController@index');
         Route::get('/user/create/{id}', 'UserController@create');
         Route::get('/user/edit/{id}', 'UserController@edit');
-        Route::post('/user/uploadprofile', 'UserController@updateprofile');
-        Route::post('/user/update', 'UserController@update');
         Route::get('/type/index/{id}', 'TypesController@index')->name('type.index');
         Route::get('/type/create/{id}', 'TypesController@create');
-        Route::post('/type/create_do', 'TypesController@create_do');
-        Route::post('/type/updatetypes', 'TypesController@updatetypes');
         Route::get('/user/edit', function () {
             return redirect('/user/edit/' . Auth::user()->id);
         });
-        
+        // post
+        Route::post('/user/uploadprofile', 'UserController@updateprofile');
+        Route::post('/user/update', 'UserController@update');
+        Route::post('/type/create_do', 'TypesController@create_do');
+        Route::post('/type/updatetypes', 'TypesController@updatetypes');
+        Route::post('/event/create', 'EventController@create');
     });
     // Route::post('logout', 'LoginController@logout');
 });

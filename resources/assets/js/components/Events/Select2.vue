@@ -44,7 +44,7 @@ export default {
       },
       options: function (options) {
           if(this.options.length > 0) {
-            $(this.$el).select2({ data: this.options })
+            $(this.$el).select2({ data: this.options, placeholder: this.placeholder})
           }
       }
   },
