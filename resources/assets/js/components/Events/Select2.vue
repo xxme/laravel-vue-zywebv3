@@ -7,7 +7,7 @@
 import select2 from 'select2' 
  
 export default { 
-  props: ['options', 'value'], 
+  props: ['options', 'value', 'placeholder'], 
   template: '#select2-template', 
   ready: function () { 
     var self = this 
@@ -20,7 +20,7 @@ export default {
       // $(this.$el) 
       select 
       // init select2 
-      .select2({data: this.options}) 
+      .select2({data: this.options, placeholder: this.placeholder}) 
       .val(this.value) 
       .on('change', (event) => { 
           const selecions = select.select2('data') 
