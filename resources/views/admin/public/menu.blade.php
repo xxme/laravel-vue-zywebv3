@@ -4,7 +4,7 @@
   <section class="sidebar">
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-menu" data-widget="tree">
-      <li @if(Request::is('admin')) class="active" @endif><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
+      <li @if(Request::is('admin') || Request::is('admin/event/*')) class="active" @endif><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
       <li class="treeview @if(Request::is('admin/type/*')) active @endif">
         <a href="#">
           <i class="fa fa-book"></i> 
@@ -23,7 +23,7 @@
       </li>
       <li class="treeview @if(Request::is('admin/user/*')) active @endif">
         <a href="#">
-          <i class="fa fa-laptop"></i> 
+          <i class="fa fa-users"></i> 
           <span>{{ __('messages.usermanage') }}</span>
           <span class="pull-right-container">
             <i class="fa fa-angle-left pull-right"></i>

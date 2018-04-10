@@ -89,18 +89,6 @@
           </div>
           <div class="col-xs-6 padding0">
             <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-phone"></i></span>
-              <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
-            </div>
-          </div>
-          <div class="col-xs-6 padding0">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
-              <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
-            </div>
-          </div>
-          <div class="col-xs-6 padding0">
-            <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-jpy"></i></span>
               <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')">
             </div>
@@ -111,13 +99,31 @@
               <input type="number" class="form-control" name="shoppingid" v-model.number="event.shoppingid" :placeholder="$t('event.shoppingListId')">
             </div>
           </div>
+          <div class="col-xs-6 padding0">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+              <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
+            </div>
+          </div>
+          <div class="col-xs-6 padding0">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
+              <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
+            </div>
+          </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
             <input type="text" class="form-control" name="fromadd" v-model="event.fromadd" :placeholder="$t('event.fromAddress')">
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
+            </span>
           </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
             <input type="text" class="form-control" name="toadd" v-model="event.toadd" :placeholder="$t('event.toAddress')">
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
+            </span>
           </div>
           <div class="form-group">
             <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
@@ -136,6 +142,79 @@
         </div>
       </div>
     </form>
+    <modal v-if="showModal" @close="showModal = false">
+      <h4 slot="header">{{ $t('event.setDetails') }}</h4>
+      <div slot="body">
+        <div class="form-group">
+          <label>{{ $t('event.fromAddress') }}</label>
+          <label>
+            <input type="radio" name="fromdt" value="1">
+            {{ $t('event.elevator') }}
+          </label>
+          <label>
+            <input type="radio" name="fromdt" value="2">
+            {{ $t('event.stairs') }}
+          </label>
+          <label>
+            <input type="radio" name="fromdt" value="3">
+            {{ $t('event.elevatorAndstairs') }}
+          </label>
+          <label>{{ $t('event.floors') }}</label>
+          <select name="fromlc">
+            <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>{{ $t('event.toAddress') }}</label>
+          <label>
+            <input type="radio" name="todt" value="1">
+            {{ $t('event.elevator') }}
+          </label>
+          <label>
+            <input type="radio" name="todt" value="2">
+            {{ $t('event.stairs') }}
+          </label>
+          <label>
+            <input type="radio" name="todt" value="3">
+            {{ $t('event.elevatorAndstairs') }}
+          </label>
+          <label>{{ $t('event.floors') }}</label>
+          <select name="tolc">
+            <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
+          </select>
+        </div>
+      </div>
+    </modal>
+    <script type="text/x-template" id="modal-template">
+      <transition name="modal">
+        <div class="modal-mask">
+          <div class="modal-wrapper">
+            <div class="modal-container">
+
+              <div class="modal-header">
+                <slot name="header">
+                  default header
+                </slot>
+              </div>
+
+              <div class="modal-body">
+                <slot name="body">
+                  default body
+                </slot>
+              </div>
+
+              <div class="modal-footer">
+                <slot name="footer">
+                  <button class="modal-default-button" @click="$emit('close')">
+                    OK
+                  </button>
+                </slot>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </script>
   </div>
 </template>
 <script>
@@ -175,6 +254,10 @@ export default {
       value: [],
       placeholder: "",
       errors: [],
+      showModal: false,
+      floors: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '30', '40', '50'],
+      setDetailsFrom: this.$i18n.t('event.setDetails'),
+      setDetailsTo: this.$i18n.t('event.setDetails'),
       event: {
         eventdate: "",
         apm: "",
@@ -292,4 +375,16 @@ export default {
 
   }
 }
+
+Vue.component('modal', {
+  template: '#modal-template',
+  data() {
+    return {
+      
+    }
+  },
+  methods: {
+    
+  }
+})
 </script>

@@ -69,7 +69,12 @@
             "eventtime": "预定时间",
             "apmAllDayOrTime": "上午、下午、晚上或全天",
             "eventtimeChecked": "选择指定具体时间的情况下，",
-            "PleaseCorrectTheFollowingError": "请修正以下错误后重试"
+            "PleaseCorrectTheFollowingError": "请修正以下错误后重试",
+            "setDetails": "设置详情",
+            "floors": "楼层",
+            "elevator": "电梯",
+            "stairs": "楼梯",
+            "elevatorAndstairs": "电梯+楼梯"
         }
     }
 }
