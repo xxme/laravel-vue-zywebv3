@@ -30,7 +30,8 @@ const router = new VueRouter({
     routes: [
         // TOPページ
         { path: '/admin', component: EventsIndex },
-        { path: '/admin/event/add', component: EventForm },
+        { path: '/admin/event/create', component: EventForm },
+        { path: '/admin/event/create/:eventdate', component: EventForm },
     ]
 });
 

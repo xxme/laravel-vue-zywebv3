@@ -27,9 +27,11 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         return redirect('/admin/login');
     });
     Route::group(['middleware' => 'auth.admin'], function () {
+        // resource
+        Route::resource('event', 'EventController');
         // get
         Route::get('/', 'AdminController@dashboard')->name('admin.main');
-        Route::get('/event/add', 'AdminController@dashboard');
+        Route::get('/event/create/{date}', 'EventController@create');
         Route::get('/user/index/{id}', 'UserController@index');
         Route::get('/user/create/{id}', 'UserController@create');
         Route::get('/user/edit/{id}', 'UserController@edit');
@@ -43,7 +45,6 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/user/update', 'UserController@update');
         Route::post('/type/create_do', 'TypesController@create_do');
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
-        Route::post('/event/create', 'EventController@create');
     });
     // Route::post('logout', 'LoginController@logout');
 });
