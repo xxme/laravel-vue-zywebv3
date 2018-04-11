@@ -7,7 +7,9 @@
             "required": "不能为空",
             "Double-byteUnavailable": "全角使用不可",
             "moreThanOne": "至少指定一种",
-            "calltheadministrator": "如果看到这个错误请联系神儿或Boss"
+            "calltheadministrator": "如果看到这个错误请联系神儿或Boss",
+            "unset": "未設定",
+            "warning": "警告"
         },
         "topmenu": {
             "quicknav" : "宇宙导航",

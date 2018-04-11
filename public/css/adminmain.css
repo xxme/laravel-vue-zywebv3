@@ -7,7 +7,7 @@
 }
 /* for fullcalendar end */
 /* loading start */
-.LockOn {
+.LockOn,.LockShow {
     pointer-events: all;
     z-index: 99999;
     border: none;
@@ -23,6 +23,9 @@
     filter: alpha(opacity=75);
     opacity: 0.5;
 }
+.LockShow{
+    display: block;
+}
 .loadingicon{
     color: #000;
     position: absolute;
@@ -30,6 +33,7 @@
     left: 50%;
 }
 .loadingicon span{
+    font-weight: bold;
     line-height: 38px;
     vertical-align: bottom;
 }
@@ -61,6 +65,9 @@
 .input-group-addon{
     width: 35px!important;
     padding: 0;
+}
+.text-left {
+    text-align: left;
 }
 
 /* modal */
@@ -95,9 +102,12 @@
 .modal-header,.modal-body,.modal-footer {
     padding: 0;
 }
-.modal-header h3 {
-    margin-top: 0;
+.modal-header h4 {
     color: #42b983;
+}
+
+.modal-body .checked{
+    color: #3c8dbc;
 }
 
 .modal-body {

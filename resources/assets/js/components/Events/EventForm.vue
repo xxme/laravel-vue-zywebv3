@@ -74,11 +74,11 @@
               <div class="input-group-addon"> 
                 <input type="radio" name="apm" value="5" v-model="event.apm" /> 
               </div> 
-              <input type="text" id="stime" class="form-control datepickertime" disabled v-model="event.fromtime" /> 
+              <input type="text" id="stime" class="form-control datepickertime" disabled v-model="event.from.time" /> 
               <div class="input-group-addon"> 
                 〜
               </div> 
-              <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.totime" /> 
+              <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.to.time" /> 
             </div> 
           </div>
           <div class="col-xs-6 padding0">
@@ -113,14 +113,14 @@
           </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
-            <input type="text" class="form-control" name="fromadd" v-model="event.fromadd" :placeholder="$t('event.fromAddress')">
+            <input type="text" class="form-control" name="fromadd" v-model="event.from.address" :placeholder="$t('event.fromAddress')">
             <span class="input-group-btn">
               <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
             </span>
           </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
-            <input type="text" class="form-control" name="toadd" v-model="event.toadd" :placeholder="$t('event.toAddress')">
+            <input type="text" class="form-control" name="toadd" v-model="event.to.address" :placeholder="$t('event.toAddress')">
             <span class="input-group-btn">
               <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
             </span>
@@ -142,47 +142,59 @@
         </div>
       </div>
     </form>
+    <modal v-if="showConfirmModal" @close="showConfirmModal = false" @sure="setSure" :warning="warning">
+    </modal>
     <modal v-if="showModal" @close="showModal = false">
       <h4 slot="header">{{ $t('event.setDetails') }}</h4>
       <div slot="body">
         <div class="form-group">
           <label>{{ $t('event.fromAddress') }}</label>
-          <label>
-            <input type="radio" name="fromdt" value="1">
+          <label :class="{ checked: event.from.elevator == 1 }">
+            <input type="radio" name="fromelevator" value="1" v-model="event.from.elevator">
             {{ $t('event.elevator') }}
           </label>
-          <label>
-            <input type="radio" name="fromdt" value="2">
+          <label :class="{ checked: event.from.elevator == 2 }">
+            <input type="radio" name="fromelevator" value="2" v-model="event.from.elevator">
             {{ $t('event.stairs') }}
           </label>
-          <label>
-            <input type="radio" name="fromdt" value="3">
+          <label :class="{ checked: event.from.elevator == 3 }">
+            <input type="radio" name="fromelevator" value="3" v-model="event.from.elevator">
             {{ $t('event.elevatorAndstairs') }}
           </label>
           <label>{{ $t('event.floors') }}</label>
-          <select name="fromlc">
+          <select name="fromfloors" v-model="event.from.floors">
+            <option value="-1">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
           </select>
         </div>
         <div class="form-group">
           <label>{{ $t('event.toAddress') }}</label>
-          <label>
-            <input type="radio" name="todt" value="1">
+          <label :class="{ checked: event.to.elevator == 1 }">
+            <input type="radio" name="toelevator" value="1" v-model="event.to.elevator">
             {{ $t('event.elevator') }}
           </label>
-          <label>
-            <input type="radio" name="todt" value="2">
+          <label :class="{ checked: event.to.elevator == 2 }">
+            <input type="radio" name="toelevator" value="2" v-model="event.to.elevator">
             {{ $t('event.stairs') }}
           </label>
-          <label>
-            <input type="radio" name="todt" value="3">
+          <label :class="{ checked: event.to.elevator == 3 }">
+            <input type="radio" name="toelevator" value="3" v-model="event.to.elevator">
             {{ $t('event.elevatorAndstairs') }}
           </label>
           <label>{{ $t('event.floors') }}</label>
-          <select name="tolc">
+          <select name="tofloors" v-model="event.to.floors">
+            <option value="-1">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
           </select>
         </div>
+      </div>
+      <div slot="footer">
+        <button class="btn btn-xs" @click="resetDetails">
+          Reset
+        </button>
+        <button class="btn btn-xs pull-right" @click="showModal = false">
+          OK
+        </button>
       </div>
     </modal>
     <script type="text/x-template" id="modal-template">
@@ -193,20 +205,23 @@
 
               <div class="modal-header">
                 <slot name="header">
-                  default header
+                  {{ $t('global.warning') }}
                 </slot>
               </div>
 
               <div class="modal-body">
                 <slot name="body">
-                  default body
+                  {{ warning.message }}
                 </slot>
               </div>
 
-              <div class="modal-footer">
+              <div class="modal-footer text-left">
                 <slot name="footer">
-                  <button class="modal-default-button" @click="$emit('close')">
-                    OK
+                  <button class="btn btn-xs" @click="$emit('close')">
+                    {{ $t('global.Cancel') }}
+                  </button>
+                  <button class="btn btn-xs pull-right" @click="setSure">
+                    {{ $t('global.Submit') }}
                   </button>
                 </slot>
               </div>
@@ -215,6 +230,7 @@
         </div>
       </transition>
     </script>
+    <loading :loadingShow="loadingShow"></loading>
   </div>
 </template>
 <script>
@@ -223,26 +239,19 @@ import Vue from 'vue'
 import Select2 from './Select2'
 import moment from 'moment'
 import datetimepicker from 'jquery-datetimepicker'
+import Loading from '../Public/Loading'
  
 export default {
   mounted() {
     this.setDatePicker()
-    $('input[name="apm"]:radio').change( function() {
-      if($( this ).val() == 5){
-        $('.datepickertime').attr('disabled', false)
-      } else {
-        $('.datepickertime').attr('disabled', true);
-        $('input[name="stime"]').val("");
-        $('input[name="ttime"]').val("");
-      }
-    })
     this.get_types()
     if(this.$route.params.eventdate){
       this.event.eventdate = this.$route.params.eventdate;
     }
   },
   components: {
-    Select2
+    Select2,
+    Loading
   },
   data() {
     return {
@@ -255,14 +264,31 @@ export default {
       placeholder: "",
       errors: [],
       showModal: false,
+      showConfirmModal: false,
+      loadingShow: false,
+      warning: {
+        message: "",
+        action: "",
+        sure: true
+      },
       floors: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '30', '40', '50'],
       setDetailsFrom: this.$i18n.t('event.setDetails'),
       setDetailsTo: this.$i18n.t('event.setDetails'),
       event: {
         eventdate: "",
         apm: "",
-        fromtime: "",
-        totime: "",
+        from: {
+          time: "",
+          address: "",
+          elevator: "",
+          floors: "-1",
+        },
+        to: {
+          time: "",
+          address: "",
+          elevator: "",
+          floors: "-1",
+        },
         worktype: [],
         aboutgoods: [],
         careful: [],
@@ -273,10 +299,24 @@ export default {
         partner: null,
         amount: null,
         shoppingid: null,
-        fromadd: "",
-        toadd: "",
         comment: ""
       }
+    }
+  },
+  watch: {
+    eventapm: function(val) {
+      if(val == 5) {
+        $('.datepickertime').attr('disabled', false);
+      } else {
+        $('.datepickertime').attr('disabled', true);
+        this.event.from.time = "";
+        this.event.to.time = "";
+      }
+    }
+  },
+  computed: {
+    eventapm: function() {
+      return this.event.apm;
     }
   },
   methods: {
@@ -295,16 +335,16 @@ export default {
       })
       $('#ttime').on('change', (e) => {
         if($(e.target).val() != ''){
-          self.event.totime = $(e.target).val()
+          self.event.to.time = $(e.target).val()
         } else {
-          self.event.totime = '';
+          self.event.to.time = '';
         }
       })
       $('#stime').on('change', (e) => {
         if($(e.target).val() != ''){
-          self.event.fromtime = $(e.target).val()
+          self.event.from.time = $(e.target).val()
         } else {
-          self.event.fromtime = '';
+          self.event.from.time = '';
         }
       })
     },
@@ -354,21 +394,51 @@ export default {
          this.errors.push(this.$i18n.t('event.apmAllDayOrTime') + this.$i18n.t('global.moreThanOne'));
          return;
       }
-      if(this.event.apm == 5 && !this.event.fromtime && !this.event.totime){
+      if(this.event.apm == 5 && !this.event.from.time && !this.event.to.time){
          this.errors.push(this.$i18n.t('event.eventtimeChecked') + this.$i18n.t('event.eventtime') + this.$i18n.t('global.required'));
          return;
       }
-      e.preventDefault();
+      if(!this.event.wechat && !this.event.phone) {
+        this.warning.sure = false;
+        this.setWarning('submit without phone number and wechat, are you sure ?');
+        return;
+      } else {
+        this.warning.sure = true;
+      }
+      if(this.warning.sure) {
+        this.submitForm();
+      }
+    },
+    submitForm() {
       this.event.worktype = $('#worktype').val();
       this.event.aboutgoods = $('#aboutgoods').val();
       this.event.careful = $('#careful').val();
       this.event.total = $('#total').val();
       this.event.truck = $('#truck').val();
+      this.loadingShow = true;
       this.$http.post('/admin/event', this.event).then(response => {
         console.log(response);
+        this.loadingShow = false;
       }).catch(error => {
-        this.errors.push(this.$i18n.t('global.calltheadministrator'))
+        this.errors.push(this.$i18n.t('global.calltheadministrator'));
+        this.loadingShow = false;
       });
+    },
+    resetDetails() {
+      if(window.confirm('Are you sure ?')) {
+        this.event.from.elevator = "";
+        this.event.to.elevator = "";
+        this.event.from.floors = "-1";
+        this.event.to.floors = "-1";
+      }
+    },
+    setWarning(message) {
+      this.warning.message = message;
+      this.showConfirmModal = true;
+    },
+    setSure() {
+      this.showConfirmModal = false;
+      this.submitForm();
     }
   },
   created() {
@@ -378,13 +448,16 @@ export default {
 
 Vue.component('modal', {
   template: '#modal-template',
+  props: ['warning'], 
   data() {
     return {
-      
+
     }
   },
   methods: {
-    
+    setSure() {
+      this.$emit('sure');
+    }
   }
 })
 </script>
