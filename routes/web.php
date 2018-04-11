@@ -45,6 +45,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/user/update', 'UserController@update');
         Route::post('/type/create_do', 'TypesController@create_do');
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
+        Route::post('/uploadimg', 'AdminController@updateImage');
     });
     // Route::post('logout', 'LoginController@logout');
 });

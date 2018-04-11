@@ -119,7 +119,7 @@
     form_data.append('_token', '{{csrf_token()}}');
     $(".LockOn").show();
     $.ajax({
-        url: "{{url('user/uploadprofile')}}",
+        url: "{{url('admin/user/uploadprofile')}}",
         data: form_data,
         type: 'POST',
         contentType: false,

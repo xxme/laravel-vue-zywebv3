@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManagerStatic as Image;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -91,5 +92,37 @@ class AdminController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    // post only
+    public function updateImage(Request $request){
+        $dt = Carbon::now();
+        $validator = \Validator::make($request->all(),
+            [
+                'file' => 'image',
+            ],
+            [
+                'file.image' => 'The file must be an image (jpeg, png, bmp, or gif)'
+            ]);
+        if ($validator->fails())
+            return array(
+                'fail' => true,
+                'errors' => $validator->errors()
+            );
+        $extension = $request->file('file')->getClientOriginalExtension();
+        $filename = $request->file('file')->getClientOriginalName();
+        $image = Image::make($request->file('file')->getRealPath());
+        $width = 1080;
+        $height = 1080;
+        $image->height() > $image->width() ? $width = null : $height = null;
+
+        \File::exists(public_path() . '/uploads/'.$dt->year.$dt->month .'/') or \File::makeDirectory(public_path() . '/uploads/'.$dt->year.$dt->month .'/', 0777, true);
+        $uniqidFileName = uniqid() . '_' . time() . '.' . $extension;
+        $image->resize($width, $height, function ($constraint) {
+            $constraint->aspectRatio();
+        });
+        $image->save(public_path() . '/uploads/'. $dt->year.$dt->month .'/' . $uniqidFileName);
+
+        return response()->json($dt->year.$dt->month.'/'.$uniqidFileName);
     }
 }

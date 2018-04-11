@@ -128,6 +128,14 @@
           <div class="form-group">
             <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
           </div>
+          <div class="form-group" v-if="hasFile">
+            <ul>
+              <li v-for="file in event.files">{{ file }}</li>
+            </ul>
+          </div>
+          <div class="form-group">
+            <upload-file :files="event.files" :fileAccept="fileAccept" @update-files="updateFiles" @update-loading="setLoading"></upload-file>
+          </div>
         </div>
         <!-- /.box-body -->
         <div class="box-footer">
@@ -142,7 +150,7 @@
         </div>
       </div>
     </form>
-    <modal v-if="showConfirmModal" @close="showConfirmModal = false" @sure="setSure" :warning="warning">
+    <modal v-if="showConfirmModal" @close="showConfirmModal = false" @sure="setSure">
     </modal>
     <modal v-if="showModal" @close="showModal = false">
       <h4 slot="header">{{ $t('event.setDetails') }}</h4>
@@ -189,10 +197,10 @@
         </div>
       </div>
       <div slot="footer">
-        <button class="btn btn-xs" @click="resetDetails">
+        <button class="btn btn-xs btn-default" @click="resetDetails">
           Reset
         </button>
-        <button class="btn btn-xs pull-right" @click="showModal = false">
+        <button class="btn btn-xs btn-primary pull-right" @click="showModal = false">
           OK
         </button>
       </div>
@@ -211,16 +219,16 @@
 
               <div class="modal-body">
                 <slot name="body">
-                  {{ warning.message }}
+                  {{ $t('event.noPhoneNumberAndWechat') }}{{ $t('global.areYouSure') }}
                 </slot>
               </div>
 
               <div class="modal-footer text-left">
                 <slot name="footer">
-                  <button class="btn btn-xs" @click="$emit('close')">
+                  <button class="btn btn-xs btn-default" @click="$emit('close')">
                     {{ $t('global.Cancel') }}
                   </button>
-                  <button class="btn btn-xs pull-right" @click="setSure">
+                  <button class="btn btn-xs btn-primary pull-right" @click="setSure">
                     {{ $t('global.Submit') }}
                   </button>
                 </slot>
@@ -240,6 +248,7 @@ import Select2 from './Select2'
 import moment from 'moment'
 import datetimepicker from 'jquery-datetimepicker'
 import Loading from '../Public/Loading'
+import UploadFile from '../Public/UploadFile'
  
 export default {
   mounted() {
@@ -251,6 +260,7 @@ export default {
   },
   components: {
     Select2,
+    UploadFile,
     Loading
   },
   data() {
@@ -274,6 +284,8 @@ export default {
       floors: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '30', '40', '50'],
       setDetailsFrom: this.$i18n.t('event.setDetails'),
       setDetailsTo: this.$i18n.t('event.setDetails'),
+      hasFile: false,
+      fileAccept: "image/*",
       event: {
         eventdate: "",
         apm: "",
@@ -299,6 +311,7 @@ export default {
         partner: null,
         amount: null,
         shoppingid: null,
+        files: [],
         comment: ""
       }
     }
@@ -400,7 +413,7 @@ export default {
       }
       if(!this.event.wechat && !this.event.phone) {
         this.warning.sure = false;
-        this.setWarning('submit without phone number and wechat, are you sure ?');
+        this.showConfirmModal = true;
         return;
       } else {
         this.warning.sure = true;
@@ -432,13 +445,16 @@ export default {
         this.event.to.floors = "-1";
       }
     },
-    setWarning(message) {
-      this.warning.message = message;
-      this.showConfirmModal = true;
-    },
     setSure() {
       this.showConfirmModal = false;
       this.submitForm();
+    },
+    setLoading(switchTF) {
+      this.loadingShow = switchTF;
+    },
+    updateFiles(file) {
+      this.event.files.push(file);
+      console.log(this.event.files);
     }
   },
   created() {

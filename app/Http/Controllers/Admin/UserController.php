@@ -162,7 +162,7 @@ class UserController extends Controller
         $extension = $request->file('file')->getClientOriginalExtension();
         $filename = $request->file('file')->getClientOriginalName();
         $image = Image::make($request->file('file')->getRealPath());
-        \File::exists(public_path() . '/uploads/profiles/') or \File::makeDirectory(public_path() . '/uploads/profiles/');
+        \File::exists(public_path() . '/uploads/profiles/') or \File::makeDirectory(public_path() . '/uploads/profiles/', 0777, true);
         $uniqidFileName = uniqid() . '_' . time() . '.' . $extension;
         $image->resize(120, 120)->save(public_path() . '/uploads/profiles/' . $uniqidFileName);
         return $uniqidFileName;
