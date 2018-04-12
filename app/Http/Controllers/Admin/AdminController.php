@@ -99,7 +99,7 @@ class AdminController extends Controller
         $dt = Carbon::now();
         $validator = \Validator::make($request->all(),
             [
-                'file' => 'image',
+                'file' => 'required|image|mimes:jpeg,png,jpg,gif,bmp|max:10240',
             ],
             [
                 'file.image' => 'The file must be an image (jpeg, png, bmp, or gif)'
@@ -111,18 +111,23 @@ class AdminController extends Controller
             );
         $extension = $request->file('file')->getClientOriginalExtension();
         $filename = $request->file('file')->getClientOriginalName();
-        $image = Image::make($request->file('file')->getRealPath());
-        $width = 1080;
-        $height = 1080;
-        $image->height() > $image->width() ? $width = null : $height = null;
+        $image = $imgThumb = Image::make($request->file('file')->getRealPath());
+        $width = $height = 1080;
+        $widthThumb = 70;
+        $heightThumb = 80;
+        $image->height() > $image->width() ? $width = $widthThumb = null : $height = $heightThumb = null;
 
         \File::exists(public_path() . '/uploads/'.$dt->year.$dt->month .'/') or \File::makeDirectory(public_path() . '/uploads/'.$dt->year.$dt->month .'/', 0777, true);
-        $uniqidFileName = uniqid() . '_' . time() . '.' . $extension;
+        $uniqid = uniqid() . '_' . time();
+        $fileNameWithPath = $dt->year.$dt->month .'/' . $uniqid;
+
         $image->resize($width, $height, function ($constraint) {
             $constraint->aspectRatio();
-        });
-        $image->save(public_path() . '/uploads/'. $dt->year.$dt->month .'/' . $uniqidFileName);
+        })->save(public_path() . '/uploads/'. $fileNameWithPath . '.' . $extension);
+        $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
+            $constraint->aspectRatio();
+        })->save(public_path() . '/uploads/'. $fileNameWithPath . '_thumb.' . $extension);
 
-        return response()->json($dt->year.$dt->month.'/'.$uniqidFileName);
+        return response()->json($fileNameWithPath . '_thumb.' . $extension);
     }
 }

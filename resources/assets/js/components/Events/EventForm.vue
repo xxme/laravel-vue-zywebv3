@@ -115,26 +115,31 @@
             <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
             <input type="text" class="form-control" name="fromadd" v-model="event.from.address" :placeholder="$t('event.fromAddress')">
             <span class="input-group-btn">
-              <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
+              <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
             </span>
           </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
             <input type="text" class="form-control" name="toadd" v-model="event.to.address" :placeholder="$t('event.toAddress')">
             <span class="input-group-btn">
-              <button type="button" class="btn btn-info btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
+              <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
             </span>
           </div>
           <div class="form-group">
             <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
           </div>
-          <div class="form-group" v-if="hasFile">
-            <ul>
-              <li v-for="file in event.files">{{ file }}</li>
-            </ul>
-          </div>
+          <div v-show="hasFile" class='col-xs-12 list-group gallery'>
+            <div v-for="file in event.files" class='col-sm-4 col-xs-6 col-md-3 col-lg-3 padding0'>
+                <a class="thumbnail fancybox" rel="ligthbox" :href="'/uploads/' + file">
+                    <img class="img-responsive" alt="" :src="'/uploads/' + file" />
+                    <div class='text-right'>
+                        <small class='text-muted'>{{ file | truncate(18) }} <button type="button" class="btn btn-xs btn-default" @click="removeFile(file)">Remove</button></small>
+                    </div> <!-- text-right / end -->
+                </a>
+            </div> <!-- col-6 / end -->
+          </div> <!-- list-group / end -->
           <div class="form-group">
-            <upload-file :files="event.files" :fileAccept="fileAccept" @update-files="updateFiles" @update-loading="setLoading"></upload-file>
+            <upload-file :fileAccept="fileAccept" @update-file="updateFiles" @update-loading="setLoading" @error-push="errorPush"></upload-file>
           </div>
         </div>
         <!-- /.box-body -->
@@ -257,6 +262,7 @@ export default {
     if(this.$route.params.eventdate){
       this.event.eventdate = this.$route.params.eventdate;
     }
+    $.fancybox.open($('.fancybox'))
   },
   components: {
     Select2,
@@ -454,11 +460,33 @@ export default {
     },
     updateFiles(file) {
       this.event.files.push(file);
-      console.log(this.event.files);
+      if(this.event.files.length > 0) {
+        this.hasFile = true;
+      } else {
+        this.hasFile = false;
+      }
+    },
+    removeFile(file) {
+      console.log("remove file:"+file);
+    },
+    errorPush(message) {
+      this.errors.push(message);
+    }
+  },
+  filters: {
+    truncate: function (value, length) {
+      if (!value) return ''
+      var length = length ? parseInt(length, 10) : 20
+      if(value.length <= length) {
+        return value
+      }
+      else {
+        return '...' + value.substring(value.length - length)
+      }
     }
   },
   created() {
-
+    
   }
 }
 

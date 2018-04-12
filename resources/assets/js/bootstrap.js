@@ -12,6 +12,7 @@ try {
     require('bootstrap-sass');
     require('fullcalendar');
     require("fullcalendar/dist/locale/zh-cn.js");
+    require('fancybox')($);
 } catch (e) {}
 
 /**
