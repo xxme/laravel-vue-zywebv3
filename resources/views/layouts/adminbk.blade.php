@@ -194,8 +194,6 @@
         <div class="pull-right hidden-xs">
           <b>Version</b> 3.0.0
         </div>
-        <strong>Copyright &copy; 2016-2018 <a href="https://koyoshieki.com/">Koyoshieki</a>.</strong> All rights
-        reserved. Power by wjx.
       </footer>
 
       <!-- /.control-sidebar -->

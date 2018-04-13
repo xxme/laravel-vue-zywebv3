@@ -19,4 +19,5 @@ mix.js('resources/assets/js/app.js', 'public/js')
    .copy('node_modules/select2/dist/css', 'public/css/select2') 
    .copy('node_modules/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js', 'public/js/datetimepicker') 
    .copy('node_modules/jquery-datetimepicker/build/jquery.datetimepicker.min.js', 'public/js/datetimepicker') 
-   .copy('node_modules/jquery-datetimepicker/build/jquery.datetimepicker.min.css', 'public/css/datetimepicker'); ;
+   .copy('node_modules/jquery-datetimepicker/build/jquery.datetimepicker.min.css', 'public/css/datetimepicker')
+   .copy('node_modules/baguettebox.js/dist/baguetteBox.min.css', 'public/css');

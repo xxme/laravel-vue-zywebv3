@@ -128,16 +128,18 @@
           <div class="form-group">
             <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
           </div>
-          <div v-show="hasFile" class='col-xs-12 list-group gallery'>
-            <div v-for="file in event.files" class='col-sm-4 col-xs-6 col-md-3 col-lg-3 padding0'>
-                <a class="thumbnail fancybox" rel="ligthbox" :href="'/uploads/' + file">
-                    <img class="img-responsive" alt="" :src="'/uploads/' + file" />
-                    <div class='text-right'>
-                        <small class='text-muted'>{{ file | truncate(18) }} <button type="button" class="btn btn-xs btn-default" @click="removeFile(file)">Remove</button></small>
-                    </div> <!-- text-right / end -->
+          <div v-show="hasFile" class='col-xs-12 padding0'>
+            <div class="gallery">
+              <div v-for="(file, key) in event.files" class="col-xs-2 padding0 marginb8">
+                <a :href="'/uploads/' + file" class="thumbnail" :title="file | truncate(25)">
+                  <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
                 </a>
-            </div> <!-- col-6 / end -->
-          </div> <!-- list-group / end -->
+                <div class='text-right'>
+                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <upload-file :fileAccept="fileAccept" @update-file="updateFiles" @update-loading="setLoading" @error-push="errorPush"></upload-file>
           </div>
@@ -247,13 +249,13 @@
   </div>
 </template>
 <script>
-var $ = window.jQuery = require('jquery')
 import Vue from 'vue'
 import Select2 from './Select2'
-import moment from 'moment'
-import datetimepicker from 'jquery-datetimepicker'
 import Loading from '../Public/Loading'
 import UploadFile from '../Public/UploadFile'
+import moment from 'moment'
+import datetimepicker from 'jquery-datetimepicker'
+import baguetteBox from 'baguettebox.js'
  
 export default {
   mounted() {
@@ -262,7 +264,6 @@ export default {
     if(this.$route.params.eventdate){
       this.event.eventdate = this.$route.params.eventdate;
     }
-    $.fancybox.open($('.fancybox'))
   },
   components: {
     Select2,
@@ -318,6 +319,7 @@ export default {
         amount: null,
         shoppingid: null,
         files: [],
+        filethumbs: [],
         comment: ""
       }
     }
@@ -331,11 +333,21 @@ export default {
         this.event.from.time = "";
         this.event.to.time = "";
       }
+    },
+    watchFiles: function(files) {
+      if(files > 0) {
+        setTimeout(function(){
+          baguetteBox.run('.gallery');
+        },500);
+      }
     }
   },
   computed: {
     eventapm: function() {
       return this.event.apm;
+    },
+    watchFiles: function() {
+      return this.event.files.length;
     }
   },
   methods: {
@@ -459,7 +471,9 @@ export default {
       this.loadingShow = switchTF;
     },
     updateFiles(file) {
-      this.event.files.push(file);
+      var bigfile = file.replace("_thumb", "");
+      this.event.files.push(bigfile);
+      this.event.filethumbs.push(file);
       if(this.event.files.length > 0) {
         this.hasFile = true;
       } else {
@@ -467,7 +481,12 @@ export default {
       }
     },
     removeFile(file) {
-      console.log("remove file:"+file);
+      if(window.confirm('Are you sure remove this photo?' + file)) {
+        var bigfile = file.replace("_thumb", "");
+        var index = this.event.files.indexOf(bigfile);
+        this.event.files.splice(index, 1);
+        this.event.filethumbs.splice(index, 1);
+      }
     },
     errorPush(message) {
       this.errors.push(message);
