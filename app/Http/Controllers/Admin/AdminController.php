@@ -111,7 +111,7 @@ class AdminController extends Controller
             );
         $extension = $request->file('file')->getClientOriginalExtension();
         $filename = $request->file('file')->getClientOriginalName();
-        $image = $imgThumb = Image::make($request->file('file')->getRealPath());
+        $image = $imgThumb = Image::make($request->file('file')->getRealPath())->orientate();
         $width = $height = 1080;
         $widthThumb = 70;
         $heightThumb = 80;
@@ -127,7 +127,7 @@ class AdminController extends Controller
         $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
             $constraint->aspectRatio();
         })->save(public_path() . '/uploads/'. $fileNameWithPath . '_thumb.' . $extension);
-
+        
         return response()->json($fileNameWithPath . '_thumb.' . $extension);
     }
 }

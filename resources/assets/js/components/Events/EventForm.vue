@@ -390,23 +390,23 @@ export default {
               option.id = res.data[index].id;
               option.text = res.data[index].name;
               switch (group_id) {
-                case "1":
+                case 1:
                   this.options1.push(option);
                   break;
-                case "2":
+                case 2:
                   this.options2.push(option);
                   break;
-                case "3":
+                case 3:
                   this.options3.push(option);
                   break;
-                case "4":
-                case "5":
-                case "6":
-                case "7":
-                case "8":
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
                   this.options4.push(option);
                   break;
-                case "9":
+                case 9:
                   this.options9.push(option);
                   break;
                 default:
