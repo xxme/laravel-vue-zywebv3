@@ -3,7 +3,7 @@
 use laravel5.5, vuejs, vuejs-route and fullcalendar
 
 ## Install
+npm install
 composer update  
-php artisan migrate  
-php artisan db:seed --class=GroupDatasSeeder  
-php artisan db:seed --class=TypeGroupsSeeder  
+php artisan migrate:install  
+php artisan migrate:refresh --seed  

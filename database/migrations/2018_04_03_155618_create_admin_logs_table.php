@@ -17,8 +17,11 @@ class CreateAdminLogsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('obj_id');
-            // 1 add 2 update 3 delete(soft) 4 comment
+            // 1 event 2 type 3 comment 4 user 5 Event commission 6 Event complete
+            // 7 shopping list 8 Estimates 9 Repetition
             $table->unsignedTinyInteger('type');
+            // 1 add 2 update 3 delete(soft)
+            $table->unsignedTinyInteger('log_type');
             $table->text('details')->nullable();
             $table->softDeletes();
             $table->timestamps();
