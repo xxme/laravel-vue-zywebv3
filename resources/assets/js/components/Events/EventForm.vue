@@ -389,7 +389,7 @@ export default {
               var option = {};
               option.id = res.data[index].id;
               option.text = res.data[index].name;
-              switch (group_id) {
+              switch (+group_id) {
                 case 1:
                   this.options1.push(option);
                   break;

@@ -30,11 +30,12 @@
     color: #000;
     position: absolute;
     top: 45%;
-    left: 50%;
+    left: 43%;
 }
 .loadingicon span{
     font-weight: bold;
     line-height: 38px;
+    margin-left: 5px;
     vertical-align: bottom;
 }
 /* loading end */
