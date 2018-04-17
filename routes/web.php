@@ -31,6 +31,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::resource('event', 'EventController');
         // get
         Route::get('/', 'AdminController@dashboard')->name('admin.main');
+        Route::get('/events/{ym}', 'EventController@index');
         Route::get('/event/create/{date}', 'EventController@create');
         Route::get('/user/index/{id}', 'UserController@index');
         Route::get('/user/create/{id}', 'UserController@create');

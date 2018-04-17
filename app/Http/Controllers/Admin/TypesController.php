@@ -66,7 +66,7 @@ class TypesController extends Controller
         $obj = new Type();
         $obj->name = $inputs['name'];
         $obj->group_id = $inputs['group_id'];
-        \AdminLog::saveWithLog($obj, 2, 1);
+        \AdminLog::saveWithLog($obj, config('const.log_type'), config('const.log_action_add'));
         return redirect()->route('type.index', ['id' => $inputs['group_id']]);
     }
 

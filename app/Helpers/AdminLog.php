@@ -13,9 +13,9 @@ class AdminLog
      * @param  model  $obj
      * @param  int  $type 1 event 2 type 3 comment 4 user 5 Event commission 6 Event complete
      *                    7 shopping list 8 Estimates 9 Repetition
-     * @param  int  $log_type 1 add 2 update 3 delete(soft) 4 comment
+     * @param  int  $log_type 1 add 2 update 3 delete(soft)
      * @param  string  $details
-     * @return true or false
+     * @return $obj->id or false
      */
     public static function saveWithLog($obj, $type, $log_type) {
         if($obj->save()) {
@@ -31,7 +31,7 @@ class AdminLog
             $log['details'] = json_encode($details);
 
             LogModel::create($log);
-            return true;
+            return $obj->id;
         }
         return false;
     }

@@ -308,11 +308,11 @@ export default {
           elevator: "",
           floors: "-1",
         },
-        worktype: [],
-        aboutgoods: [],
-        careful: [],
-        total: [],
-        truck: [],
+        worktype: "",
+        aboutgoods: "",
+        careful: "",
+        total: "",
+        truck: "",
         wechat: "",
         phone: "",
         partner: null,
@@ -449,6 +449,7 @@ export default {
       this.loadingShow = true;
       this.$http.post('/admin/event', this.event).then(response => {
         console.log(response);
+        this.$router.go(-1);
         this.loadingShow = false;
       }).catch(error => {
         this.errors.push(this.$i18n.t('global.calltheadministrator'));
