@@ -232,6 +232,12 @@ Vue.component('todo', {
             viewRender: function(view, element){
                 var showdate = $('#calendartodo').fullCalendar('getDate');
                 self.$parent.$emit('update-events', moment(showdate).format('YYYY-MM'));
+            },
+            eventAfterAllRender: function(view){
+                $('.fc-day').each(function(){
+                    $(this).css('position','relative');
+                    $(this).append('<a href="/admin/event/create/'+$(this).data("date")+'" style="position:absolute;bottom:0;left:0;right:0;display: block;font-size:12px;color:#000;text-align:center;cursor:pointer;"><i class="fa fa-plus-square"></i> Create event</a>');
+                });
             }
         }
         

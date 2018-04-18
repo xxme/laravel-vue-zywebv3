@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Event;
 use App\Comment;
@@ -67,15 +68,19 @@ class EventController extends Controller
             'phone' => $inputs['phone'],
             'wechat' => $inputs['wechat']
         );
+        if($inputs['from']['time']) {
+            $eventDate = Carbon::parse($inputs['eventdate'].' '.$inputs['from']['time']);
+        } else {
+            $eventDate = $inputs['eventdate'];
+        }
         $user_id = auth()->user()->id;
         $objEvent->user_id = $user_id;
         $objEvent->shopping_id = $inputs['shoppingid'];
         $objEvent->agent_id = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
-        $objEvent->event_date = $inputs['eventdate'];
+        $objEvent->event_date = $eventDate;
         $objEvent->apm = $inputs['apm'];
         $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-        $objEvent->event_date = $inputs['eventdate'];
         $objEvent->truck_ids = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
         $objEvent->images = json_encode($inputs['filethumbs'], JSON_UNESCAPED_UNICODE);
         $objEvent->details = json_encode($details, JSON_UNESCAPED_UNICODE);
