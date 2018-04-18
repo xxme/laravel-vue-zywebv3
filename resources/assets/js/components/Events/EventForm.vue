@@ -152,7 +152,7 @@
               <li v-for="error in errors">{{ error }}</li>
             </ul>
           </div>
-          <router-link to="/admin"><button type="button" class="btn btn-default">{{ $t('global.Cancel') }}</button></router-link> 
+          <button type="button" class="btn btn-default" @click="$router.go(-1)">{{ $t('global.Cancel') }}</button>
           <button @click="checkForm" type="button" class="btn btn-primary pull-right">{{ $t('global.Submit') }}</button> 
         </div>
       </div>
