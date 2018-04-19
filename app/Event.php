@@ -14,4 +14,8 @@ class Event extends Model
     {
         return $this->belongsTo('App\User');
     }
+    public function details()
+    {
+        return $this->hasOne('App\EventDetail');
+    }
 }

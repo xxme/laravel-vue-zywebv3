@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Event;
+use App\EventDetail;
 use App\Comment;
 use App\Type;
 
@@ -23,20 +24,18 @@ class EventController extends Controller
             ->orderBy('event_date', 'ASC')->orderBy('id', 'ASC')
             ->with(['comments' => function ($query) {
                 $query->with('user');
-            }, 'user'])->get();
+            }, 'user', 'details'])->get();
         $types = Type::get(['id', 'name']);
         foreach($types as $type) {
             $typeArray[$type->id] = $type->name;
         }
         foreach($init['events'] as $key=>$event) {
-            $event['details'] = json_decode($event->details, true);
-            $event['images'] = json_decode($event->images, true);
+            $event['images'] = json_decode($event->details->images, true);
             $event['comments'] = json_decode($event->comments, true);
-
-            $event['goods'] = $this->getTypeNames($event['details']['aboutgoods'], $typeArray, false);
-            $event['totalname'] = $this->getTypeNames($event['details']['total'], $typeArray, false);
-            $event['typenames'] = $this->getTypeNames($event['types'], $typeArray);
-            $event['carefulnames'] = $this->getTypeNames($event['details']['careful'], $typeArray, false);
+            $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+            $event['totalname'] = $typeArray[$event->total];
+            $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
+            $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
         }
         $init['auth'] = auth()->user();
         
@@ -76,40 +75,43 @@ class EventController extends Controller
     {
         $inputs = $request->all();
         $objEvent = new Event();
-        $details = array(
-            'aboutgoods' => $inputs['aboutgoods'],
-            'careful' => $inputs['careful'],
-            'total' => $inputs['total'],
-            'from' => $inputs['from'],
-            'to' => $inputs['to'],
-            'phone' => $inputs['phone'],
-            'wechat' => $inputs['wechat']
-        );
-        if($inputs['from']['time']) {
-            $eventDate = Carbon::parse($inputs['eventdate'].' '.$inputs['from']['time']);
-        } else {
-            $eventDate = $inputs['eventdate'];
-        }
         $user_id = auth()->user()->id;
         $objEvent->user_id = $user_id;
         $objEvent->shopping_id = $inputs['shoppingid'];
-        $objEvent->agent_id = $inputs['partner'];
+        $objEvent->partner_id = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
-        $objEvent->event_date = $eventDate;
+        $objEvent->total = $inputs['total'];
+        $objEvent->event_date = $inputs['eventdate'];
         $objEvent->apm = $inputs['apm'];
+        $objEvent->start_time = $inputs['from']['time'];
+        $objEvent->end_time = $inputs['to']['time'];
         $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-        $objEvent->truck_ids = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
-        $objEvent->images = json_encode($inputs['filethumbs'], JSON_UNESCAPED_UNICODE);
-        $objEvent->details = json_encode($details, JSON_UNESCAPED_UNICODE);
 
         $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_add'));
 
-        if($event_id && !empty($inputs['comment'])) {
-            $objComment = new Comment();
-            $objComment->user_id = $user_id;
-            $objComment->event_id = $event_id;
-            $objComment->content = $inputs['comment'];
-            \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+        if($event_id) {
+            $objEventDetail = new EventDetail();
+            $objEventDetail->event_id = $event_id;
+            $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->images = json_encode($inputs['filethumbs'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->from_address = $inputs['from']['address'];
+            $objEventDetail->from_elevator = $inputs['from']['elevator'];
+            $objEventDetail->from_floor = $inputs['from']['floors'];
+            $objEventDetail->to_address = $inputs['to']['address'];
+            $objEventDetail->to_elevator = $inputs['to']['elevator'];
+            $objEventDetail->to_floor = $inputs['to']['floors'];
+            $objEventDetail->phone = $inputs['phone'];
+            $objEventDetail->wechat = $inputs['wechat'];
+            $objEventDetail->save();
+            if(!empty($inputs['comment'])){
+                $objComment = new Comment();
+                $objComment->user_id = $user_id;
+                $objComment->event_id = $event_id;
+                $objComment->content = $inputs['comment'];
+                \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+            }
         }
         return response()->json($objEvent);
     }

@@ -20,7 +20,7 @@ export default {
       // $(this.$el) 
       select 
       // init select2 
-      .select2({data: this.options, placeholder: this.placeholder}) 
+      .select2({data: this.options, placeholder: this.placeholder})
       .val(this.value) 
       .on('change', (event) => { 
           const selecions = select.select2('data') 
@@ -44,7 +44,8 @@ export default {
       },
       options: function (options) {
           if(this.options.length > 0) {
-            $(this.$el).select2({ data: this.options, placeholder: this.placeholder})
+            $(this.$el).select2({ data: this.options, allowClear: true, placeholder: this.placeholder})
+            .val($(this).attr('placeholder')).trigger('change');
           }
       }
   },

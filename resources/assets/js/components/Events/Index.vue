@@ -37,7 +37,7 @@
                 <span v-else-if="event.apm == 2">{{ $t('event.afternoon') }}</span>
                 <span v-else-if="event.apm == 3">{{ $t('event.night') }}</span>
                 <span v-else-if="event.apm == 4">{{ $t('event.allday') }}</span>
-                <span v-else>{{ event.details.from.time }}〜{{ event.details.to.time }}</span>
+                <span v-else>{{ event.start_time | formatTime(event.event_date) }}〜{{ event.end_time | formatTime(event.event_date) }}</span>
               </h4>
               <h5 v-if="event.typenames.length > 0">
                 <span v-for="typename in event.typenames" class="label label-success"><i class="fa fa-tag"></i> {{ typename }}</span>
@@ -46,7 +46,7 @@
                 <span v-for="carefulname in event.carefulnames" class="label label-danger"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }}</span>
               </h5>
               <h5 v-if="event.goods.length > 0 || event.totalname.length > 0">
-                <span v-for="totalname in event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ totalname }}</span>
+                <span v-if="event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ event.totalname }}</span>
                 <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
               </h5>
               <h4 v-if="event.amount">
@@ -54,37 +54,34 @@
                 <small>
                   <span v-if="event.agent_id" class="marginr3"><i class="fa fa-male"></i> #{{ event.agent_id }}</span>
                   <span v-if="event.shopping_id" class="marginr3"><i class="fa fa-list-alt"></i> #{{ event.shopping_id }}</span>
+                  <span v-if="event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  <a :href="'tel:' + event.details.phone">{{ event.details.phone }}</a></span>
+                  <span v-if="event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }}</span>
                 </small>
               </h4>
 
               <div class="row invoice-info">
-                <div v-if="event.details.from.address" class="col-sm-4 invoice-col">
+                <div v-if="event.details.from_address" class="col-sm-6 invoice-col">
                   From
                   <address>
-                    <strong>{{ event.details.from.address }}</strong>
-                    <span v-if="event.details.from.elevator == 1"> {{ $t('event.elevator') }}</span>
-                    <span v-else-if="event.details.from.elevator == 2"> {{ $t('event.stairs') }}</span>
-                    <span v-else-if="event.details.from.elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
-                    <span v-if="event.details.from.floors > 0 && event.details.from.floors < 10"> {{ event.details.from.floors }} {{ $t('event.floor') }}</span>
-                    <span v-else-if="event.details.from.floors > 9"> {{ event.details.from.floors }}+ {{ $t('event.floor') }}</span>
+                    <strong>{{ event.details.from_address }}</strong>
+                    <span v-if="event.details.from_elevator == 1"> {{ $t('event.elevator') }}</span>
+                    <span v-else-if="event.details.from_elevator == 2"> {{ $t('event.stairs') }}</span>
+                    <span v-else-if="event.details.from_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                    <span v-if="event.details.from_floor > 0 && event.details.from_floor < 10"> {{ event.details.from_floor }} {{ $t('event.floor') }}</span>
+                    <span v-else-if="event.details.from_floor > 9"> {{ event.details.from_floor }}+ {{ $t('event.floor') }}</span>
                   </address>
                 </div>
                 <!-- /.col -->
-                <div v-if="event.details.to.address" class="col-sm-4 invoice-col">
+                <div v-if="event.details.to_address" class="col-sm-6 invoice-col">
                   To
                   <address>
-                    <strong>{{ event.details.to.address }}</strong>
-                    <span v-if="event.details.to.elevator == 1"> {{ $t('event.elevator') }}</span>
-                    <span v-else-if="event.details.to.elevator == 2"> {{ $t('event.stairs') }}</span>
-                    <span v-else-if="event.details.to.elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
-                    <span v-if="event.details.to.floors > 0 && event.details.to.floors < 10"> {{ event.details.to.floors }} {{ $t('event.floor') }}</span>
-                    <span v-else-if="event.details.to.floors > 9"> {{ event.details.to.floors }}+ {{ $t('event.floor') }}</span>
+                    <strong>{{ event.details.to_address }}</strong>
+                    <span v-if="event.details.to_elevator == 1"> {{ $t('event.elevator') }}</span>
+                    <span v-else-if="event.details.to_elevator == 2"> {{ $t('event.stairs') }}</span>
+                    <span v-else-if="event.details.to_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                    <span v-if="event.details.to_floor > 0 && event.details.to_floor < 10"> {{ event.details.to_floor }} {{ $t('event.floor') }}</span>
+                    <span v-else-if="event.details.to_floor > 9"> {{ event.details.to_floor }}+ {{ $t('event.floor') }}</span>
                   </address>
-                </div>
-                <!-- /.col -->
-                <div v-if="event.details.phone || event.details.wechat" class="col-sm-4 invoice-col">
-                  <span v-if="event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  {{ event.details.phone }} </span>
-                  <span v-if="event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }} </span>
                 </div>
                 <!-- /.col -->
               </div>
@@ -218,6 +215,9 @@ export default {
   filters: {
     formatNumberJPY(number) {
       return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
+    },
+    formatTime(time, date) {
+      return moment(date+' '+time).format('HH:mm');
     },
     truncate: function (value, length) {
       if (!value) return ''

@@ -28,7 +28,7 @@
             <div class="col-xs-6 padding0">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
-                <select2 :options="options3" id="total" :placeholder="$t('event.typeoftotal')"></select2>
+                <select2 :options="options3" id="total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
               </div>
             </div>
             <div class="col-xs-6 padding0">
