@@ -17,17 +17,19 @@
                 <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg" :alt="event.user.name">
                 <img v-else class="img-circle" src="/images/no-image-available.jpeg" :alt="event.user.name">
                 <span class="username">{{ event.user.name }}</span>
-                <span class="description">{{ event.created_at }}<span v-if="event.created_at != event.updated_at"> / {{ event.updated_at }}</span></span>
+                <span class="description">#{{event.id}} {{ event.created_at }}<span v-if="event.created_at != event.updated_at"> / {{ event.updated_at }}</span></span>
               </div>
               <!-- /.user-block -->
               <div class="box-tools">
+                <button type="button" class="btn btn-box-tool" @click="makered(event.id)" data-original-title="Mark as read">
+                  <i class="fa fa-circle-o"></i></button>
                 <button type="button" class="btn btn-box-tool"><i class="fa fa-minus"></i>
                 </button>
               </div>
               <!-- /.box-tools -->
             </div>
             <!-- /.box-header -->
-            <div class="box-body">
+            <div class="box-body" :data-box="'box' + event.id">
               <h4 class="eventdate">
                 <span>{{ formatDateWithWeekname(event.event_date) }}</span>
                 
@@ -37,81 +39,86 @@
                 <span v-else-if="event.apm == 4">{{ $t('event.allday') }}</span>
                 <span v-else>{{ event.details.from.time }}〜{{ event.details.to.time }}</span>
               </h4>
-              <h5>
-                <span class="label label-success"><i class="fa fa-tag"></i> Aコース</span>
-                <span class="label label-success"><i class="fa fa-tag"></i> 送货</span>
+              <h5 v-if="event.typenames.length > 0">
+                <span v-for="typename in event.typenames" class="label label-success"><i class="fa fa-tag"></i> {{ typename }}</span>
               </h5>
-              <h5>
-                <span class="label label-danger"><i class="fa fa-exclamation-triangle"></i> 注意1</span>
-                <span class="label label-danger"><i class="fa fa-exclamation-triangle"></i> 注意2</span>
+              <h5 v-if="event.carefulnames.length > 0">
+                <span v-for="carefulname in event.carefulnames" class="label label-danger"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }}</span>
               </h5>
+              <h5 v-if="event.goods.length > 0 || event.totalname.length > 0">
+                <span v-for="totalname in event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ totalname }}</span>
+                <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
+              </h5>
+              <h4 v-if="event.amount">
+                <span class="marginr3">{{ event.amount | formatNumberJPY }}</span>
+                <small>
+                  <span v-if="event.agent_id" class="marginr3"><i class="fa fa-male"></i> #{{ event.agent_id }}</span>
+                  <span v-if="event.shopping_id" class="marginr3"><i class="fa fa-list-alt"></i> #{{ event.shopping_id }}</span>
+                </small>
+              </h4>
 
               <div class="row invoice-info">
-                <div class="col-sm-4 invoice-col">
+                <div v-if="event.details.from.address" class="col-sm-4 invoice-col">
                   From
                   <address>
-                    <strong>{{ event.details.from.address }}</strong><br>
-                    795 Folsom Ave, Suite 600<br>
-                    San Francisco, CA 94107<br>
-                    Phone: (804) 123-5432<br>
-                    Email: info@almasaeedstudio.com
+                    <strong>{{ event.details.from.address }}</strong>
+                    <span v-if="event.details.from.elevator == 1"> {{ $t('event.elevator') }}</span>
+                    <span v-else-if="event.details.from.elevator == 2"> {{ $t('event.stairs') }}</span>
+                    <span v-else-if="event.details.from.elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                    <span v-if="event.details.from.floors > 0 && event.details.from.floors < 10"> {{ event.details.from.floors }} {{ $t('event.floor') }}</span>
+                    <span v-else-if="event.details.from.floors > 9"> {{ event.details.from.floors }}+ {{ $t('event.floor') }}</span>
                   </address>
                 </div>
                 <!-- /.col -->
-                <div class="col-sm-4 invoice-col">
+                <div v-if="event.details.to.address" class="col-sm-4 invoice-col">
                   To
                   <address>
-                    <strong>{{ event.details.to.address }}</strong><br>
-                    795 Folsom Ave, Suite 600<br>
-                    San Francisco, CA 94107<br>
-                    Phone: (555) 539-1037<br>
-                    Email: john.doe@example.com
+                    <strong>{{ event.details.to.address }}</strong>
+                    <span v-if="event.details.to.elevator == 1"> {{ $t('event.elevator') }}</span>
+                    <span v-else-if="event.details.to.elevator == 2"> {{ $t('event.stairs') }}</span>
+                    <span v-else-if="event.details.to.elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                    <span v-if="event.details.to.floors > 0 && event.details.to.floors < 10"> {{ event.details.to.floors }} {{ $t('event.floor') }}</span>
+                    <span v-else-if="event.details.to.floors > 9"> {{ event.details.to.floors }}+ {{ $t('event.floor') }}</span>
                   </address>
                 </div>
                 <!-- /.col -->
-                <div class="col-sm-4 invoice-col">
-                  <b>Invoice #007612</b><br>
-                  <br>
-                  <b>Order ID:</b> 4F3S8J<br>
-                  <b>Payment Due:</b> 2/22/2014<br>
-                  <b>Account:</b> 968-34567
+                <div v-if="event.details.phone || event.details.wechat" class="col-sm-4 invoice-col">
+                  <span v-if="event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  {{ event.details.phone }} </span>
+                  <span v-if="event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }} </span>
                 </div>
                 <!-- /.col -->
               </div>
-              <img class="img-responsive pad" src="">
+              <div v-if="event.images.length > 0" class="gallery">
+                <div v-for="imgfile in event.images" class="col-xs-2 padding0 marginb8">
+                  <a :href="'/uploads/' + imgfile | toBiggerImg" class="thumbnail" :title="imgfile | truncate(25)">
+                    <img :src="'/uploads/' + imgfile" :alt="imgfile">
+                  </a>
+                </div>
+              </div>
 
-              <button type="button" class="btn btn-default btn-xs"><i class="fa fa-share"></i> Share</button>
-              <button type="button" class="btn btn-default btn-xs"><i class="fa fa-thumbs-o-up"></i> Like</button>
-              <span class="pull-right text-muted">127 likes - 3 comments</span>
+              <span class="text-muted">{{ event.comments.length }} comments</span>
+              <div class="pull-right">
+                <a href="#" class="btn-box-tool blue">
+                  <i class="fa fa-pencil"></i>
+                </a>
+                <a href="#" class="btn-box-tool red">
+                  <i class="fa fa-trash-o"></i>
+                </a>
+              </div>
             </div>
             <!-- /.box-body -->
-            <div class="box-footer box-comments">
-              <div class="box-comment">
+            <div v-if="event.comments.length > 0" class="box-footer box-comments">
+              <div v-for="comment in event.comments" class="box-comment">
                 <!-- User image -->
-                <img class="img-circle img-sm" src="" alt="User Image">
+                <img v-if="comment.user.profileimg" class="img-circle img-sm" :src="'/uploads/profiles/' + comment.user.profileimg">
+                <img v-else class="img-circle img-sm" src="/images/no-image-available.jpeg">
 
                 <div class="comment-text">
                 <span class="username">
-                  Maria Gonzales
-                  <span class="text-muted pull-right">8:03 PM Today</span>
+                  {{ comment.user.name }}
+                  <span class="text-muted pull-right">{{ comment.created_at }}</span>
                 </span><!-- /.username -->
-                  It is a long established fact that a reader will be distracted
-                  by the readable content of a page when looking at its layout.
-                </div>
-                <!-- /.comment-text -->
-              </div>
-              <!-- /.box-comment -->
-              <div class="box-comment">
-                <!-- User image -->
-                <img class="img-circle img-sm" src="" alt="User Image">
-
-                <div class="comment-text">
-                <span class="username">
-                    Luna Stark
-                    <span class="text-muted pull-right">8:03 PM Today</span>
-                </span><!-- /.username -->
-                    It is a long established fact that a reader will be distracted
-                    by the readable content of a page when looking at its layout.
+                  {{ comment.content }}
                 </div>
                 <!-- /.comment-text -->
               </div>
@@ -149,6 +156,7 @@
 
 import Vue from 'vue'
 import moment from 'moment'
+import baguetteBox from 'baguettebox.js'
 import UniverseNav from '../Public/UniverseNav'
 
 export default {
@@ -160,8 +168,10 @@ export default {
         showYm: moment().format('YYYY-MM')
     }
   },
-  created() {
-
+  updated: function () {
+    this.$nextTick(function () {
+      baguetteBox.run('.gallery');
+    })
   },
   components: {
     UniverseNav
@@ -175,6 +185,19 @@ export default {
           this.events_list =  res.data.events;
           this.auth =  res.data.auth;
       })
+    },
+    makered(eventid) {
+      var dom = $(".col-md-12").find("[data-box='box" + eventid + "']");
+      if(dom.hasClass('makered')) {
+        dom.removeClass('makered');
+      } else {
+        $(".box-widget").each(function(i) {
+          if($(this).hasClass('makered')){
+            $(this).removeClass('makered');
+          }
+        });
+        dom.addClass('makered');
+      }
     },
     formatDateWithWeekname(date) {
       if(this.$i18n.locale == 'cn') {
@@ -191,6 +214,24 @@ export default {
     formatDateByHyphen(date) {
       return moment(date).format('YYYY-MM-DD');
     }
+  },
+  filters: {
+    formatNumberJPY(number) {
+      return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
+    },
+    truncate: function (value, length) {
+      if (!value) return ''
+      var length = length ? parseInt(length, 10) : 20
+      if(value.length <= length) {
+        return value
+      }
+      else {
+        return '...' + value.substring(value.length - length)
+      }
+    },
+    toBiggerImg(filename) {
+      return filename.replace("_thumb", "");
+    }
   }
 }
 </script>
@@ -203,5 +244,13 @@ export default {
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
+}
+.gallery {
+  height: 85px;
+  margin: 10px 0;
+}
+.label, .marginr3 {
+  margin-right: 3px;
+  font-weight: 100;
 }
 </style>

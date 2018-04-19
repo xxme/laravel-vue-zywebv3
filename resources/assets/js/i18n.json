@@ -75,6 +75,7 @@
             "PleaseCorrectTheFollowingError": "请修正以下错误后重试",
             "setDetails": "设置详情",
             "floors": "楼层",
+            "floor": "层",
             "elevator": "电梯",
             "stairs": "楼梯",
             "elevatorAndstairs": "电梯+楼梯",

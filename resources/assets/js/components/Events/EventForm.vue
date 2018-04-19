@@ -333,22 +333,19 @@ export default {
         this.event.from.time = "";
         this.event.to.time = "";
       }
-    },
-    watchFiles: function(files) {
-      if(files > 0) {
-        setTimeout(function(){
-          baguetteBox.run('.gallery');
-        },500);
-      }
     }
   },
   computed: {
     eventapm: function() {
       return this.event.apm;
-    },
-    watchFiles: function() {
-      return this.event.files.length;
     }
+  },
+  updated: function () {
+    this.$nextTick(function () {
+      if(this.event.files.length > 0) {
+        baguetteBox.run('.gallery');
+      }
+    })
   },
   methods: {
     setDatePicker() {

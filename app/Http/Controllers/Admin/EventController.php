@@ -21,20 +21,37 @@ class EventController extends Controller
         $init['events'] = Event::whereNull('deleted_at')
             ->where('event_date', 'LIKE', "$ym%")
             ->orderBy('event_date', 'ASC')->orderBy('id', 'ASC')
-            ->with('comments', 'user')->get();
+            ->with(['comments' => function ($query) {
+                $query->with('user');
+            }, 'user'])->get();
+        $types = Type::get(['id', 'name']);
+        foreach($types as $type) {
+            $typeArray[$type->id] = $type->name;
+        }
         foreach($init['events'] as $key=>$event) {
             $event['details'] = json_decode($event->details, true);
-            if($event['details']['aboutgoods']) {
-                $ids = implode(",", $event['details']['aboutgoods']);
-                $aboutgoods = Type::where('id', 'IN', $ids)->get();
-                foreach($aboutgoods as $goods) {
-                    var_dump($goods);
-                }
-            }
+            $event['images'] = json_decode($event->images, true);
+            $event['comments'] = json_decode($event->comments, true);
+
+            $event['goods'] = $this->getTypeNames($event['details']['aboutgoods'], $typeArray, false);
+            $event['totalname'] = $this->getTypeNames($event['details']['total'], $typeArray, false);
+            $event['typenames'] = $this->getTypeNames($event['types'], $typeArray);
+            $event['carefulnames'] = $this->getTypeNames($event['details']['careful'], $typeArray, false);
         }
         $init['auth'] = auth()->user();
         
         return $init;
+    }
+
+    private function getTypeNames($ids, $typeArray, $decode = true) {
+        if($decode) {
+            $ids = json_decode($ids, true);
+        }
+        $nameArray = array();
+        foreach($ids as $id) {
+            $nameArray[] = $typeArray[$id];
+        }
+        return $nameArray;
     }
 
     /**

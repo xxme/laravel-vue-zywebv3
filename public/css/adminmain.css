@@ -164,3 +164,14 @@
     border: none;
 }
 /* fix main footer end */
+
+/* event start */
+.makered {
+    border: medium solid #dd4b39 !important;
+}
+.red {
+    color: #dd4b39;
+}
+.blue {
+    color: #367fa9;
+}
