@@ -45,7 +45,7 @@
         "event": { 
             "addEvent": "添加日程",
             "editEvent": "编辑日程",
-            "workType": "工作类型", 
+            "workType": "日程类型", 
             "scheduledDatetime": "预定时间",
             "typeofcareful": "特别注意",
             "typeoftotal": "物品总量",

@@ -415,16 +415,20 @@ export default {
     checkForm:function(e) {
       this.errors = [];
       if(!this.event.eventdate){
-         this.errors.push(this.$i18n.t('event.eventdate') + this.$i18n.t('global.required'));
-         return;
+        this.errors.push(this.$i18n.t('event.eventdate') + this.$i18n.t('global.required'));
+        return;
+      }
+      if($("#worktype").val() == '') {
+        this.errors.push(this.$i18n.t('event.workType') + this.$i18n.t('global.required'));
+        return;
       }
       if(!this.event.apm){
-         this.errors.push(this.$i18n.t('event.apmAllDayOrTime') + this.$i18n.t('global.moreThanOne'));
-         return;
+        this.errors.push(this.$i18n.t('event.apmAllDayOrTime') + this.$i18n.t('global.moreThanOne'));
+        return;
       }
       if(this.event.apm == 5 && !this.event.from.time && !this.event.to.time){
-         this.errors.push(this.$i18n.t('event.eventtimeChecked') + this.$i18n.t('event.eventtime') + this.$i18n.t('global.required'));
-         return;
+        this.errors.push(this.$i18n.t('event.eventtimeChecked') + this.$i18n.t('event.eventtime') + this.$i18n.t('global.required'));
+        return;
       }
       if(!this.event.wechat && !this.event.phone) {
         this.warning.sure = false;

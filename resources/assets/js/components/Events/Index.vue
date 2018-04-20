@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <universe-nav :otherMonth="otherMonth" :showYm="showYm" :events="events_list" v-on:update-events="get_events"></universe-nav>
+    <universe-nav :otherMonth="otherMonth" :showYm="showYm" :events="events" v-on:update-events="get_events"></universe-nav>
     <div class="col-md-12">
       <div v-if="events_list.length > 0">
         <div v-for="(event, key) in events_list" :key="event.id">
@@ -37,7 +37,11 @@
                 <span v-else-if="event.apm == 2">{{ $t('event.afternoon') }}</span>
                 <span v-else-if="event.apm == 3">{{ $t('event.night') }}</span>
                 <span v-else-if="event.apm == 4">{{ $t('event.allday') }}</span>
-                <span v-else>{{ event.start_time | formatTime(event.event_date) }}〜{{ event.end_time | formatTime(event.event_date) }}</span>
+                <span v-else>
+                  <span v-if="event.start_time">{{ event.start_time | formatTime(event.event_date) }}</span>
+                  〜
+                  <span v-if="event.end_time">{{ event.end_time | formatTime(event.event_date) }}</span>
+                </span>
               </h4>
               <h5 v-if="event.typenames.length > 0">
                 <span v-for="typename in event.typenames" class="label label-success"><i class="fa fa-tag"></i> {{ typename }}</span>
@@ -52,7 +56,7 @@
               <h4 v-if="event.amount">
                 <span class="marginr3">{{ event.amount | formatNumberJPY }}</span>
                 <small>
-                  <span v-if="event.agent_id" class="marginr3"><i class="fa fa-male"></i> #{{ event.agent_id }}</span>
+                  <span v-if="event.partner_id" class="marginr3"><i class="fa fa-male"></i> #{{ event.partner_id }}</span>
                   <span v-if="event.shopping_id" class="marginr3"><i class="fa fa-list-alt"></i> #{{ event.shopping_id }}</span>
                   <span v-if="event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  <a :href="'tel:' + event.details.phone">{{ event.details.phone }}</a></span>
                   <span v-if="event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }}</span>
@@ -161,6 +165,7 @@ export default {
     return {
         auth: null,
         events_list: [],
+        events: [],
         otherMonth: false,
         showYm: moment().format('YYYY-MM')
     }
@@ -181,7 +186,11 @@ export default {
       }).then(res =>  {
           this.events_list =  res.data.events;
           this.auth =  res.data.auth;
+          setEvents(res.data.events);
       })
+    },
+    setEvents(resEvents) {
+      var event = new Object();
     },
     makered(eventid) {
       var dom = $(".col-md-12").find("[data-box='box" + eventid + "']");
