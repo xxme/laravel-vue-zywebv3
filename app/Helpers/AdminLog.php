@@ -35,4 +35,19 @@ class AdminLog
         }
         return false;
     }
+
+    public static function saveLog($objid, $type, $log_type) {
+        $logObj = new LogModel();
+        $logObj['obj_id'] = $objid;
+        $logObj['type'] = $type;
+        $logObj['log_type'] = $log_type;
+        $details['url'] = Request::fullUrl();
+        $details['method'] = Request::method();
+        $details['ip'] = Request::ip();
+        $details['agent'] = Request::header('user-agent');
+        $logObj['user_id'] = auth()->user()->id;
+        $logObj['details'] = json_encode($details);
+
+        $logObj->save();
+    }
 }

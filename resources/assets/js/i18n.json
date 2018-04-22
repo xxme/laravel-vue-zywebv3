@@ -2,6 +2,8 @@
     "cn": {
         "global": {
             "addEvent": "添加",
+            "update": "更新",
+            "delete": "删除",
             "Submit": "提交",
             "Cancel": "取消",
             "required": "不能为空",
@@ -43,6 +45,7 @@
             "registeredusers" : "注册用户"
         }, 
         "event": { 
+            "event": "日程",
             "addEvent": "添加日程",
             "editEvent": "编辑日程",
             "workType": "日程类型", 
@@ -60,6 +63,7 @@
             "afternoon": "下午",
             "night": "夜",
             "allday": "全",
+            "alldayT": "全天",
             "partnerID": "推广人ID",
             "phoneNumber": "电话号码",
             "wechat": "微信",

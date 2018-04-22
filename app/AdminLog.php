@@ -14,4 +14,9 @@ class AdminLog extends Model
     protected $fillable = [
         'user_id', 'obj_id', 'type', 'log_type', 'details'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
 }

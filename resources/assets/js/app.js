@@ -32,6 +32,7 @@ const router = new VueRouter({
         { path: '/admin', component: EventsIndex },
         { path: '/admin/event/create', component: EventForm },
         { path: '/admin/event/create/:eventdate', component: EventForm },
+        { path: '/admin/event/:eventid/edit/', component: EventForm },
     ]
 });
 

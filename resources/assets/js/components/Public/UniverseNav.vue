@@ -21,94 +21,39 @@
                 </div>
                 <!-- /.tab-pane -->
                 <div :class="[otherMonth ? 'active' : '', 'tab-pane']" id="topcalendar">
-                    <todo :events="events" :showYm="showYm" id="calendartodo"></todo>
+                    <todo :events="events" :showYm="showYm" :holidays="holidays" id="calendartodo"></todo>
                 </div>
                 <!-- /.tab-pane -->
                 <div class="tab-pane" id="timeline">
                     <!-- The timeline -->
-                    <ul class="timeline timeline-inverse">
+                    <ul v-if="log_list.length > 0" class="timeline timeline-inverse">
                         <!-- timeline time label -->
                         <li class="time-label">
                             <span class="bg-red">
-                                10 Feb. 2014
+                                {{ timelineYmd }}
                             </span>
                         </li>
                         <!-- /.timeline-label -->
                         <!-- timeline item -->
-                        <li>
-                            <i class="fa fa-envelope bg-blue"></i>
+                        <li v-for="(log, key) in log_list" :key="log.id">
+                            <i :class="['fa', { 'fa-calendar bg-blue': log.type == 1, 'fa-book bg-aqua': log.type == 2, 'fa-comments bg-yellow': log.type == 3 }]"></i>
 
                             <div class="timeline-item">
-                                <span class="time"><i class="fa fa-clock-o"></i> 12:05</span>
+                                <span class="time"><i class="fa fa-clock-o"></i> {{ log.created_at }}</span>
 
-                                <h3 class="timeline-header"><a href="#">Support Team</a> sent you an email</h3>
+                                <h3 class="timeline-header">
+                                    <a href="#">{{ log.user.name }}</a> 
+                                    <span v-if="log.log_type == 1">{{ $t('global.addEvent') }} </span>
+                                    <span v-else-if="log.log_type == 2">{{ $t('global.update') }} </span>
+                                    <span v-else-if="log.log_type == 3">{{ $t('global.delete') }} </span>
+                                    <span v-if="log.type == 1">{{ $t('event.event') }} </span>
+                                    <span v-else-if="log.type == 2">{{ $t('quicknav.typeofwork') }} </span>
+                                    <span v-else-if="log.type == 3">{{ $t('event.comment') }} </span>
+                                </h3>
 
-                                <div class="timeline-body">
-                                    Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles,
-                                    weebly ning heekya handango imeem plugg dopplr jibjab, movity
-                                    jajah plickers sifteo edmodo ifttt zimbra. Babblely odeo kaboodle
-                                    quora plaxo ideeli hulu weebly balihoo...
-                                </div>
                                 <div class="timeline-footer">
                                     <a class="btn btn-primary btn-xs">Read more</a>
                                     <a class="btn btn-danger btn-xs">Delete</a>
-                                </div>
-                            </div>
-                        </li>
-                        <!-- END timeline item -->
-                        <!-- timeline item -->
-                        <li>
-                            <i class="fa fa-user bg-aqua"></i>
-
-                            <div class="timeline-item">
-                            <span class="time"><i class="fa fa-clock-o"></i> 5 mins ago</span>
-
-                            <h3 class="timeline-header no-border"><a href="#">Sarah Young</a> accepted your friend request
-                            </h3>
-                            </div>
-                        </li>
-                        <!-- END timeline item -->
-                        <!-- timeline item -->
-                        <li>
-                            <i class="fa fa-comments bg-yellow"></i>
-
-                            <div class="timeline-item">
-                            <span class="time"><i class="fa fa-clock-o"></i> 27 mins ago</span>
-
-                            <h3 class="timeline-header"><a href="#">Jay White</a> commented on your post</h3>
-
-                            <div class="timeline-body">
-                                Take me to your leader!
-                                Switzerland is small and neutral!
-                                We are more like Germany, ambitious and misunderstood!
-                            </div>
-                            <div class="timeline-footer">
-                                <a class="btn btn-warning btn-flat btn-xs">View comment</a>
-                            </div>
-                            </div>
-                        </li>
-                        <!-- END timeline item -->
-                        <!-- timeline time label -->
-                        <li class="time-label">
-                            <span class="bg-green">
-                                3 Jan. 2014
-                            </span>
-                        </li>
-                        <!-- /.timeline-label -->
-                        <!-- timeline item -->
-                        <li>
-                            <i class="fa fa-camera bg-purple"></i>
-
-                            <div class="timeline-item">
-                                <span class="time"><i class="fa fa-clock-o"></i> 2 days ago</span>
-
-                                <h3 class="timeline-header"><a href="#">Mina Lee</a> uploaded new photos</h3>
-
-                                <div class="timeline-body">
-                                    <img src="http://placehold.it/150x100" alt="..." class="margin">
-                                    <img src="http://placehold.it/150x100" alt="..." class="margin">
-                                    <img src="http://placehold.it/150x100" alt="..." class="margin">
-                                    <img src="http://placehold.it/150x100" alt="..." class="margin">
                                 </div>
                             </div>
                         </li>
@@ -207,7 +152,7 @@ import moment from 'moment'
 
 Vue.component('todo', {
     template: '<div></div>',
-    props: ['events', 'showYm'],
+    props: ['events', 'showYm', 'holidays'],
     data () {
         return {
             cal: null
@@ -222,17 +167,24 @@ Vue.component('todo', {
             defaultView: 'month',
             events: self.events,
             defaultDate: self.showYm,
+            minTime: '08:00:00',
+            maxTime: '21:00:00',
             header: {
                 left: 'title createEventButton',
-                right: 'today prev,next'
+                right: 'month agendaWeek agendaDay today prev,next'
             },
             // 日付クリックイベント
             dayClick: function(date, jsEvent, view) {
                 window.location.hash = date.format();
             },
+            navLinks: true,
+            navLinkDayClick: function(date, jsEvent) {
+                router.push({ path: '/admin/event/create/' + date.format() })
+            },
             // イベントクリック
             eventClick: function(calEvent, jsEvent, view) {
-                alert('Event: ' + calEvent.title);
+                self.$parent.$emit('makered', calEvent.id);
+                window.location.hash = 'event' + calEvent.id;
             },
             viewRender: function(view, element){
                 var showdate = $('#calendartodo').fullCalendar('getDate');
@@ -249,10 +201,51 @@ Vue.component('todo', {
         }
         
         this.cal.fullCalendar(args)
+    },
+    watch: {
+        getevents: function(val) {
+            this.cal.fullCalendar('removeEventSources');
+            this.cal.fullCalendar('addEventSource', this.events);
+            
+            Object.keys(this.holidays).forEach(function (holiday) {
+                $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
+            });
+        }
+    },
+    computed: {
+        getevents: function() {
+            return this.events;
+        }
     }
 })
 
 export default {
-  props: ['otherMonth', 'showYm', 'events']
+  props: ['otherMonth', 'showYm', 'events', 'holidays'],
+  data() {
+    return {
+        timelineYmd: this.showYm,
+        log_list: [],
+    }
+  },
+  mounted() { 
+      // this.timelineYmd
+      this.get_logs("2018-04-22");
+  },
+  watch: {
+    timelineYmd: function (value) {
+      this.get_logs(value);
+    }
+  },
+  methods: {
+    get_logs(ymd) {
+        this.$http({
+            url: '/admin/ajaxlogs/' + ymd,
+            method: 'GET'
+        }).then(res =>  {
+            this.log_list = res.data;
+            console.log(this.log_list);
+        })
+    }
+  }
 }
 </script>

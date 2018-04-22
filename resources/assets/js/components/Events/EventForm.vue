@@ -9,32 +9,32 @@
           <div class="col-xs-12 padding0">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-tags"></i></span>
-              <select2 :options="options1" id="worktype" :placeholder="$t('event.workType')"></select2>
+              <select2 :options="options1" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
             </div>
           </div>
           <div class="col-xs-12 padding0">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-cube"></i></span>
-              <select2 :options="options4" id="aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
+              <select2 :options="options4" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
             </div>
           </div>
           <div class="col-xs-12 padding0">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
-              <select2 :options="options2" id="careful" :placeholder="$t('event.typeofcareful')"></select2>
+              <select2 :options="options2" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
             </div>
           </div>
           <div class="col-xs-12 padding0"> 
             <div class="col-xs-6 padding0">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
-                <select2 :options="options3" id="total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
+                <select2 :options="options3" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
               </div>
             </div>
             <div class="col-xs-6 padding0">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-truck"></i></span>
-                <select2 :options="options9" id="truck" :placeholder="$t('event.typeoftruck')"></select2>
+                <select2 :options="options9" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
               </div>
             </div>
           </div> 
@@ -178,7 +178,7 @@
           </label>
           <label>{{ $t('event.floors') }}</label>
           <select name="fromfloors" v-model="event.from.floors">
-            <option value="-1">{{ $t('global.unset') }}</option>
+            <option value="0">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
           </select>
         </div>
@@ -198,7 +198,7 @@
           </label>
           <label>{{ $t('event.floors') }}</label>
           <select name="tofloors" v-model="event.to.floors">
-            <option value="-1">{{ $t('global.unset') }}</option>
+            <option value="0">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
           </select>
         </div>
@@ -294,19 +294,20 @@ export default {
       hasFile: false,
       fileAccept: "image/*",
       event: {
+        id: "",
         eventdate: "",
         apm: "",
         from: {
           time: "",
           address: "",
           elevator: "",
-          floors: "-1",
+          floors: "0",
         },
         to: {
           time: "",
           address: "",
           elevator: "",
-          floors: "-1",
+          floors: "0",
         },
         worktype: "",
         aboutgoods: "",
@@ -410,6 +411,9 @@ export default {
                   break;
               }
             }
+            if (this.$route.params.eventid){
+              this.getEvent(this.$route.params.eventid)
+            }
         })
     },
     checkForm:function(e) {
@@ -448,21 +452,30 @@ export default {
       this.event.total = $('#total').val();
       this.event.truck = $('#truck').val();
       this.loadingShow = true;
-      this.$http.post('/admin/event', this.event).then(response => {
-        console.log(response);
-        this.$router.go(-1);
-        this.loadingShow = false;
-      }).catch(error => {
-        this.errors.push(this.$i18n.t('global.calltheadministrator'));
-        this.loadingShow = false;
-      });
+      if(this.event.id) {
+        this.$http.put('/admin/event/' + this.event.id, this.event).then(response => {
+          this.$router.go(-1);
+          this.loadingShow = false;
+        }).catch(error => {
+          this.errors.push(this.$i18n.t('global.calltheadministrator'));
+          this.loadingShow = false;
+        });
+      } else {
+        this.$http.post('/admin/event', this.event).then(response => {
+          this.$router.go(-1);
+          this.loadingShow = false;
+        }).catch(error => {
+          this.errors.push(this.$i18n.t('global.calltheadministrator'));
+          this.loadingShow = false;
+        });
+      }
     },
     resetDetails() {
       if(window.confirm('Are you sure ?')) {
         this.event.from.elevator = "";
         this.event.to.elevator = "";
-        this.event.from.floors = "-1";
-        this.event.to.floors = "-1";
+        this.event.from.floors = "0";
+        this.event.to.floors = "0";
       }
     },
     setSure() {
@@ -492,6 +505,44 @@ export default {
     },
     errorPush(message) {
       this.errors.push(message);
+    },
+    getEvent(eventid) {
+      this.$http({
+        url: '/admin/event/' + eventid,
+        method: 'GET'
+      }).then(res =>  {
+        this.event.id = eventid;
+        this.event.worktype = JSON.parse(res.data.types);
+        this.event.aboutgoods = JSON.parse(res.data.details.aboutgoods);
+        this.event.careful = JSON.parse(res.data.details.carefully);
+        this.event.truck = JSON.parse(res.data.details.trucks);
+        this.event.total = res.data.total;
+        this.event.amount = res.data.amount;
+        this.event.eventdate = res.data.event_date;
+        this.event.from.address = res.data.details.from_address;
+        this.event.to.address = res.data.details.to_address;
+        this.event.phone = res.data.details.phone;
+        this.event.wechat = res.data.details.wechat;
+        this.event.partner = res.data.partner_id;
+        this.event.shoppingid = res.data.shopping_id;
+        var filethumbs = JSON.parse(res.data.details.images);
+        for(var key in filethumbs) {
+          this.event.filethumbs.push(filethumbs[key]);
+          this.event.files.push(filethumbs[key].replace("_thumb", ""));
+        }
+        if(this.event.files.length > 0) {
+          this.hasFile = true;
+        }
+        this.event.apm = res.data.apm;
+        if(res.data.apm == 5) {
+          this.event.from.time = res.data.start_time;
+          this.event.to.time = res.data.end_time;
+        }
+        this.event.from.floors = res.data.details.from_floor;
+        this.event.from.elevator = res.data.details.from_elevator;
+        this.event.to.floors = res.data.details.to_floor;
+        this.event.to.elevator = res.data.details.to_elevator;
+      })
     }
   },
   filters: {

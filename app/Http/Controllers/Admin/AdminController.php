@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManagerStatic as Image;
 use Carbon\Carbon;
+use App\AdminLog;
 
 class AdminController extends Controller
 {
@@ -14,10 +15,9 @@ class AdminController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  string  $showdate(format:YYYY-MM)
      * @return \Illuminate\Http\Response
      */
-    public function dashboard($showdate = null)
+    public function dashboard()
     {
         // $user = Auth::user();
         // if($user->group_id > 2){
@@ -129,5 +129,12 @@ class AdminController extends Controller
         })->save(public_path() . '/uploads/'. $fileNameWithPath . '_thumb.' . $extension);
         
         return response()->json($fileNameWithPath . '_thumb.' . $extension);
+    }
+
+    public function getLogByYmd($ymd) {
+        $logs = AdminLog::where('created_at', 'LIKE', "$ymd%")
+            ->orderBy('created_at', 'DESC')
+            ->with(['user'])->get();
+        return $logs;
     }
 }
