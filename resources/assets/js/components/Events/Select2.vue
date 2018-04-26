@@ -25,10 +25,17 @@ export default {
   }, 
   watch: {
     selected: function (value) {
+      if(this.options) {
+        $(this.$el).select2({allowClear: true, data: this.options, placeholder: this.placeholder}).val($(this).attr('placeholder')).trigger("change");
+      }
       if(value && (value > 0 || value.length > 0)) {
         $(this.$el).select2({allowClear: true, data: this.options, placeholder: this.placeholder}).val(value).trigger("change");
-      } else {
-        $(this.$el).select2({allowClear: true, data: this.options, placeholder: this.placeholder}).val($(this).attr('placeholder')).trigger("change");
+      }
+    },
+    options: function (options) {
+      $(this.$el).select2({allowClear: true, data: options, placeholder: this.placeholder}).val($(this).attr('placeholder')).trigger("change");
+      if(this.value && (this.value > 0 || this.value.length > 0)) {
+        $(this.$el).select2({allowClear: true, data: options, placeholder: this.placeholder}).val(this.value).trigger("change");
       }
     }
   },

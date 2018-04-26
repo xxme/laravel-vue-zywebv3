@@ -34,7 +34,9 @@ class CommentController extends Controller
      */
     public function destroy($id)
     {
-        \AdminLog::saveLog($id, config('const.log_comment'), config('const.log_action_del'));
+        $obj = Comment::with(['event'])->findOrFail($id);
+        \AdminLog::saveLog($id, config('const.log_comment'), config('const.log_action_del'), 
+                $obj->event->event_date.' '.__('messages.event').' #'.$obj->event->id.' '.$obj->content);
         return Comment::destroy($id);
     }
 }

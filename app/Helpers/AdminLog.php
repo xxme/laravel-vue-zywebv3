@@ -3,6 +3,7 @@
 namespace App\Helpers;
 use Request;
 use App\AdminLog as LogModel;
+use App\Comment;
 
 class AdminLog
 {
@@ -29,6 +30,12 @@ class AdminLog
             $details['agent'] = Request::header('user-agent');
             $log['user_id'] = auth()->user()->id;
             $log['details'] = json_encode($details);
+            if($type == config('const.log_event')) {
+                $log['content'] = $obj->event_date;
+            } else if($type == config('const.log_comment')) {
+                $objcomment = Comment::with(['event'])->findOrFail($obj->id);
+                $log['content'] = $objcomment->event->event_date.' '.__('messages.event').' #'.$objcomment->event->id.' '.$obj->content;
+            }
 
             LogModel::create($log);
             return $obj->id;
@@ -36,7 +43,7 @@ class AdminLog
         return false;
     }
 
-    public static function saveLog($objid, $type, $log_type) {
+    public static function saveLog($objid, $type, $log_type, $content = null) {
         $logObj = new LogModel();
         $logObj['obj_id'] = $objid;
         $logObj['type'] = $type;
@@ -47,6 +54,9 @@ class AdminLog
         $details['agent'] = Request::header('user-agent');
         $logObj['user_id'] = auth()->user()->id;
         $logObj['details'] = json_encode($details);
+        if($content) {
+            $logObj['content'] = $content;
+        }
 
         $logObj->save();
     }

@@ -265,7 +265,7 @@ export default {
         moment.locale('ja');
         weekname = moment(date).format('dddd');
       }
-      if(this.holidays[date]) {
+      if(this.holidays && this.holidays[date]) {
         weekname += ' '+this.holidays[date];
       }
 

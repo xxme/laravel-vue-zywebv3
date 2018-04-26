@@ -12,7 +12,7 @@ class AdminLog extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'obj_id', 'type', 'log_type', 'details'
+        'user_id', 'obj_id', 'type', 'log_type', 'content', 'details'
     ];
 
     public function user()

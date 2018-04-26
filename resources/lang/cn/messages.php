@@ -18,6 +18,7 @@ return [
 
     // nav / page titles and sub titles start
     'events' => '工作日程',
+    'event' => '日程',
     'eventsSubTitle' => '凡事预则立　不预则废',
     'typemanage' => '分类管理',
     'usermanage' => '用户管理',

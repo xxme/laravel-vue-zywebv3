@@ -22,6 +22,7 @@ class CreateAdminLogsTable extends Migration
             $table->unsignedTinyInteger('type');
             // 1 add 2 update 3 delete(soft)
             $table->unsignedTinyInteger('log_type');
+            $table->string('content')->nullable();
             $table->text('details')->nullable();
             $table->softDeletes();
             $table->timestamps();

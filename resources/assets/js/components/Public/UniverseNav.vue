@@ -46,14 +46,14 @@
                                     <span v-if="log.log_type == 1">{{ $t('global.addEvent') }} </span>
                                     <span v-else-if="log.log_type == 2">{{ $t('global.update') }} </span>
                                     <span v-else-if="log.log_type == 3">{{ $t('global.delete') }} </span>
+                                    <span v-if="log.type == 1">{{ log.content }} </span>
                                     <span v-if="log.type == 1">{{ $t('event.event') }} </span>
                                     <span v-else-if="log.type == 2">{{ $t('quicknav.typeofwork') }} </span>
                                     <span v-else-if="log.type == 3">{{ $t('event.comment') }} </span>
+                                    <span v-if="log.type == 1">#{{ log.obj_id }}</span>
                                 </h3>
-
-                                <div class="timeline-footer">
-                                    <a class="btn btn-primary btn-xs">Read more</a>
-                                    <a class="btn btn-danger btn-xs">Delete</a>
+                                <div v-if="log.type == 3" class="timeline-body">
+                                    <span>{{ log.content }}</span>
                                 </div>
                             </div>
                         </li>
@@ -228,8 +228,7 @@ export default {
     }
   },
   mounted() { 
-      // this.timelineYmd
-      this.get_logs("2018-04-22");
+      this.get_logs(this.timelineYmd);
   },
   watch: {
     timelineYmd: function (value) {

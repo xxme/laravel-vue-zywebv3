@@ -15,4 +15,8 @@ class Comment extends Model
     {
         return $this->belongsTo('App\User');
     }
+    public function event()
+    {
+        return $this->belongsTo('App\Event');
+    }
 }
