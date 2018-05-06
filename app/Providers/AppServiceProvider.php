@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         }
         // get usergroups for menu
         if (Schema::hasTable('user_groups')){
-            $usergroups = DB::table('user_groups')->get();
+            $usergroups = DB::table('user_groups')->where('id', '>', 1)->get();
             View::share('usergroups', $usergroups);
         }
     }

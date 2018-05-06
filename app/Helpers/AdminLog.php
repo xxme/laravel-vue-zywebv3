@@ -4,6 +4,7 @@ namespace App\Helpers;
 use Request;
 use App\AdminLog as LogModel;
 use App\Comment;
+use App\Expense;
 
 class AdminLog
 {
@@ -35,6 +36,11 @@ class AdminLog
             } else if($type == config('const.log_comment')) {
                 $objcomment = Comment::with(['event'])->findOrFail($obj->id);
                 $log['content'] = $objcomment->event->event_date.' '.__('messages.event').' #'.$objcomment->event->id.' '.$obj->content;
+            } else if($type == config('const.log_event_complete')) {
+                $objExpense = Expense::with(['event'])->findOrFail($obj->id);
+                $log['content'] = $objExpense->event->event_date.' '.__('messages.event').' #'.$objExpense->event->id;
+            } else if($type == config('const.log_shopping_list')) {
+                $log['content'] = __('messages.totalprice').' ￥'.number_format($obj->price);
             }
 
             LogModel::create($log);

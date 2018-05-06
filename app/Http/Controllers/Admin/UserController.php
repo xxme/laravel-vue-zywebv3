@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManagerStatic as Image;
 use Input;
+use App\User;
+use App\UserGroup;
 
 class UserController extends Controller
 {
@@ -17,11 +19,14 @@ class UserController extends Controller
      */
     public function index($group_id)
     {
-        $userGroup = \App\UserGroup::findOrFail($group_id);
+        if($group_id == 1) {
+            return redirect()->route('admin.userindex', 2);
+        }
+        $userGroup = UserGroup::findOrFail($group_id);
         $data['pageTitle'] = __('messages.usermanage');
         $data['subTitle'] = $userGroup->name;
         $data['group_id'] = $userGroup->id;
-        $data['users'] = \App\UserGroup::find($userGroup->id)->users;
+        $data['users'] = UserGroup::find($userGroup->id)->users;
 
         return view('admin.user.index', $data);
     }
@@ -33,7 +38,11 @@ class UserController extends Controller
      */
     public function create($group_id)
     {
-        $userGroup = \App\UserGroup::findOrFail($group_id);
+        $loginuser = Auth::user();
+        if($loginuser->group_id != 1){
+            return redirect()->route('admin.userindex', $group_id);
+        }
+        $userGroup = UserGroup::findOrFail($group_id);
         $data['pageTitle'] = __('messages.usermanage');
         $data['subTitle'] = $userGroup->name;
         $data['group_id'] = $userGroup->id;
@@ -48,7 +57,37 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $inputs = $request->all();
+
+        $loginuser = Auth::user();
+        if($loginuser->group_id != 1){
+            $request->session()->flash('message', __('messages.error').':'.__('messages.manageronly'));
+            return redirect()->route('admin.userindex', $inputs['group_id']);
+        }
+        //rules
+        $rules = [
+            'name' => 'required|min:2|max:30',
+            'email' => 'required|email',
+            'password' => 'required|min:6|max:32'
+        ];
+        //validation
+        $validation = \Validator::make($inputs, $rules);
+        //if fails
+        if($validation->fails())
+        {
+            return redirect()->back()->withErrors($validation->errors())->withInput();
+        }
+        $password = \Hash::make($inputs['password']);
+
+        $obj_user = new User();
+        $obj_user->password = $password;
+        $obj_user->name = $inputs['name'];
+        $obj_user->email = $inputs['email'];
+        $obj_user->group_id = $inputs['groupid'];
+        $obj_user->profileimg = $inputs['profileimg'];
+        $obj_user->save();
+
+        return redirect()->route('admin.userindex', $inputs['group_id']);
     }
 
     /**
@@ -74,11 +113,10 @@ class UserController extends Controller
     	$data['pageTitle'] = __('messages.useredit');
         $data['subTitle'] = "";
         
-    	if($loginuser->group_id == 1 && isset($id)){
-    		$data['user'] = \App\User::findOrFail($id);
-    		return view('admin.user.edit', $data);
+    	if($loginuser->group_id != 1 && $id != $loginuser->id){
+    		return redirect()->route('admin.useredit', $loginuser->id);
     	}
-    	$data['user'] = \App\User::findOrFail($loginuser->id);
+    	$data['user'] = User::findOrFail($id);
         return view('admin.user.edit', $data);
     }
     
@@ -93,9 +131,15 @@ class UserController extends Controller
         //inputs
         $inputs = $request->all();
 
+        $loginuser = Auth::user();
+        // manager can be change the other user infomations.
+        if($loginuser->group_id != 1 && $request->userid != $loginuser->id){
+            $request->session()->flash('message', __('messages.error').':'.__('messages.manageronly'));
+            return redirect()->route('admin.userindex', $inputs['group_id']);
+        }
         //rules
         $rules = [
-            'name'=>'required|min:4|max:30',
+            'name'=>'required|min:2|max:30',
             'email'=>'required|email',
         ];
         if($inputs['changepw'] == 1){
@@ -111,23 +155,19 @@ class UserController extends Controller
             return redirect()->back()->withErrors($validation->errors())->withInput();
         }
         
-        $loginuser = Auth::user();
-        // manager can be change the other user infomations.
-        if($loginuser->group_id == 1){
-            $userid = $request->userid;
-        } else {
-            $userid = $loginuser->id;
-        }
         if($inputs['password']){
             $password = \Hash::make($inputs['password']);
         }
 
-        $obj_user = \App\User::find($userid)->first();
+        $obj_user = User::find($request->userid);
         if(isset($password)){
             $obj_user->password = $password;
         }
         $obj_user->name = $inputs['name'];
         $obj_user->email = $inputs['email'];
+        if(isset($inputs['groupid'])) {
+            $obj_user->group_id = $inputs['groupid'];
+        }
         $obj_user->profileimg = $inputs['profileimg'];
         $obj_user->save();
 

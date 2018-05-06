@@ -30,25 +30,30 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         // resource
         Route::resource('event', 'EventController');
         Route::resource('comment', 'CommentController');
+        Route::resource('productlist', 'ProductListController');
         // get
         Route::get('/', 'AdminController@dashboard')->name('admin.main');
         Route::get('/events/{ym}', 'EventController@index');
         Route::get('/event/create/{date}', 'EventController@create');
-        Route::get('/user/index/{id}', 'UserController@index');
+        Route::get('/event/createbyproductlist/{listid}', 'EventController@create');
+        Route::get('/user/index/{id}', 'UserController@index')->name('admin.userindex');
         Route::get('/user/create/{id}', 'UserController@create');
-        Route::get('/user/edit/{id}', 'UserController@edit');
+        Route::get('/user/edit/{id}', 'UserController@edit')->name('admin.useredit');
         Route::get('/type/index/{id}', 'TypesController@index')->name('type.index');
         Route::get('/type/create/{id}', 'TypesController@create');
         Route::get('/user/edit', function () {
             return redirect('/user/edit/' . Auth::user()->id);
         });
         Route::get('/ajaxlogs/{ymd}', 'AdminController@getLogByYmd');
+        Route::get('/pdlist/getlists/{type}', 'ProductListController@getlists');
         // post
         Route::post('/user/uploadprofile', 'UserController@updateprofile');
         Route::post('/user/update', 'UserController@update');
+        Route::post('/user/create', 'UserController@store');
         Route::post('/type/create_do', 'TypesController@create_do');
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
         Route::post('/uploadimg', 'AdminController@updateImage');
+        Route::post('/event/complete', 'EventController@complete');
     });
     // Route::post('logout', 'LoginController@logout');
 });

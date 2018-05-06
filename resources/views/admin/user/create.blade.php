@@ -8,7 +8,7 @@
 <div>
   <div class="box box-primary">
     <!-- form start -->
-    <form role="form" method="post" action="{{ url('admin/user/update') }}">
+    <form role="form" method="post" action="{{ url('admin/user/create') }}">
       {{ csrf_field() }}
       <div class="box-body">
         <div class="form-group @if(!empty($errors->first('name'))) has-error @endif">
@@ -29,6 +29,25 @@
           </div>
           <span class="help-block">{{ $errors->first('password') }}</span>
         </div>
+        @if($currentUser->group_id == 1)
+          <div class="form-group">
+            <label>Group</label><br />
+            @if($usergroups)
+            @foreach ($usergroups as $usergroup)
+              @if($usergroup->id == 2 || $usergroup->id == 5)
+              <label>
+                @if($usergroup->id == 2)
+                <input type="radio" name="groupid" value="{{ $usergroup->id }}" checked="checked">
+                @else
+                <input type="radio" name="groupid" value="{{ $usergroup->id }}">
+                @endif
+                {{ $usergroup->name }} 
+              </label>
+              @endif
+            @endforeach
+            @endif
+          </div>
+        @endif
         <div class="form-group is-hide newprofile">
           <label>New profile photo</label><br />
           <img src="" id="newprofile" />
@@ -69,7 +88,7 @@
     });
 
     @if(old('profileimg'))
-        $('#newprofile').attr('src', '{{asset('uploads/profiles/'.old('profileimg'))}}');
+        $('#newprofile').attr('src', "{{asset('uploads/profiles/'.old('profileimg'))}}");
         $('input[name="profileimg"]').val("{{ old('profileimg') }}");
         $(".newprofile").show();
     @endif
@@ -96,7 +115,7 @@
     form_data.append('_token', '{{csrf_token()}}');
     $(".LockOn").show();
     $.ajax({
-        url: "{{url('user/uploadprofile')}}",
+        url: "{{url('admin/user/uploadprofile')}}",
         data: form_data,
         type: 'POST',
         contentType: false,

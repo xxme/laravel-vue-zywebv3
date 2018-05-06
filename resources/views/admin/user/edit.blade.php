@@ -31,6 +31,25 @@
           </div>
           <span class="help-block">{{ $errors->first('password') }}</span>
         </div>
+        @if($currentUser->group_id == 1 && $currentUser->id != $user->id)
+          <div class="form-group">
+            <label>Group</label><br />
+            @if($usergroups)
+            @foreach ($usergroups as $usergroup)
+              @if($usergroup->id == 2 || $usergroup->id == 5)
+              <label>
+                @if($user->group_id == $usergroup->id)
+                <input type="radio" name="groupid" value="{{ $usergroup->id }}" checked="checked">
+                @else
+                <input type="radio" name="groupid" value="{{ $usergroup->id }}">
+                @endif
+                {{ $usergroup->name }} 
+              </label>
+              @endif
+            @endforeach
+            @endif
+          </div>
+        @endif
         @if ($user->profileimg)
         <div class="form-group">
           <label>Using profile photo</label><br />
@@ -130,7 +149,7 @@
             }
             else {
                 $('input[name="profileimg"]').val(data);
-                $('#newprofile').attr('src', '{{asset('uploads/profiles')}}/' + data);
+                $('#newprofile').attr('src', "{{asset('uploads/profiles')}}/" + data);
                 $('.newprofile').show();
             }
             $(".LockOn").hide();

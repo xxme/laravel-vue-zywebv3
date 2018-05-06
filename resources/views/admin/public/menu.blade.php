@@ -38,9 +38,9 @@
         </ul>
       </li>
       <li>
-        <a href="#">
-          <i class="fa fa-list-alt"></i> 
-          <span>{{ __('messages.shoppinglist') }}</span>
+        <a href="{{ url('admin/productlist') }}">
+          <i class="fa fa-shopping-cart"></i> 
+          <span>{{ __('messages.menushoppinglist') }}</span>
           <span class="pull-right-container">
             <small class="label pull-right bg-green">16</small>
           </span>
@@ -68,9 +68,4 @@
     </ul>
   </section>
   <!-- /.sidebar -->
-  <footer class="main-footer">
-    <div class="hidden-xs">
-      Version 3.0.0 Power by wjx.
-    </div>
-  </footer>
 </aside>

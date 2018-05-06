@@ -43,6 +43,9 @@
 .is-hide{
     display: none;
 }
+.content-wrapper {
+    overflow: hidden;
+}
 .user-listimage{
     width: 50px;
     height: 50px;
@@ -51,7 +54,7 @@
     margin-top: 6px;
     margin-bottom: 8px;
 }
-.padding0,.padding-top15{
+.padding-top15{
     padding: 0;
 }
 .padding-left3{
@@ -59,6 +62,12 @@
 }
 .padding-top15{
     padding-top: 15px;
+}
+.margintb10 {
+    margin: 10px 0;
+}
+.marginlr10 {
+    margin: 0 10px;
 }
 .input-group{
     width: 100%;
@@ -70,11 +79,27 @@
 .text-left {
     text-align: left;
 }
+.zy-icon {
+    text-align: center;
+}
+.bigger-120 {
+    font-size: 120% !important;
+}
+.bigger-140 {
+    font-size: 140% !important;
+}
+tr.detail-row {
+    display: none;
+}
+tr.detail-row.open {
+    display: block;
+    display: table-row;
+}
 
 /* modal */
 .modal-mask {
     position: fixed;
-    z-index: 9998;
+    z-index: 1040;
     top: 0;
     left: 0;
     width: 100%;
@@ -107,7 +132,7 @@
     color: #42b983;
 }
 
-.modal-body .checked{
+.modal-body .checked, .zy-icon{
     color: #3c8dbc;
 }
 
@@ -153,17 +178,16 @@
     margin-bottom: 8px;
 }
 /* fix gallery end */
-/* fix main footer start */
-.main-footer{
-    margin-left: 0;
-    position: absolute;
-    width: 230px;
-    bottom: 0;
-    background-color: #1e282c;
-    color: #b8c7ce;
-    border: none;
+
+.input-group, .select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default .select2-selection--multiple {
+    height: 34px;
 }
-/* fix main footer end */
+.select2-container--default .select2-selection--multiple .select2-selection__rendered,
+.input-group .form-control:not(:first-child):not(:last-child),
+.input-group .form-control:last-child {
+    padding: 0 12px;
+}
 
 /* event start */
 .makered {
@@ -174,4 +198,23 @@
 }
 .blue {
     color: #367fa9;
+}
+.actioncursor {
+    cursor: pointer
+}
+.detailtitle {
+    margin-left: 7px;
+    color: #9c9c9c;
+}
+.detail-row .table {
+    margin-bottom: 5px;
+}
+.detail-row th {
+    font-weight: 400;
+}
+
+@media screen and (min-width: 490px) {
+    .costcontrol {
+        padding: 8px;
+    }
 }

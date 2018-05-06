@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAdminLogsTable extends Migration
+class CreateProductListsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,20 +13,17 @@ class CreateAdminLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('admin_logs', function (Blueprint $table) {
+        Schema::create('product_lists', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('user_id');
-            $table->unsignedInteger('obj_id');
-            // 1 event 2 type 3 comment 4 user 5 Event commission 6 Event complete
-            // 7 shopping list 8 Estimates 9 Repetition
-            $table->unsignedTinyInteger('type');
-            // 1 add 2 update 3 delete(soft)
-            $table->unsignedTinyInteger('log_type');
-            $table->text('content')->nullable();
-            $table->text('details')->nullable();
+            $table->unsignedInteger('event_id')->nullable();
+            $table->unsignedInteger('cost')->default(0); // 送料
+            $table->unsignedInteger('price')->default(0); // 価格
+            $table->text('note')->nullable();
             $table->softDeletes();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('event_id')->references('id')->on('events');
         });
     }
 
@@ -37,6 +34,6 @@ class CreateAdminLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('admin_logs');
+        Schema::dropIfExists('product_lists');
     }
 }

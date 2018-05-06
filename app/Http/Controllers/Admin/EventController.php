@@ -9,6 +9,9 @@ use App\Event;
 use App\EventDetail;
 use App\Comment;
 use App\Type;
+use App\User;
+use App\ProductList;
+use App\Expense;
 
 class EventController extends Controller
 {
@@ -23,7 +26,9 @@ class EventController extends Controller
             ->orderBy('event_date', 'ASC')->orderBy('id', 'ASC')
             ->with(['comments' => function ($query) {
                 $query->with('user');
-            }, 'user', 'details'])->get();
+            }, 'expense' => function ($query) {
+                $query->with('user');
+            }, 'user', 'details', 'productlist'])->get();
         $types = Type::get(['id', 'name']);
         foreach($types as $type) {
             $typeArray[$type->id] = $type->name;
@@ -53,6 +58,8 @@ class EventController extends Controller
         }
 
         $init['auth'] = auth()->user();
+
+        $init['users'] = User::where('group_id', '<', 3)->get(['id', 'name', 'profileimg']);
 
         // get holidays
         $ch = curl_init();
@@ -84,9 +91,7 @@ class EventController extends Controller
      */
     public function create($date = null)
     {
-        $data['pageTitle'] = __('messages.events');
-        $data['subTitle'] = __('messages.eventsSubTitle');
-        return view('admin.dashboard', $data);
+        return view('admin.dashboard');
     }
 
     /**
@@ -101,7 +106,7 @@ class EventController extends Controller
         $objEvent = new Event();
         $user_id = auth()->user()->id;
         $objEvent->user_id = $user_id;
-        $objEvent->shopping_id = $inputs['shoppingid'];
+        $objEvent->product_list_id = $inputs['product_list_id'];
         $objEvent->partner_id = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
         $objEvent->total = $inputs['total'];
@@ -110,14 +115,13 @@ class EventController extends Controller
         $objEvent->start_time = $inputs['from']['time'];
         $objEvent->end_time = $inputs['to']['time'];
         $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-
         $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_add'));
 
         if($event_id) {
             $objEventDetail = new EventDetail();
             $objEventDetail->event_id = $event_id;
             $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->images = json_encode($inputs['filethumbs'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
             $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
             $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
             $objEventDetail->from_address = $inputs['from']['address'];
@@ -135,6 +139,11 @@ class EventController extends Controller
                 $objComment->event_id = $event_id;
                 $objComment->content = $inputs['comment'];
                 \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+            }
+            if($inputs['product_list_id']) {
+                $objProductList = ProductList::find($inputs['product_list_id']);
+                $objProductList->event_id = $event_id;
+                $objProductList->save();
             }
         }
         return response()->json($objEvent);
@@ -159,9 +168,7 @@ class EventController extends Controller
      */
     public function edit($id)
     {
-        $data['pageTitle'] = __('messages.events');
-        $data['subTitle'] = __('messages.eventsSubTitle');
-        return view('admin.dashboard', $data);
+        return view('admin.dashboard');
     }
 
     /**
@@ -175,7 +182,12 @@ class EventController extends Controller
     {
         $inputs = $request->all();
         $objEvent = Event::with(['details'])->findOrFail($id);
-        $objEvent->shopping_id = $inputs['shoppingid'];
+        if($objEvent->product_list_id && !$inputs['product_list_id']){
+            $objList = ProductList::find($objEvent->product_list_id);
+            $objList->event_id = null;
+            $objList->save();
+        }
+        $objEvent->product_list_id = $inputs['product_list_id'];
         $objEvent->partner_id = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
         $objEvent->total = $inputs['total'];
@@ -184,14 +196,13 @@ class EventController extends Controller
         $objEvent->start_time = $inputs['from']['time'];
         $objEvent->end_time = $inputs['to']['time'];
         $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-
         $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_update'));
 
         if($event_id) {
             $objEventDetail = EventDetail::findOrFail($objEvent->details->id);
             $objEventDetail->event_id = $event_id;
             $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->images = json_encode($inputs['filethumbs'], JSON_UNESCAPED_UNICODE);
+            $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
             $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
             $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
             $objEventDetail->from_address = $inputs['from']['address'];
@@ -210,6 +221,11 @@ class EventController extends Controller
                 $objComment->content = $inputs['comment'];
                 \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
             }
+            if($inputs['product_list_id']) {
+                $objList = ProductList::find($inputs['product_list_id']);
+                $objList->event_id = $event_id;
+                $objList->save();
+            }
         }
         return response()->json($objEvent);
     }
@@ -222,6 +238,50 @@ class EventController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $obj = Event::findOrFail($id);
+        if($obj->product_list_id) {
+            $objList = ProductList::findOrFail($obj->product_list_id);
+            \AdminLog::saveLog($obj->product_list_id, config('const.log_shopping_list'), config('const.log_action_del'), __('messages.totalprice').' ￥'.number_format($objList->price));
+            ProductList::destroy($obj->product_list_id);
+        }
+        \AdminLog::saveLog($id, config('const.log_event'), config('const.log_action_del'), $obj->event_date);
+        return Event::destroy($id);
+    }
+
+    public function complete(Request $request) {
+        $inputs = $request->all();
+        $objEvent = Event::findOrFail($inputs['eventid']);
+        $objExpense = Expense::where('event_id', $inputs['eventid'])->first();
+        if(!$objExpense) {
+            $objExpense = new Expense();
+            $action = config('const.log_action_add');
+        } else {
+            $action = config('const.log_action_update');
+        }
+        $objExpense->event_id = $inputs['eventid'];
+        $objExpense->user_id = $inputs['payee'];
+        $objExpense->finalprice = $inputs['price'] > 0 ? $inputs['price'] : 0;
+        $objExpense->zctingche = $inputs['tingche'] > 0 ? $inputs['tingche'] : 0;
+        $objExpense->zccanyin = $inputs['canyin'] > 0 ? $inputs['canyin'] : 0;
+        $objExpense->zcgaosu = $inputs['gaosu'] > 0 ? $inputs['gaosu'] : 0;
+        $objExpense->zcjiayou = $inputs['jiayou'] > 0 ? $inputs['jiayou'] : 0;
+        $objExpense->zcmaihuo = $inputs['maihuo'] > 0 ? $inputs['maihuo'] : 0;
+        $objExpense->zcother = $inputs['other'] > 0 ? $inputs['other'] : 0;
+        $objExpense->fxrmb = $inputs['rmb'] > 0 ? $inputs['rmb'] : 0;
+        $objExpense->fxjpy = $inputs['jpy'] > 0 ? $inputs['jpy'] : 0;
+        $objExpense->expenditure = 
+                $objExpense->zctingche + $objExpense->zccanyin + 
+                $objExpense->zcgaosu + $objExpense->zcjiayou + 
+                $objExpense->zcmaihuo + $objExpense->zcother + 
+                $objExpense->fxjpy;
+        
+        $objExpense->status = $inputs['sta'];
+        \AdminLog::saveWithLog($objExpense, config('const.log_event_complete'), $action);
+        if($objExpense->id && $objEvent->status == 1){
+            $objEvent->status = 2;
+            $objEvent->save();
+        }
+
+        return Expense::with(['user'])->find($objExpense->id);
     }
 }

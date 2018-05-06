@@ -10,11 +10,15 @@ return [
     // top menu end
 
     // quicknav start
-    'shoppinglist' => '购物清单',
-    'estimateslist' => '見積信息',
-    'tasklist' => '任务板',
+    'shoppinglist' => '购物',
+    'estimateslist' => '見積',
+    'tasklist' => '任务',
     'recycle' => '回收站',
     // quicknav end
+
+    // menu start
+    'menushoppinglist' => '购物单',
+    // menu end
 
     // nav / page titles and sub titles start
     'events' => '工作日程',
@@ -23,20 +27,25 @@ return [
     'typemanage' => '分类管理',
     'usermanage' => '用户管理',
     // nav / page titles and sub titles end
-    
-    'profile' => 'Profile',
-    'signOut' => 'Sign out',
-    'useredit' => 'User edit',
-    'edit' => 'Edit',
-    'cancel' => 'Cancel',
-    'submit' => 'Submit',
-    'action' => 'Action',
-    'listorder' => 'Order',
-    'name' => 'Name',
-    'email' => 'Email',
-    'status' => 'Status',
-    'create' => 'Create',
-    'success' => 'Success',
-    'error' => 'Error'
 
+    // product start
+    
+    // product end
+    
+    'profile' => '个人设定',
+    'signOut' => '注销',
+    'useredit' => '用户编辑',
+    'edit' => '编辑',
+    'cancel' => '取消',
+    'submit' => '提交',
+    'action' => '操作',
+    'listorder' => '排序',
+    'name' => '名称',
+    'email' => 'Email',
+    'status' => '状态',
+    'create' => '创建',
+    'success' => '成功',
+    'error' => '错误',
+    'totalprice' => '总价',
+    'manageronly' => '舰长Only'
 ];

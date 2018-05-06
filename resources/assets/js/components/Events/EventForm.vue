@@ -1,37 +1,44 @@
 <template>
   <div>
-    <form id="eventform" method="post">
+    <section class="content-header">
+			<h1>
+				{{ $t('event.pagetitle') }}
+				<small>{{ $t('event.subtitle') }}</small>
+			</h1>
+		</section>
+		<!-- Main content -->
+		<section class="content">
       <div class="box box-primary">
         <div class="box-header">
-          <h3 class="box-title">{{ $t('event.addEvent') }}</h3>
+          <h3 class="box-title">{{ boxtitle }} <small v-if="$route.params.eventid">#{{$route.params.eventid}}</small></h3>
         </div>
         <div class="box-body">
-          <div class="col-xs-12 padding0">
+          <div class="col-xs-12 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-tags"></i></span>
               <select2 :options="options1" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
             </div>
           </div>
-          <div class="col-xs-12 padding0">
+          <div class="col-xs-12 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-cube"></i></span>
               <select2 :options="options4" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
             </div>
           </div>
-          <div class="col-xs-12 padding0">
+          <div class="col-xs-12 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
               <select2 :options="options2" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
             </div>
           </div>
-          <div class="col-xs-12 padding0"> 
-            <div class="col-xs-6 padding0">
+          <div class="col-xs-12 no-padding"> 
+            <div class="col-xs-6 no-padding">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
                 <select2 :options="options3" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
               </div>
             </div>
-            <div class="col-xs-6 padding0">
+            <div class="col-xs-6 no-padding">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-truck"></i></span>
                 <select2 :options="options9" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
@@ -39,7 +46,7 @@
             </div>
           </div> 
           <!-- datepicker --> 
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group"> 
               <div class="input-group-addon"> 
                 <i class="fa fa-calendar"></i> 
@@ -47,7 +54,7 @@
               <input type="text" name="eventdate" class="form-control datepicker" v-model="event.eventdate" :placeholder="$t('event.eventdate')" readonly /> 
             </div>
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group"> 
               <div class="radio padding-left3">
                 <label>
@@ -69,7 +76,7 @@
               </div>
             </div> 
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group"> 
               <div class="input-group-addon"> 
                 <input type="radio" name="apm" value="5" v-model="event.apm" /> 
@@ -81,35 +88,37 @@
               <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.to.time" /> 
             </div> 
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-male"></i></span>
               <input type="number" class="form-control" name="partner" v-model.number="event.partner" :placeholder="$t('event.partnerID')">
             </div>
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-jpy"></i></span>
               <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')">
             </div>
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-shopping-cart"></i></span>
-              <input type="number" class="form-control" name="shoppingid" v-model.number="event.shoppingid" :placeholder="$t('event.shoppingListId')">
+              <select2 :options="options5" :change="true" @change="getProductlist" id="product_list_id" :selected="event.product_list_id" :placeholder="$t('event.shoppingListId')" :multiple="false"></select2>
             </div>
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-12 no-padding">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-phone"></i></span>
               <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
             </div>
           </div>
-          <div class="col-xs-6 padding0">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
               <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
             </div>
+          </div>
           </div>
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
@@ -128,14 +137,22 @@
           <div class="form-group">
             <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
           </div>
-          <div v-show="hasFile" class='col-xs-12 padding0'>
+          <div v-show="hasFile" class='col-xs-12 no-padding'>
             <div class="gallery">
-              <div v-for="(file, key) in event.files" class="col-xs-2 padding0 marginb8">
+              <div v-for="(file, key) in event.files" class="col-xs-2 no-padding marginb8">
                 <a :href="'/uploads/' + file" class="thumbnail" :title="file | truncate(25)">
                   <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
                 </a>
                 <div class='text-right'>
                   <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">Remove</button>
+                </div>
+              </div>
+              <div v-for="(img, key) in event.productlistimgs" class="col-xs-2 no-padding marginb8">
+                <a :href="img" class="thumbnail" :title="img | truncate(25)">
+                  <img :src="img" :alt="img">
+                </a>
+                <div class='text-right'>
+                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.productlistimgs[key], 2)">Remove</button>
                 </div>
               </div>
             </div>
@@ -156,7 +173,8 @@
           <button @click="checkForm" type="button" class="btn btn-primary pull-right">{{ $t('global.Submit') }}</button> 
         </div>
       </div>
-    </form>
+    </section>
+    
     <modal v-if="showConfirmModal" @close="showConfirmModal = false" @sure="setSure">
     </modal>
     <modal v-if="showModal" @close="showModal = false">
@@ -261,9 +279,6 @@ export default {
   mounted() {
     this.setDatePicker()
     this.get_types()
-    if(this.$route.params.eventdate){
-      this.event.eventdate = this.$route.params.eventdate;
-    }
   },
   components: {
     Select2,
@@ -276,6 +291,7 @@ export default {
       options2: [],
       options3: [],
       options4: [],
+      options5: [],
       options9: [],
       value: [],
       placeholder: "",
@@ -289,13 +305,14 @@ export default {
         sure: true
       },
       floors: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '30', '40', '50'],
-      setDetailsFrom: this.$i18n.t('event.setDetails'),
-      setDetailsTo: this.$i18n.t('event.setDetails'),
+      setDetailsFrom: this.$t('event.setDetails'),
+      setDetailsTo: this.$t('event.setDetails'),
       hasFile: false,
       fileAccept: "image/*",
+      boxtitle: this.$route.params.eventid ? this.$t('global.edit') : this.$t('global.add'),
       event: {
         id: "",
-        eventdate: "",
+        eventdate: this.$route.params.eventdate ? this.$route.params.eventdate : "",
         apm: "",
         from: {
           time: "",
@@ -318,9 +335,10 @@ export default {
         phone: "",
         partner: null,
         amount: null,
-        shoppingid: null,
+        product_list_id: "",
         files: [],
         filethumbs: [],
+        productlistimgs: [],
         comment: ""
       }
     }
@@ -343,8 +361,13 @@ export default {
   },
   updated: function () {
     this.$nextTick(function () {
-      if(this.event.files.length > 0) {
-        baguetteBox.run('.gallery');
+      if(this.event.files.length > 0 || this.event.productlistimgs.length > 0) {
+        baguetteBox.run('.gallery', {
+          noScrollbars: true
+        });
+      }
+      if(this.$route.params.listid){
+        this.event.product_list_id = this.$route.params.listid;
       }
     })
   },
@@ -378,15 +401,18 @@ export default {
       })
     },
     get_types() {
+        if (this.$route.params.eventid){
+          this.event.id = this.$route.params.eventid;
+        }
         this.$http({
-            url: '/api/get_types/',
+            url: '/api/get_types/' + this.event.id,
             method: 'GET'
         }).then(res =>  {
-            for (var index in res.data) {
-              var group_id = res.data[index].group_id;
+            for (var index in res.data.types) {
+              var group_id = res.data.types[index].group_id;
               var option = {};
-              option.id = res.data[index].id;
-              option.text = res.data[index].name;
+              option.id = res.data.types[index].id;
+              option.text = res.data.types[index].name;
               switch (+group_id) {
                 case 1:
                   this.options1.push(option);
@@ -411,27 +437,37 @@ export default {
                   break;
               }
             }
-            if (this.$route.params.eventid){
-              this.getEvent(this.$route.params.eventid)
+            for (var index in res.data.productlists) {
+              var option = {};
+              option.id = res.data.productlists[index].id;
+              option.text = '#'+res.data.productlists[index].id+' '+this.formatNumberJPY(res.data.productlists[index].price);
+              this.options5.push(option);
+            }
+            if (this.event.id){
+              this.getEvent(this.event.id)
             }
         })
     },
     checkForm:function(e) {
       this.errors = [];
       if(!this.event.eventdate){
-        this.errors.push(this.$i18n.t('event.eventdate') + this.$i18n.t('global.required'));
+        this.errors.push(this.$t('event.eventdate') + this.$t('global.required'));
         return;
       }
       if($("#worktype").val() == '') {
-        this.errors.push(this.$i18n.t('event.workType') + this.$i18n.t('global.required'));
+        this.errors.push(this.$t('event.workType') + this.$t('global.required'));
         return;
       }
       if(!this.event.apm){
-        this.errors.push(this.$i18n.t('event.apmAllDayOrTime') + this.$i18n.t('global.moreThanOne'));
+        this.errors.push(this.$t('event.apmAllDayOrTime') + this.$t('global.moreThanOne'));
         return;
       }
       if(this.event.apm == 5 && !this.event.from.time && !this.event.to.time){
-        this.errors.push(this.$i18n.t('event.eventtimeChecked') + this.$i18n.t('event.eventtime') + this.$i18n.t('global.required'));
+        this.errors.push(this.$t('event.eventtimeChecked') + this.$t('event.eventtime') + this.$t('global.required'));
+        return;
+      }
+      if(this.event.from.time && this.event.to.time && moment(this.event.eventdate+' '+this.event.from.time) > moment(this.event.eventdate+' '+this.event.to.time)) {
+        this.errors.push(this.$t('event.timereverse'));
         return;
       }
       if(!this.event.wechat && !this.event.phone) {
@@ -451,13 +487,14 @@ export default {
       this.event.careful = $('#careful').val();
       this.event.total = $('#total').val();
       this.event.truck = $('#truck').val();
+      this.event.product_list_id = $('#product_list_id').val();
       this.loadingShow = true;
       if(this.event.id) {
         this.$http.put('/admin/event/' + this.event.id, this.event).then(response => {
           this.$router.go(-1);
           this.loadingShow = false;
         }).catch(error => {
-          this.errors.push(this.$i18n.t('global.calltheadministrator'));
+          this.errors.push(this.$t('global.calltheadministrator'));
           this.loadingShow = false;
         });
       } else {
@@ -465,7 +502,7 @@ export default {
           this.$router.go(-1);
           this.loadingShow = false;
         }).catch(error => {
-          this.errors.push(this.$i18n.t('global.calltheadministrator'));
+          this.errors.push(this.$t('global.calltheadministrator'));
           this.loadingShow = false;
         });
       }
@@ -495,16 +532,48 @@ export default {
         this.hasFile = false;
       }
     },
-    removeFile(file) {
+    removeFile(file, uploaded = 1) {
       if(window.confirm('Are you sure remove this photo?' + file)) {
-        var bigfile = file.replace("_thumb", "");
-        var index = this.event.files.indexOf(bigfile);
-        this.event.files.splice(index, 1);
-        this.event.filethumbs.splice(index, 1);
+        if(uploaded == 1) {
+          var bigfile = file.replace("_thumb", "");
+          var index = this.event.files.indexOf(bigfile);
+          this.event.files.splice(index, 1);
+          this.event.filethumbs.splice(index, 1);
+        } else {
+          var index = this.event.productlistimgs.indexOf(file);
+          this.event.productlistimgs.splice(index, 1);
+        }
       }
     },
     errorPush(message) {
       this.errors.push(message);
+    },
+    getProductlist(listid){
+      if(this.event.product_list_id != listid) {
+        this.event.comment = "";
+        this.event.productlistimgs = [];
+        this.$http({
+          url: '/admin/productlist/' + listid,
+          method: 'GET'
+        }).then(res =>  {
+          if(res.data.id) {
+            console.log(res.data);
+            if(res.data.note) {
+              this.event.comment = res.data.note;
+              for(var key in res.data.items) {
+                if(res.data.items[key].image) {
+                  this.event.productlistimgs.push(res.data.items[key].image);
+                }
+              }
+              if(this.event.productlistimgs.length > 0) {
+                this.hasFile = true;
+              }
+            }
+          } else {
+            console.log("no value");
+          }
+        })
+      }
     },
     getEvent(eventid) {
       this.$http({
@@ -524,11 +593,15 @@ export default {
         this.event.phone = res.data.details.phone;
         this.event.wechat = res.data.details.wechat;
         this.event.partner = res.data.partner_id;
-        this.event.shoppingid = res.data.shopping_id;
+        this.event.product_list_id = res.data.product_list_id;
         var filethumbs = JSON.parse(res.data.details.images);
         for(var key in filethumbs) {
-          this.event.filethumbs.push(filethumbs[key]);
-          this.event.files.push(filethumbs[key].replace("_thumb", ""));
+          if(this.shopImg(filethumbs[key])) {
+            this.event.productlistimgs.push(filethumbs[key]);
+          } else {
+            this.event.filethumbs.push(filethumbs[key]);
+            this.event.files.push(filethumbs[key].replace("_thumb", ""));
+          }
         }
         if(this.event.files.length > 0) {
           this.hasFile = true;
@@ -543,6 +616,18 @@ export default {
         this.event.to.floors = res.data.details.to_floor;
         this.event.to.elevator = res.data.details.to_elevator;
       })
+    },
+    formatNumberJPY(number) {
+			if(number) {
+				return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
+			}
+		},
+    shopImg(img) {
+      if(img.substring(0, 4) === 'http'){
+        return true
+      } else {
+        return false
+      }
     }
   },
   filters: {

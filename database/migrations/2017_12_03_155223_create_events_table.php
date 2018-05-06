@@ -17,7 +17,7 @@ class CreateEventsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('order_id')->nullable();  // 見積もりid
-            $table->unsignedInteger('shopping_id')->nullable();  // 购物单id
+            $table->unsignedInteger('product_list_id')->nullable();  // 购物单id
             $table->unsignedInteger('partner_id')->nullable();  // 推广人id
             $table->unsignedInteger('amount')->nullable();  // 报价
             $table->unsignedTinyInteger('total')->nullable();  // 总量

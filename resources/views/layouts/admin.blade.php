@@ -136,22 +136,8 @@
       @include('admin.public.menu')
 
       <!-- Content Wrapper. Contains page content -->
-      <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-          <h1>
-            @yield('pageTitle')
-            <small>@yield('pageSubTitle')</small>
-          </h1>
-        </section>
-        <!-- Main content -->
-        <section class="content" id="app">
-          <!-- Main row -->
-          @yield('content')
-          <router-view></router-view>
-          <!-- /.row (main row) -->
-        </section>
-        <!-- /.content -->
+      <div class="content-wrapper" id="app">
+        <router-view></router-view>
       </div>
       <!-- /.content-wrapper -->
 
