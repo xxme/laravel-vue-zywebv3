@@ -30,9 +30,9 @@
 						<tbody>
 							<tr>
 								<th style="width: 30px">#</th>
-								<th style="width: 50px">{{ $t('productlist.details') }}</th>
-								<th>{{ $t('productlist.createduname') }}</th>
-								<th>{{ $t('productlist.updatedat') }}</th>
+								<th style="width: 50px">{{ $t('global.details') }}</th>
+								<th>{{ $t('global.createduname') }}</th>
+								<th>{{ $t('global.updatedat') }}</th>
 								<th>{{ $t('productlist.total') }}</th>
 								<th style="width: 10px"><i class="fa fa-flag"></i></th>
 							</tr>
@@ -118,7 +118,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import SampleNav from '../Public/SampleNav'
 import baguetteBox from 'baguettebox.js'
 import pagination from 'laravel-vue-pagination'
@@ -143,14 +142,15 @@ export default {
 			$(e.target).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
 		},
 		get_productlists(page = 1) {
+      this.product_lists.data.length = 0;
 			$('.open').toggleClass('open');
 			$('.fa-angle-double-up').toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
 			this.$http({
 				url: '/admin/pdlist/getlists/' + this.type + '?page=' + page,
 				method: 'GET'
 			}).then(res =>  {
-				if(res.data.length == 0) {
-					$('#listrs').html('No list in this type.');
+				if(res.data.data.length == 0) {
+					$('#listrs').html(this.$t('global.noRes'));
 				} else {
 					this.product_lists = res.data;
 					var classname = [];

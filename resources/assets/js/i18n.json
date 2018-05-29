@@ -17,6 +17,15 @@
             "unset": "未設定",
             "warning": "注意",
             "action": "操作",
+            "all": "全部",
+            "details": "详情",
+            "createduname": "创建者",
+            "updatedat": "更新时间",
+            "noRes": "没有找到任何数据",
+            "remove": "移除",
+            "loadding": "处理中...",
+            "notselectd": "请先选择要处理的项目",
+            "manageronly": "舰长Only",
             "areYouSure": "确认要这样做吗?"
         },
         "topmenu": {
@@ -29,7 +38,8 @@
             "shoppinglist" : "购物",
             "estimateslist" : "見積",
             "tasklist" : "任务",
-            "recycle" : "回收站"
+            "recycle" : "回收站",
+            "money": "入金"
         },
         "quicknav" : {
             "typeofwork" : "工作分类"
@@ -53,6 +63,7 @@
             "payee": "收款人",
             "notpayment": "未入金",
             "paymented": "已入金",
+            "myself": "自己",
             "receipt": "收",
             "expenditure": "支",
             "unpaid": "未返现",
@@ -75,7 +86,7 @@
             "night": "夜",
             "allday": "全",
             "alldayT": "全天",
-            "partnerID": "推广人ID",
+            "partner": "推广人",
             "phoneNumber": "电话号码",
             "wechat": "微信",
             "amount": "报价",
@@ -116,14 +127,15 @@
             "zccanyin": "餐饮支出",
             "zcmaihuo": "买货支出",
             "zcother": "其它支出",
-            "undone": "未完成收入预计"
+            "undone": "未完成收入预计",
+            "completeDate": "日程完成时间",
+            "checked": "已选",
+            "areyousurereceived": "确定要把已选定的标记为已入金吗?总金额",
+            "moneymanage": "入金管理"
         },
         "productlist": {
             "pagetitle": "购物单",
             "subtitle": "加入日程既表示已处理，放置可等待其他人处理",
-            "details": "详情",
-            "createduname": "创建者",
-            "updatedat": "更新时间",
             "quantity": "数量",
             "price": "单价",
             "total": "合计",
@@ -140,6 +152,28 @@
             "norow": "请勿制造空间黑洞",
             "required": "商品,数量及单价不能为空,或请删除无用项目再提交.",
             "couldNotFind": "无法获取商品信息,请确认SDK是否输入正确."
+        },
+        "estimate": {
+            "pagetitle": "見積",
+            "subtitle": "第一位记录信息即可抢得客户",
+            "my": "我的客户",
+            "untreated": "未处理",
+            "uname": "处理人",
+            "createdat": "見積时间",
+            "hopedate": "希望时间",
+            "price": "报价",
+            "note": "备注",
+            "nicknameandtel": "联系电话"
+        },
+        "offer": {
+            "goback": "上一步",
+            "gonext": "下一步",
+            "buildingtype1": "团地",
+            "buildingtype2": "マンション",
+            "buildingtype3": "高级マンション",
+            "buildingtype4": "アパート",
+            "buildingtype6": "一戸建",
+            "buildingtype5": "办公楼"
         }
     }
 }

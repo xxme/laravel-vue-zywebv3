@@ -25,7 +25,7 @@ class TypesController extends Controller
         $data['pageTitle'] = __('messages.typemanage');
         $data['subTitle'] = $typeGroup->name;
         $data['group_id'] = $typeGroup->id;
-        $data['types'] = TypeGroup::whereNull('deleted_at')->find($typeGroup->id)->types;
+        $data['types'] = TypeGroup::find($typeGroup->id)->types;
 
         return view('admin.type.index', $data);
     }

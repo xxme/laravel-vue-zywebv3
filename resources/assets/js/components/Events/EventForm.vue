@@ -41,7 +41,7 @@
             <div class="col-xs-6 no-padding">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-truck"></i></span>
-                <select2 :options="options9" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
+                <select2 :options="options6" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
               </div>
             </div>
           </div> 
@@ -91,7 +91,7 @@
           <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-male"></i></span>
-              <input type="number" class="form-control" name="partner" v-model.number="event.partner" :placeholder="$t('event.partnerID')">
+              <input type="text" class="form-control" name="partner" v-model="event.partner" :placeholder="$t('event.partner')">
             </div>
           </div>
           <div class="col-xs-6 no-padding">
@@ -144,7 +144,7 @@
                   <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
                 </a>
                 <div class='text-right'>
-                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">Remove</button>
+                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">{{ $t('global.remove') }}</button>
                 </div>
               </div>
               <div v-for="(img, key) in event.productlistimgs" class="col-xs-2 no-padding marginb8">
@@ -152,7 +152,7 @@
                   <img :src="img" :alt="img">
                 </a>
                 <div class='text-right'>
-                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.productlistimgs[key], 2)">Remove</button>
+                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.productlistimgs[key], 2)">{{ $t('global.remove') }}</button>
                 </div>
               </div>
             </div>
@@ -279,6 +279,10 @@ export default {
   mounted() {
     this.setDatePicker()
     this.get_types()
+    if(this.$route.params.orderid){
+      this.event.order_id = this.$route.params.orderid;
+      this.getOrder();
+    }
   },
   components: {
     Select2,
@@ -292,7 +296,7 @@ export default {
       options3: [],
       options4: [],
       options5: [],
-      options9: [],
+      options6: [],
       value: [],
       placeholder: "",
       errors: [],
@@ -310,6 +314,15 @@ export default {
       hasFile: false,
       fileAccept: "image/*",
       boxtitle: this.$route.params.eventid ? this.$t('global.edit') : this.$t('global.add'),
+      buildingtypes: [
+        '0', 
+        this.$t('offer.buildingtype1'), 
+        this.$t('offer.buildingtype2'), 
+        this.$t('offer.buildingtype3'), 
+        this.$t('offer.buildingtype4'), 
+        this.$t('offer.buildingtype5'), 
+        this.$t('offer.buildingtype6')
+      ],
       event: {
         id: "",
         eventdate: this.$route.params.eventdate ? this.$route.params.eventdate : "",
@@ -336,6 +349,7 @@ export default {
         partner: null,
         amount: null,
         product_list_id: "",
+        order_id: "",
         files: [],
         filethumbs: [],
         productlistimgs: [],
@@ -424,14 +438,10 @@ export default {
                   this.options3.push(option);
                   break;
                 case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
                   this.options4.push(option);
                   break;
-                case 9:
-                  this.options9.push(option);
+                case 5:
+                  this.options6.push(option);
                   break;
                 default:
                   break;
@@ -440,7 +450,7 @@ export default {
             for (var index in res.data.productlists) {
               var option = {};
               option.id = res.data.productlists[index].id;
-              option.text = '#'+res.data.productlists[index].id+' '+this.formatNumberJPY(res.data.productlists[index].price);
+              option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
               this.options5.push(option);
             }
             if (this.event.id){
@@ -548,32 +558,78 @@ export default {
     errorPush(message) {
       this.errors.push(message);
     },
-    getProductlist(listid){
-      if(this.event.product_list_id != listid) {
-        this.event.comment = "";
-        this.event.productlistimgs = [];
+    getOrder() {
+      if(this.event.order_id) {
         this.$http({
-          url: '/admin/productlist/' + listid,
+          url: '/admin/estimate/' + this.event.order_id,
           method: 'GET'
         }).then(res =>  {
           if(res.data.id) {
-            console.log(res.data);
-            if(res.data.note) {
-              this.event.comment = res.data.note;
-              for(var key in res.data.items) {
-                if(res.data.items[key].image) {
-                  this.event.productlistimgs.push(res.data.items[key].image);
-                }
-              }
-              if(this.event.productlistimgs.length > 0) {
-                this.hasFile = true;
-              }
+            this.event.comment = res.data.manager_note;
+            this.event.eventdate = res.data.hopedate;
+            this.event.partner = res.data.partner;
+            this.event.phone = res.data.tel;
+            this.event.from.address = res.data.from_info.adr;
+            if(res.data.from_info.fbtype) {
+              this.event.from.address += ' ' + this.buildingtypes[res.data.from_info.fbtype];
+            }
+            this.event.to.address = res.data.to_info.adr;
+            if(res.data.to_info.tbtype) {
+              this.event.to.address += ' ' + this.buildingtypes[res.data.to_info.tbtype];
+            }
+            this.event.from.elevator = res.data.from_info.elevator;
+            this.event.to.elevator = res.data.to_info.elevator;
+            if(res.data.apm) {
+              this.event.apm = res.data.apm
+            } else {
+              this.event.apm = 5;
+            }
+            if(res.data.from_info.floor) {
+              this.event.from.floors = res.data.from_info.floor;
+            }
+            if(res.data.to_info.floor) {
+              this.event.to.floors = res.data.to_info.floor;
+            }
+            
+            for(var key in res.data.images) {
+              var bigfile = res.data.images[key].replace("_thumb", "");
+              this.event.files.push(bigfile);
+              this.event.filethumbs.push(res.data.images[key]);
+            }
+            if(this.event.files.length > 0) {
+              this.hasFile = true;
+            } else {
+              this.hasFile = false;
             }
           } else {
             console.log("no value");
           }
         })
       }
+    },
+    getProductlist(listid){
+      this.event.comment = "";
+      this.event.productlistimgs = [];
+      this.$http({
+        url: '/admin/productlist/' + listid,
+        method: 'GET'
+      }).then(res =>  {
+        if(res.data.id) {
+          if(res.data.note) {
+            this.event.comment = res.data.note;
+          }
+          for(var key in res.data.items) {
+            if(res.data.items[key].image) {
+              this.event.productlistimgs.push(res.data.items[key].image);
+            }
+          }
+          if(this.event.productlistimgs.length > 0) {
+            this.hasFile = true;
+          }
+        } else {
+          console.log("no value");
+        }
+      })
     },
     getEvent(eventid) {
       this.$http({
@@ -592,8 +648,9 @@ export default {
         this.event.to.address = res.data.details.to_address;
         this.event.phone = res.data.details.phone;
         this.event.wechat = res.data.details.wechat;
-        this.event.partner = res.data.partner_id;
+        this.event.partner = res.data.partner;
         this.event.product_list_id = res.data.product_list_id;
+        this.event.order_id = res.data.order_id;
         var filethumbs = JSON.parse(res.data.details.images);
         for(var key in filethumbs) {
           if(this.shopImg(filethumbs[key])) {
@@ -617,11 +674,6 @@ export default {
         this.event.to.elevator = res.data.details.to_elevator;
       })
     },
-    formatNumberJPY(number) {
-			if(number) {
-				return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
-			}
-		},
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){
         return true

@@ -5,16 +5,15 @@
             <ul class="nav nav-tabs">
                 <li :class="[otherMonth ? '' : 'active']"><a href="#quicknav" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.quicknav') }}</a></li>
                 <li :class="[otherMonth ? 'active' : '']"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
-                <li class=""><a href="#timeline" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.timeline') }}</a></li>
-                <li class=""><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
+                <li><a href="#timeline" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.timeline') }}</a></li>
+                <li v-if="auth && auth.group_id == 1"><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
             </ul>
             <div class="tab-content">
                 <div :class="[otherMonth ? '' : 'active', 'tab-pane']" id="quicknav">
                     <!-- quicknav -->
                     <div class="row margin">
                         <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
-                        <button type="button" class="btn btn-outline-primary"><i class="fa fa-money"></i> {{ $t('nav.estimateslist') }}</button>
-                        <button type="button" class="btn btn-outline-primary"><i class="fa fa-empire"></i> {{ $t('nav.tasklist') }}</button>
+                        <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
                     </div>
                     <!-- ./quicknav -->
                 </div>
@@ -35,7 +34,7 @@
                         <!-- /.timeline-label -->
                         <!-- timeline item -->
                         <li v-for="(log, key) in log_list" :key="log.id">
-                            <i :class="['fa', {'bg-blue' : log.log_type == 1, 'bg-yellow' : log.log_type == 2, 'bg-red' : log.log_type == 3}, { 'fa-calendar': log.type == 1, 'fa-book bg-aqua': log.type == 2, 'fa-comments': log.type == 3, 'fa-check-square-o bg-green': log.type == 6, 'fa-shopping-cart': log.type == 7 }]"></i>
+                            <i :class="['fa', {'bg-blue' : log.log_type == 1, 'bg-yellow' : log.log_type == 2, 'bg-red' : log.log_type == 3}, { 'fa-calendar': log.type == 1, 'fa-book bg-aqua': log.type == 2, 'fa-comments': log.type == 3, 'fa-check-square-o bg-green': log.type == 6, 'fa-shopping-cart': log.type == 7 , 'fa-comments-o': log.type == 8 }]"></i>
 
                             <div class="timeline-item">
                                 <span class="time"><i class="fa fa-clock-o"></i> {{ log.created_at | formatTime }}</span>
@@ -52,7 +51,8 @@
                                     <span v-else-if="log.type == 2">{{ $t('quicknav.typeofwork') }} </span>
                                     <span v-else-if="log.type == 3">{{ $t('event.comment') }} </span>
                                     <span v-else-if="log.type == 7">{{ $t('productlist.pagetitle') }} </span>
-                                    <span v-if="log.type == 1 || log.type == 7">#{{ log.obj_id }}</span>
+                                    <span v-else-if="log.type == 8">{{ $t('estimate.pagetitle') }} </span>
+                                    <span v-if="log.type == 1 || log.type == 7 || log.type == 8">#{{ log.obj_id }}</span>
                                 </h3>
                                 <div v-if="log.type == 3 || log.type == 6 || log.type == 7" class="timeline-body">
                                     <span>{{ log.content }}</span>
@@ -65,10 +65,11 @@
                         </li>
                     </ul>
                 </div>
-                <div class="tab-pane" id="statistics">
+                <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
                     <!-- statistics -->
                     <div class="box-header">
                         <h3 class="box-title">{{ showYm }}{{ $t('finance.finance') }}</h3>
+                        <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
                     </div>
                     <table class="table table-striped">
                         <tbody>
@@ -89,8 +90,8 @@
                                 <td>{{ $t('finance.zcother') }}:{{ fee.finance.zcother | formatNumberJPY }}</td>
                             </tr>
                             <tr v-if="fee.finance.fxjpy || fee.finance.fxrmb">
-                                <td>{{ $t('finance.fxjpy') }}:{{ fee.finance.fxjpy | formatNumberJPY }}</td>
-                                <td>{{ $t('finance.fxrmb') }}:{{ fee.finance.fxrmb | formatNumberJPY }}</td>
+                                <td>{{ $t('event.fxjpy') }}:{{ fee.finance.fxjpy | formatNumberJPY }}</td>
+                                <td>{{ $t('event.fxrmb') }}:{{ fee.finance.fxrmb | formatNumberJPY }}</td>
                             </tr>
                             <tr>
                             <td v-if="fee.finance.undone" colspan="2">{{ $t('finance.undone') }}:{{ fee.finance.undone | formatNumberJPY }}</td>
@@ -206,7 +207,7 @@ Vue.component('todo', {
 })
 
 export default {
-  props: ['otherMonth', 'showYmd', 'events', 'holidays', 'fee'],
+  props: ['otherMonth', 'showYmd', 'events', 'holidays', 'fee', 'auth'],
   data() {
     return {
         timelineYmd: this.showYmd,

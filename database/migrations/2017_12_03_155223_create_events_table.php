@@ -18,14 +18,14 @@ class CreateEventsTable extends Migration
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('order_id')->nullable();  // 見積もりid
             $table->unsignedInteger('product_list_id')->nullable();  // 购物单id
-            $table->unsignedInteger('partner_id')->nullable();  // 推广人id
+            $table->string('partner')->nullable();  // 推广人id
             $table->unsignedInteger('amount')->nullable();  // 报价
             $table->unsignedTinyInteger('total')->nullable();  // 总量
             $table->date('event_date');
             $table->unsignedTinyInteger('apm');
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
-            $table->json('types');
+            $table->text('types');
             $table->unsignedTinyInteger('status')->default(1);
             $table->softDeletes();
             $table->timestamps();

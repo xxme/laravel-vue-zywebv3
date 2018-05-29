@@ -181,7 +181,7 @@ tr.detail-row.open {
 
 .input-group, .select2-container--default.select2-container--focus .select2-selection--multiple,
 .select2-container--default .select2-selection--multiple {
-    height: 34px;
+    min-height: 34px;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__rendered,
 .input-group .form-control:not(:first-child):not(:last-child),

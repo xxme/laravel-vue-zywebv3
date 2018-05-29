@@ -8,7 +8,7 @@
 		</section>
 		<!-- Main content -->
 		<section class="content">
-      <universe-nav :otherMonth="otherMonth" :showYmd="showYmd" :events="events" :holidays="holidays" :fee="fee" v-on:update-events="get_events" @makered="makered"></universe-nav>
+      <universe-nav :otherMonth="otherMonth" :showYmd="showYmd" :events="events" :holidays="holidays" :fee="fee" :auth="auth" v-on:update-events="get_events" @makered="makered"></universe-nav>
       <div class="col-md-12 no-padding">
         <div v-if="events_list.length > 0">
           <div v-for="(event, key) in events_list" :key="event.id">
@@ -39,8 +39,8 @@
                   {{ $t('event.expenditure') }}:
                   <span v-if="event.expense.expenditure" class="marginr3">{{ formatNumberJPY(event.expense.expenditure) }}</span>
                   <span v-else class="marginr3">0</span>
-                  <div v-if="event.partner_id">
-                    <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner_id}}</small></h4>
+                  <div v-if="event.partner">
+                    <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner}}</small></h4>
                     <span v-else>
                       {{ $t('event.fx') }}
                       <span v-if="event.expense.fxrmb">{{ $t('event.rmb') }}:{{ formatNumberJPY(event.expense.fxrmb) }}</span>
@@ -50,8 +50,9 @@
                 </div>
                 <!-- /.user-block -->
                 <div class="box-tools">
-                  <button type="button" class="btn btn-box-tool" @click="makered(event.id)">
-                    <i class="fa fa-circle-o"></i></button>
+                  <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="makered(event.id)">
+                    <i class="fa fa-circle-o"></i>
+                  </button>
                   <button type="button" class="btn btn-box-tool" @click="event.status = !event.status">
                     <i v-if="event.status == 1" class="fa fa-minus"></i>
                     <i v-else class="fa fa-window-maximize"></i>
@@ -63,9 +64,9 @@
               
               <div v-show="event.status == 1">
               <div class="box-body" :data-box="'box' + event.id">
-                  <div v-if="event.expense">
-                    <img class="completed" src="/images/completed.png">
-                  </div>
+                <div v-if="event.expense">
+                  <img class="completed" src="/images/completed.png">
+                </div>
                 <h4 class="eventdate">
                   <span :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
                     {{ formatDateWithWeekname(event.event_date) }}
@@ -95,8 +96,9 @@
                 <h4>
                   <span v-if="event.amount" class="marginr3">{{ formatNumberJPY(event.amount) }}</span>
                   <small>
-                    <span v-if="event.partner_id" class="marginr3"><i class="fa fa-male"></i> #{{ event.partner_id }}</span>
-                    <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }}{{ formatNumberJPY(event.productlist.price) }}</router-link></span>
+                    <span v-if="event.partner" class="marginr3"><i class="fa fa-male"></i> {{ event.partner }}</span>
+                    <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }} {{ formatNumberJPY(event.productlist.price) }}</router-link></span>
+                    <span v-if="event.order_id" class="marginr3"><i class="fa fa-comments-o"></i> #{{ event.order_id }}</span>
                     <span v-if="event.details && event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  <a :href="'tel:' + event.details.phone">{{ event.details.phone }}</a></span>
                     <span v-if="event.details && event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }}</span>
                   </small>
@@ -131,9 +133,9 @@
                 <div v-if="event.images && event.images.length > 0" class="gallery">
                   <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8">
                     <template v-if="shopImg(imgfile)">
-                    <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
-                      <img :src="imgfile" :alt="imgfile">
-                    </a>
+                      <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
+                        <img :src="imgfile" :alt="imgfile">
+                      </a>
                     </template>
                     <template v-else>
                       <a :href="'/uploads/' + imgfile | toBiggerImg" class="thumbnail" :title="imgfile | truncate(25)">
@@ -148,7 +150,7 @@
                     <button class="btn btn-xs btn-warning" @click="$router.push('/admin/event/' + event.id + '/edit')">
                       <i class="fa fa-pencil"></i>
                     </button>
-                    <button class="btn btn-xs btn-success" @click="completeEvent(event.id)">
+                    <button class="btn btn-xs btn-success" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
                       <i class="ace-icon fa fa-check-square-o"></i>
                     </button>
                 </div>
@@ -191,8 +193,7 @@
           </div>
         </div>
         <div v-else>
-          <span id="eventrs">{{ $t('global.loading') }}</span><br />
-          <router-link to="/admin/event/create/"><i class="fa fa-plus-square"></i> Create event</router-link>
+          <span id="eventrs">{{ $t('global.loading') }}</span>
         </div>
       </div>
       <!-- /.col-md-12 -->
@@ -265,7 +266,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="payee">
+                  <div class="payee" v-if="auth && auth.group_id == 1">
                     <div class="col-xs-6 no-padding">
                       <select2 id="payee" :options="user_list" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
                     </div>
@@ -300,9 +301,8 @@
     </section>
   </div>
 </template>
-<script>
 
-import Vue from 'vue'
+<script>
 import moment from 'moment'
 import baguetteBox from 'baguettebox.js'
 import UniverseNav from '../Public/UniverseNav'
@@ -368,7 +368,7 @@ export default {
   methods: {
     get_events(ym) {
       this.events_list = [];
-      $('#eventrs').html('Loading...');
+      $('#eventrs').html(this.$t('global.loading'));
       this.$http({
           url: '/admin/events/' + ym,
           method: 'GET'
@@ -376,7 +376,7 @@ export default {
           this.holidays = res.data.holidays;
           this.resetFee();
           if(res.data.events.length == 0) {
-            $('#eventrs').html('No event in this month.');
+            $('#eventrs').html(this.$t('global.noRes'));
           } else {
             this.events_list = res.data.events;
             this.setEvents();
@@ -450,6 +450,9 @@ export default {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#001f3f';
+        } else if (this.events_list[i].types.indexOf(4) > -1) {
+          // 見積もり已完成  正在考虑
+          eventObj.color = '#A9A9A9';
         }
         this.events.push(eventObj);
 
@@ -462,11 +465,11 @@ export default {
               hasuserdata = true;
               if(this.events_list[i].expense) {
                 // completed
-                this.fee.users[index].total += this.events_list[i].expense.finalprice;
-                this.fee.users[index].completed += this.events_list[i].expense.finalprice;
+                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
+                this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
               } else {
                 // undone
-                this.fee.users[index].total += this.events_list[i].amount;
+                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
               }
             }
           }
@@ -492,20 +495,20 @@ export default {
           if(this.events_list[i].amount || this.events_list[i].expense) {
             if(this.events_list[i].expense) {
               // completed
-              this.fee.finance.total += this.events_list[i].expense.finalprice;
-              this.fee.finance.expenditure += this.events_list[i].expense.expenditure;
-              this.fee.finance.zctingche += this.events_list[i].expense.zctingche;
-              this.fee.finance.zccanyin += this.events_list[i].expense.zccanyin;
-              this.fee.finance.zcgaosu += this.events_list[i].expense.zcgaosu;
-              this.fee.finance.zcjiayou += this.events_list[i].expense.zcjiayou;
-              this.fee.finance.zcmaihuo += this.events_list[i].expense.zcmaihuo;
-              this.fee.finance.zcother += this.events_list[i].expense.zcother;
-              this.fee.finance.fxrmb += this.events_list[i].expense.fxrmb;
-              this.fee.finance.fxjpy += this.events_list[i].expense.fxjpy;
+              this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
+              this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
+              this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
+              this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
+              this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
+              this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
+              this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
+              this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
+              this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
+              this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
             } else {
               // undone
-              this.fee.finance.total += this.events_list[i].amount;
-              this.fee.finance.undone += this.events_list[i].amount;
+              this.fee.finance.total += parseInt(this.events_list[i].amount);
+              this.fee.finance.undone += parseInt(this.events_list[i].amount);
             }
           }
         }
@@ -640,7 +643,7 @@ export default {
           }
           this.completeinfo.eventid = eventid;
           this.completeinfo.eventkey = key;
-          if(this.events_list[key].partner_id) {
+          if(this.events_list[key].partner) {
             this.completeinfo.haspartner = true;
           } else {
             this.completeinfo.haspartner = false;
@@ -650,34 +653,38 @@ export default {
       this.showCompleteModal = true;
   },
     completedo() {
-      this.completeinfo.payee = $('#payee').val();
-      if(this.completeinfo.payee) {
-        if(this.completeinfo.sta == 1) {
-          var status = this.$t('event.notpayment');
-        } else {
-          var status = this.$t('event.paymented');
-        }
+      if($('#payee').val()) {
+        this.completeinfo.payee = $('#payee').val();
+      } else {
+        this.completeinfo.payee = this.auth.id;
+      }
+      if(this.completeinfo.sta == 1) {
+        var status = this.$t('event.notpayment');
+      } else {
+        var status = this.$t('event.paymented');
+      }
+      if(this.completeinfo.payee == this.auth.id) {
+        var payeename = this.$t('event.myself');
+      } else {
         for(var key in this.user_list) {
           if(this.user_list[key].id == this.completeinfo.payee) {
             var payeename = this.user_list[key].text;
           }
         }
-        if(this.completeinfo.price > 0) {
-          var finalprice = this.formatNumberJPY(this.completeinfo.price);
-        } else {
-          var finalprice = status = payeename = '';
-        }
-        if(window.confirm(this.$t('global.areYouSure') + 
-            payeename + ' ' + finalprice + status
-          )) {
-          this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
-            this.events_list[this.completeinfo.eventkey].expense = res.data;
-            this.events_list[this.completeinfo.eventkey].status = 2;
-            this.showCompleteModal = false;
-          })
-        }
+      }
+      if(this.completeinfo.price > 0) {
+        var finalprice = this.formatNumberJPY(this.completeinfo.price);
       } else {
-        alert(this.$t('event.payee') + this.$t('global.required'));
+        var finalprice = status = payeename = '';
+      }
+      if(window.confirm(this.$t('global.areYouSure') + 
+          payeename + ' ' + finalprice + status
+        )) {
+        this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
+          this.events_list[this.completeinfo.eventkey].expense = res.data;
+          this.events_list[this.completeinfo.eventkey].status = 2;
+          this.showCompleteModal = false;
+        })
       }
     },
     shopImg(img) {

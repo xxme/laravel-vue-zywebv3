@@ -18,10 +18,10 @@ class TypeGroupsSeeder extends Seeder
             ['name' => '特别注意', 'created_at' => $dt, 'updated_at' => $dt],
             ['name' => '物品总量', 'created_at' => $dt, 'updated_at' => $dt],
             ['name' => '物品结构', 'created_at' => $dt, 'updated_at' => $dt],
-            ['name' => '散件数量', 'created_at' => $dt, 'updated_at' => $dt],
-            ['name' => '无法装箱', 'created_at' => $dt, 'updated_at' => $dt],
-            ['name' => '带挂衣量', 'created_at' => $dt, 'updated_at' => $dt],
-            ['name' => '被子套数', 'created_at' => $dt, 'updated_at' => $dt],
+            // ['name' => '散件数量', 'created_at' => $dt, 'updated_at' => $dt],
+            // ['name' => '无法装箱', 'created_at' => $dt, 'updated_at' => $dt],
+            // ['name' => '带挂衣量', 'created_at' => $dt, 'updated_at' => $dt],
+            // ['name' => '被子套数', 'created_at' => $dt, 'updated_at' => $dt],
             ['name' => '车辆信息', 'created_at' => $dt, 'updated_at' => $dt],
         ]);
     }

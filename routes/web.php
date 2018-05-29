@@ -12,8 +12,14 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
+Route::get('/admintest', function () {
+    return redirect('/admin');
+});
+Route::get('/offer', 'PublicController@public')->name('offer');
+Route::get('/offer/{zipcode}', 'PublicController@public');
+Route::post('/offer', 'PublicController@createOffer');
 
 Auth::routes();
 
@@ -31,11 +37,18 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::resource('event', 'EventController');
         Route::resource('comment', 'CommentController');
         Route::resource('productlist', 'ProductListController');
+        Route::resource('estimate', 'EstimateController');
+        // vue
+        Route::get('/', 'AdminController@vue')->name('admin.main');
+        Route::get('/event/create', 'AdminController@vue');
+        Route::get('/event/create/{date}', 'AdminController@vue');
+        Route::get('/event/createbyproductlist/{listid}', 'AdminController@vue');
+        Route::get('/event/createbyorder/{orderid}', 'AdminController@vue');
+        Route::get('/finances', 'AdminController@vue');
+
         // get
-        Route::get('/', 'AdminController@dashboard')->name('admin.main');
         Route::get('/events/{ym}', 'EventController@index');
-        Route::get('/event/create/{date}', 'EventController@create');
-        Route::get('/event/createbyproductlist/{listid}', 'EventController@create');
+        Route::get('/events/finances/{type}', 'EventController@finances');
         Route::get('/user/index/{id}', 'UserController@index')->name('admin.userindex');
         Route::get('/user/create/{id}', 'UserController@create');
         Route::get('/user/edit/{id}', 'UserController@edit')->name('admin.useredit');
@@ -46,6 +59,10 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         });
         Route::get('/ajaxlogs/{ymd}', 'AdminController@getLogByYmd');
         Route::get('/pdlist/getlists/{type}', 'ProductListController@getlists');
+        Route::get('/estimates/{type}', 'EstimateController@getlists');
+        Route::get('/logs', 'AdminController@logsindex');
+        Route::get('/logs/{ym}', 'AdminController@logsindex');
+        Route::get('/logs/{ym}/{action}', 'AdminController@logsindex');
         // post
         Route::post('/user/uploadprofile', 'UserController@updateprofile');
         Route::post('/user/update', 'UserController@update');
@@ -54,6 +71,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
         Route::post('/uploadimg', 'AdminController@updateImage');
         Route::post('/event/complete', 'EventController@complete');
+        Route::post('/event/received', 'EventController@setReceived');
     });
     // Route::post('logout', 'LoginController@logout');
 });

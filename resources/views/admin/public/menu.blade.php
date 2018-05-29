@@ -42,23 +42,23 @@
           <i class="fa fa-shopping-cart"></i> 
           <span>{{ __('messages.menushoppinglist') }}</span>
           <span class="pull-right-container">
-            <small class="label pull-right bg-green">16</small>
+            <small class="label pull-right bg-green">{{ $countproductlist }}</small>
           </span>
         </a>
       </li>
       <li>
-        <a href="#">
-          <i class="fa fa-money"></i> 
+        <a href="{{ url('admin/estimate') }}">
+          <i class="fa fa-comments-o"></i> 
           <span>{{ __('messages.estimateslist') }}</span>
           <span class="pull-right-container">
-            <small class="label pull-right label-primary">7</small>
+            <small class="label pull-right label-primary">{{ $countoffers }}</small>
           </span>
         </a>
       </li>
       <li>
-        <a href="#">
-          <i class="fa fa-recycle"></i> 
-          <span>{{ __('messages.recycle') }}</span>
+        <a href="{{ url('admin/logs') }}">
+          <i class="fa fa-globe"></i> 
+          <span>{{ __('messages.timeline') }}</span>
         </a>
       </li>
       <!-- <li class="header">LABELS</li>

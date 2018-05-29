@@ -26,6 +26,8 @@ return [
     'eventsSubTitle' => '凡事预则立　不预则废',
     'typemanage' => '分类管理',
     'usermanage' => '用户管理',
+    'logs' => '航行记录',
+    'typeofwork' => '工作分类',
     // nav / page titles and sub titles end
 
     // product start
@@ -47,5 +49,10 @@ return [
     'success' => '成功',
     'error' => '错误',
     'totalprice' => '总价',
+    'actiondatetime' => '操作时间',
+    'actionadd' => '创建',
+    'actionupdate' => '更新',
+    'actiondel' => '删除',
+    "comment" => "留言",
     'manageronly' => '舰长Only'
 ];

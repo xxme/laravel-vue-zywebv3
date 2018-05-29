@@ -16,10 +16,10 @@ class CreateEventDetailsTable extends Migration
         Schema::create('event_details', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('event_id');
-            $table->json('trucks')->nullable();
-            $table->json('carefully')->nullable();
-            $table->json('aboutgoods')->nullable();
-            $table->json('images')->nullable();
+            $table->text('trucks')->nullable();
+            $table->text('carefully')->nullable();
+            $table->text('aboutgoods')->nullable();
+            $table->text('images')->nullable();
             $table->string('from_address')->nullable();
             $table->unsignedTinyInteger('from_elevator')->nullable();
             $table->unsignedTinyInteger('from_floor')->nullable();

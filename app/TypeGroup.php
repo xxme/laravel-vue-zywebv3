@@ -8,6 +8,6 @@ class TypeGroup extends Model
 {
     public function types()
     {
-        return $this->hasMany('App\Type', 'group_id')->orderBy('listorder');
+        return $this->hasMany('App\Type', 'group_id')->orderBy('listorder', 'asc')->orderBy('id', 'asc');
     }
 }

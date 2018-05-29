@@ -26,7 +26,6 @@
         <div class="form-group is-hide pwddiv @if(!empty($errors->first('password'))) has-error @endif">
           <label for="inputPassword1">Password</label>
           <div class="input-group">
-            <div class="input-group-addon eye"><i class="fa fa-eye"></i></div> 
             <input type="password" class="form-control" id="inputPassword1" name="password" placeholder="Password">
           </div>
           <span class="help-block">{{ $errors->first('password') }}</span>

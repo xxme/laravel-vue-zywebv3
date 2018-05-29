@@ -67,7 +67,7 @@ class UserController extends Controller
         //rules
         $rules = [
             'name' => 'required|min:2|max:30',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users',
             'password' => 'required|min:6|max:32'
         ];
         //validation
@@ -140,7 +140,7 @@ class UserController extends Controller
         //rules
         $rules = [
             'name'=>'required|min:2|max:30',
-            'email'=>'required|email',
+            'email'=>'required|email|unique:users,email,'.$inputs['userid'],
         ];
         if($inputs['changepw'] == 1){
             $rules['password'] = 'required|min:6|max:32';

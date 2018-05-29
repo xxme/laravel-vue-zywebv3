@@ -12,7 +12,7 @@
         <!-- quicknav -->
         <div class="row margin">
           <button type="button" class="btn bg-olive"><i class="fa fa-shopping-cart"></i> {{ __('messages.shoppinglist') }}</button>
-          <button type="button" class="btn btn-primary"><i class="fa fa-money"></i> {{ __('messages.estimateslist') }}</button>
+          <button type="button" class="btn btn-primary"><i class="fa fa-comments-o"></i> {{ __('messages.estimateslist') }}</button>
           <button type="button" class="btn bg-purple"><i class="fa fa-empire"></i> {{ __('messages.tasklist') }}</button>
           <button type="button" class="btn btn-info"><i class="fa fa-recycle"></i> {{ __('messages.recycle') }}</button>
         </div>

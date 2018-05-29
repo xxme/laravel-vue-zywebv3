@@ -15,6 +15,9 @@ import EventsIndex from './components/Events/Index.vue';
 import EventForm from './components/Events/EventForm.vue';
 import ProductListsIndex from './components/ProductLists/Index.vue';
 import ProductListForm from './components/ProductLists/ListForm.vue';
+import EstimateIndex from './components/Estimates/Index.vue';
+import Finances from './components/Events/Money.vue';
+import Offer from './components/Public/Offer.vue';
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -30,15 +33,24 @@ Vue.use(VueI18n);
 const router = new VueRouter({
     mode: 'history',
     routes: [
+        // For admin
         // TOPページ
         { path: '/admin', component: EventsIndex },
         { path: '/admin/event/create', component: EventForm },
         { path: '/admin/event/create/:eventdate', component: EventForm },
         { path: '/admin/event/createbyproductlist/:listid', component: EventForm },
+        { path: '/admin/event/createbyorder/:orderid', component: EventForm },
         { path: '/admin/event/:eventid/edit/', component: EventForm },
         { path: '/admin/productlist', component: ProductListsIndex },
         { path: '/admin/productlist/create', component: ProductListForm },
         { path: '/admin/productlist/:listid/edit/', component: ProductListForm },
+        { path: '/admin/estimate', component: EstimateIndex },
+        { path: '/admin/finances', component: Finances },
+
+        // For customer
+        { path: '/offer', component: Offer },
+        { path: '/offer/:partner', component: Offer },
+        { path: '/offerzip/:zipcode', component: Offer },
     ]
 });
 
@@ -55,6 +67,11 @@ const app = new Vue({
     methods: {
         handleClick_changeLanguage(lang) {
             this.$i18n.locale = lang;
+        },
+        formatNumberJPY(number) {
+            if(number) {
+                return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
+            }
         }
     }
 });

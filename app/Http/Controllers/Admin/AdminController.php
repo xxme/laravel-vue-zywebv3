@@ -33,65 +33,9 @@ class AdminController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function vue()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        return view('admin.dashboard');
     }
 
     // post only
@@ -136,5 +80,31 @@ class AdminController extends Controller
             ->orderBy('created_at', 'DESC')
             ->with(['user'])->get();
         return $logs;
+    }
+
+    public function logsindex($ym = null, $action = 0) {
+        $data['pageTitle'] = __('messages.logs');
+        if(!isset($ym)) {
+            // 获取当月日志
+            $dt = Carbon::now();
+            $month = $dt->month < 10 ? '0'.$dt->month:$dt->month;
+            $ym = $dt->year.'-'.$month;
+        } else {
+            $dt = new Carbon($ym);
+        }
+        $data['nextmonth'] = $dt->addMonth()->format('Y-m');
+        $data['prevmonth'] = $dt->subMonth(2)->format('Y-m');
+        $data['subTitle'] = $ym;
+        $whereData = [
+            ['created_at', 'LIKE', "$ym%"]
+        ];
+        if($action) {
+            array_push($whereData, ['log_type', $action]);
+        }
+        $data['logs'] = AdminLog::where($whereData)
+        ->orderBy('created_at', 'DESC')
+        ->with(['user'])->paginate(20);
+
+        return view('admin.others.logs', $data);
     }
 }

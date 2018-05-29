@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Event;
 use App\EventDetail;
@@ -11,6 +10,7 @@ use App\Comment;
 use App\Type;
 use App\User;
 use App\ProductList;
+use App\Offer;
 use App\Expense;
 
 class EventController extends Controller
@@ -85,16 +85,6 @@ class EventController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create($date = null)
-    {
-        return view('admin.dashboard');
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -107,7 +97,8 @@ class EventController extends Controller
         $user_id = auth()->user()->id;
         $objEvent->user_id = $user_id;
         $objEvent->product_list_id = $inputs['product_list_id'];
-        $objEvent->partner_id = $inputs['partner'];
+        $objEvent->order_id = $inputs['order_id'];
+        $objEvent->partner = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
         $objEvent->total = $inputs['total'];
         $objEvent->event_date = $inputs['eventdate'];
@@ -144,6 +135,11 @@ class EventController extends Controller
                 $objProductList = ProductList::find($inputs['product_list_id']);
                 $objProductList->event_id = $event_id;
                 $objProductList->save();
+            }
+            if($inputs['order_id']) {
+                $objOffer = Offer::find($inputs['order_id']);
+                $objOffer->event_id = $event_id;
+                $objOffer->save();
             }
         }
         return response()->json($objEvent);
@@ -188,7 +184,7 @@ class EventController extends Controller
             $objList->save();
         }
         $objEvent->product_list_id = $inputs['product_list_id'];
-        $objEvent->partner_id = $inputs['partner'];
+        $objEvent->partner = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
         $objEvent->total = $inputs['total'];
         $objEvent->event_date = $inputs['eventdate'];
@@ -241,8 +237,17 @@ class EventController extends Controller
         $obj = Event::findOrFail($id);
         if($obj->product_list_id) {
             $objList = ProductList::findOrFail($obj->product_list_id);
-            \AdminLog::saveLog($obj->product_list_id, config('const.log_shopping_list'), config('const.log_action_del'), __('messages.totalprice').' ￥'.number_format($objList->price));
-            ProductList::destroy($obj->product_list_id);
+            if($objList) {
+                \AdminLog::saveLog($obj->product_list_id, config('const.log_shopping_list'), config('const.log_action_del'), __('messages.totalprice').' ￥'.number_format($objList->price));
+                ProductList::destroy($obj->product_list_id);
+            }
+        }
+        if($obj->order_id) {
+            $objOffer = Offer::findOrFail($obj->order_id);
+            if($objOffer) {
+                \AdminLog::saveLog($obj->order_id, config('const.log_estimates'), config('const.log_action_del'));
+                Offer::destroy($obj->order_id);
+            }
         }
         \AdminLog::saveLog($id, config('const.log_event'), config('const.log_action_del'), $obj->event_date);
         return Event::destroy($id);
@@ -283,5 +288,21 @@ class EventController extends Controller
         }
 
         return Expense::with(['user'])->find($objExpense->id);
+    }
+
+    // $type 1 入金していない 2 入金済み
+    public function finances($type) {
+        $auth = auth()->user();
+        if($auth->group_id != 1) {
+            return "403";
+        }
+        $finances = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
+        return $finances;
+    }
+
+    public function setReceived(Request $request) {
+        $ids = $request->all();
+        $finances = Expense::whereIn('id', $ids)->update(['status' => 2]);
+        return $finances;
     }
 }
