@@ -23,7 +23,10 @@ class EventController extends Controller
     public function index($ym)
     {
         $init['events'] = Event::where('event_date', 'LIKE', "$ym%")
-            ->orderBy('event_date', 'ASC')->orderBy('id', 'ASC')
+            ->orderBy('event_date', 'ASC')
+            ->orderBy('status', 'ASC')
+            ->orderBy('apm', 'ASC')
+            ->orderBy('id', 'ASC')
             ->with(['comments' => function ($query) {
                 $query->with('user');
             }, 'expense' => function ($query) {
@@ -296,7 +299,18 @@ class EventController extends Controller
         if($auth->group_id != 1) {
             return "403";
         }
-        $finances = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
+        $finances['data'] = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
+        $userprice = Expense::where('finalprice', '>', 0)->where('status', $type)
+        ->groupBy('user_id')
+        ->selectRaw('sum(finalprice) as sum, user_id')
+        ->pluck('sum','user_id');
+        
+        foreach($userprice as $key=>$up) {
+            $uname = User::find($key,['name']);
+            $user[$uname['name']] = $up;
+        }
+        $finances['user'] = $user;
+
         return $finances;
     }
 

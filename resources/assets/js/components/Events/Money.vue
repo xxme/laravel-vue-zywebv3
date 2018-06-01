@@ -10,6 +10,17 @@
 		<section class="content">
       <sample-nav></sample-nav>
 			<div class="box">
+        <div class="col-xs-12" v-if="type == 1">
+          <h5>未入金统计</h5>
+          <table class="table">
+            <tbody>
+              <tr v-for="(price, name) in user">
+              <td>{{ name }}</td>
+              <td>{{ price | formatNumberJPY }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 				<div class="box-header">
 					<label :class="{ checked: type == 2 }">
 						<input type="radio" value="2" v-model="type">
@@ -74,6 +85,7 @@ export default {
       checkedIds: [],
       checkedAmount: 0,
       loadingShow: false,
+      user: [],
       finances: {
         data: {
           length: 0
@@ -92,10 +104,11 @@ export default {
           alert(this.$t('global.manageronly'));
           this.$router.push('/admin');
         }
-        if(res.data.data.length == 0) {
+        if(res.data.data.data.length == 0) {
           $('#listrs').html(this.$t('global.noRes'));
         } else {
-          this.finances = res.data;
+          this.finances = res.data.data;
+          this.user = res.data.user;
         }
       })
     },
