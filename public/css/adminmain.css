@@ -215,6 +215,11 @@ tr.detail-row.open {
 .completedevent {
     display: none;
 }
+.completedeventbg {
+    background-image: url('../images/completed.png');
+    background-repeat: no-repeat;
+    background-position: top right;
+}
 
 @media screen and (min-width: 490px) {
     .costcontrol {

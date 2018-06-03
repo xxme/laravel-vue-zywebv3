@@ -1,304 +1,311 @@
 <template>
   <div>
-    <section class="content-header">
-			<h1>
-				{{ $t('event.pagetitle') }}
-				<small>{{ $t('event.subtitle') }}</small>
-			</h1>
-		</section>
-		<!-- Main content -->
-		<section class="content">
-      <universe-nav :otherMonth="otherMonth" :showYmd="showYmd" :events="events" :holidays="holidays" :fee="fee" :auth="auth" v-on:update-events="get_events" @makered="makered"></universe-nav>
-      <div class="col-md-12 no-padding">
-        <div v-if="events_list.length > 0">
-          <div v-for="(event, key) in events_list" :key="event.id">
-            <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
-                <a :name="event.event_date"></a>
-                <h4>{{ formatDateWithWeekname(event.event_date) }} <router-link :to="'/admin/event/create/'+event.event_date"><i class="fa fa-plus-square pull-right"></i></router-link></h4>
+    <div>
+      <section class="content-header">
+        <h1>
+          {{ $t('event.pagetitle') }}
+          <span class="pull-right">
+            <div class="switch">
+            <small>{{ $t('finance.completed') }}</small>
+              <input id="switch" v-model="showCompleted" type="checkbox">
+              <label for="switch"></label>
             </div>
-            
-            <!-- box -->
-            <div class="box box-widget" :id="'event' + event.id">
-              <!-- box-header -->
-              <div class="box-header with-border">
-                <div v-if="event.status == 1 || !event.expense" class="user-block">
-                  <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg" :alt="event.user.name">
-                  <img v-else class="img-circle" src="/images/no-image-available.jpeg" :alt="event.user.name">
-                  <span class="username">{{ event.user.name }}</span>
-                  <span class="description">
-                    #{{event.id}} {{ event.created_at }}
-                    <span v-if="event.created_at != event.updated_at"> / {{ event.updated_at }} </span>
-                    <span v-if="!event.expense" class="paddingl3"><i class="fa fa-trash-o red" @click="deleteevent(event.id, event.product_list_id)"></i></span>
-                  </span>
+          </span>
+        </h1>
+      </section>
+      <!-- Main content -->
+      <section class="content">
+        <universe-nav :otherMonth="otherMonth" :showYmd="showYmd" :events="events" :holidays="holidays" :fee="fee" :auth="auth" v-on:update-events="get_events" @makered="makered" @showform="createEvent"></universe-nav>
+        <div class="col-md-12 no-padding" v-show="!showQuickForm">
+          <div v-if="events_list.length > 0">
+            <div v-for="(event, key) in events_list" :key="event.id">
+              <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
+                  <a :id="'date'+event.event_date"></a>
+                  <h4>{{ formatDateWithWeekname(event.event_date) }} <button class="btn btn-primary btn-xs pull-right" @click="createEvent(event.event_date)"><i class="fa fa-plus"></i></button></h4>
+              </div>
+              
+              <!-- box -->
+              <div :class="[event.status == 1 || showCompleted ? '' : 'completedevent', 'box box-widget']" :id="'event' + event.id">
+                <!-- box-header -->
+                <div class="box-header with-border">
+                  <div v-if="event.status == 1 || !event.expense" class="user-block">
+                    <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg" :alt="event.user.name">
+                    <img v-else class="img-circle" src="/images/no-image-available.jpeg" :alt="event.user.name">
+                    <span class="username">{{ event.user.name }}</span>
+                    <span class="description">
+                      #{{event.id}} {{ event.created_at }}
+                      <span v-if="event.created_at != event.updated_at"> / {{ event.updated_at }} </span>
+                      <span v-if="!event.expense" class="paddingl3"><i class="fa fa-trash-o red" @click="deleteevent(event.id, event.product_list_id)"></i></span>
+                    </span>
+                  </div>
+                  <div v-else class="user-block">
+                    <span v-if="event.expense.user.name">{{ event.expense.user.name }}</span>
+                    {{ $t('event.receipt') }}:
+                    <span v-if="event.expense.finalprice" class="marginr3">{{ formatNumberJPY(event.expense.finalprice) }}</span>
+                    <span v-else class="marginr3">0</span>
+                    {{ $t('event.expenditure') }}:
+                    <span v-if="event.expense.expenditure" class="marginr3">{{ formatNumberJPY(event.expense.expenditure) }}</span>
+                    <span v-else class="marginr3">0</span>
+                    <div v-if="event.partner">
+                      <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner}}</small></h4>
+                      <span v-else>
+                        {{ $t('event.fx') }}
+                        <span v-if="event.expense.fxrmb">{{ $t('event.rmb') }}:{{ formatNumberJPY(event.expense.fxrmb) }}</span>
+                        <span v-if="event.expense.fxjpy">{{ $t('event.jpy') }}:{{ formatNumberJPY(event.expense.fxjpy) }}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <!-- /.user-block -->
+                  <div class="box-tools">
+                    <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="makered(event.id)">
+                      <i class="fa fa-circle-o"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" @click="event.status = !event.status">
+                      <i v-if="event.status == 1" class="fa fa-minus"></i>
+                      <i v-else class="fa fa-window-maximize"></i>
+                    </button>
+                  </div>
+                  <!-- /.box-tools -->
                 </div>
-                <div v-else class="user-block">
-                  <span v-if="event.expense.user.name">{{ event.expense.user.name }}</span>
-                  {{ $t('event.receipt') }}:
-                  <span v-if="event.expense.finalprice" class="marginr3">{{ formatNumberJPY(event.expense.finalprice) }}</span>
-                  <span v-else class="marginr3">0</span>
-                  {{ $t('event.expenditure') }}:
-                  <span v-if="event.expense.expenditure" class="marginr3">{{ formatNumberJPY(event.expense.expenditure) }}</span>
-                  <span v-else class="marginr3">0</span>
-                  <div v-if="event.partner">
-                    <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner}}</small></h4>
+                <!-- /.box-header -->
+                
+                <div v-show="event.status == 1" :class="[event.expense ? 'completedeventbg' : '']">
+                <div class="box-body" :data-box="'box' + event.id">
+                  <h4 class="eventdate">
+                    <span :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
+                      {{ formatDateWithWeekname(event.event_date) }}
+                    </span>
+                    
+                    <span v-if="event.apm == 1">{{ $t('event.morning') }}</span>
+                    <span v-else-if="event.apm == 2">{{ $t('event.afternoon') }}</span>
+                    <span v-else-if="event.apm == 3">{{ $t('event.night') }}</span>
+                    <span v-else-if="event.apm == 4">{{ $t('event.alldayT') }}</span>
                     <span v-else>
-                      {{ $t('event.fx') }}
-                      <span v-if="event.expense.fxrmb">{{ $t('event.rmb') }}:{{ formatNumberJPY(event.expense.fxrmb) }}</span>
-                      <span v-if="event.expense.fxjpy">{{ $t('event.jpy') }}:{{ formatNumberJPY(event.expense.fxjpy) }}</span>
+                      <span v-if="event.start_time">{{ event.start_time | formatTime(event.event_date) }}</span>
+                      〜
+                      <span v-if="event.end_time">{{ event.end_time | formatTime(event.event_date) }}</span>
+                    </span>
+                  </h4>
+                  <h5 v-if="event.typenames && event.typenames.length > 0">
+                    <span v-if="event.trucks && event.trucks.length > 0"><span v-for="truckname in event.trucks" class="label label-success"><i class="fa fa-truck"></i> {{ truckname }}</span></span>
+                    <span v-for="typename in event.typenames" class="label label-success"><i class="fa fa-tag"></i> {{ typename }}</span>
+                  </h5>
+                  <h5 v-if="event.carefulnames && event.carefulnames.length > 0">
+                    <span v-for="carefulname in event.carefulnames" class="label label-danger"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }}</span>
+                  </h5>
+                  <h5 v-if="(event.goods && event.goods.length > 0) || (event.totalname && event.totalname.length > 0)">
+                    <span v-if="event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ event.totalname }}</span>
+                    <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
+                  </h5>
+                  <h4>
+                    <span v-if="event.amount" class="marginr3">{{ formatNumberJPY(event.amount) }}</span>
+                    <small>
+                      <span v-if="event.partner" class="marginr3"><i class="fa fa-male"></i> {{ event.partner }}</span>
+                      <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }} {{ formatNumberJPY(event.productlist.price) }}</router-link></span>
+                      <span v-if="event.order_id" class="marginr3"><i class="fa fa-comments-o"></i> #{{ event.order_id }}</span>
+                      <span v-if="event.details && event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  <a :href="'tel:' + event.details.phone">{{ event.details.phone }}</a></span>
+                      <span v-if="event.details && event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }}</span>
+                    </small>
+                  </h4>
+
+                  <div class="row invoice-info">
+                    <div v-if="event.details && event.details.from_address" class="col-sm-6 invoice-col">
+                      From
+                      <address>
+                        <strong>{{ event.details.from_address }}</strong>
+                        <span v-if="event.details.from_elevator == 1"> {{ $t('event.elevator') }}</span>
+                        <span v-else-if="event.details.from_elevator == 2"> {{ $t('event.stairs') }}</span>
+                        <span v-else-if="event.details.from_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                        <span v-if="event.details.from_floor > 0 && event.details.from_floor < 10"> {{ event.details.from_floor }} {{ $t('event.floor') }}</span>
+                        <span v-else-if="event.details.from_floor > 9"> {{ event.details.from_floor }}+ {{ $t('event.floor') }}</span>
+                      </address>
+                    </div>
+                    <!-- /.col -->
+                    <div v-if="event.details && event.details.to_address" class="col-sm-6 invoice-col">
+                      To
+                      <address>
+                        <strong>{{ event.details.to_address }}</strong>
+                        <span v-if="event.details.to_elevator == 1"> {{ $t('event.elevator') }}</span>
+                        <span v-else-if="event.details.to_elevator == 2"> {{ $t('event.stairs') }}</span>
+                        <span v-else-if="event.details.to_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
+                        <span v-if="event.details.to_floor > 0 && event.details.to_floor < 10"> {{ event.details.to_floor }} {{ $t('event.floor') }}</span>
+                        <span v-else-if="event.details.to_floor > 9"> {{ event.details.to_floor }}+ {{ $t('event.floor') }}</span>
+                      </address>
+                    </div>
+                    <!-- /.col -->
+                  </div>
+                  <div v-if="event.images && event.images.length > 0" class="gallery">
+                    <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8">
+                      <template v-if="shopImg(imgfile)">
+                        <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
+                          <img :src="imgfile" :alt="imgfile">
+                        </a>
+                      </template>
+                      <template v-else>
+                        <a :href="'/uploads/' + imgfile | toBiggerImg" class="thumbnail" :title="imgfile | truncate(25)">
+                          <img :src="'/uploads/' + imgfile" :alt="imgfile">
+                        </a>
+                      </template>
+                    </div>
+                  </div>
+
+                  <span class="text-muted">{{ event.comments.length }} comments</span>
+                  <div class="pull-right">
+                      <button class="btn btn-xs btn-warning" @click="editEvent(event.id)">
+                        <i class="fa fa-pencil"></i>
+                      </button>
+                      <button class="btn btn-xs btn-success" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
+                        <i class="ace-icon fa fa-check-square-o"></i>
+                      </button>
+                  </div>
+                </div>
+                  
+                <!-- /.box-body -->
+                <div v-if="event.comments.length > 0" class="box-footer box-comments">
+                  <div v-for="comment in event.comments" class="box-comment">
+                    <!-- User image -->
+                    <img v-if="comment.user.profileimg" class="img-circle img-sm" :src="'/uploads/profiles/' + comment.user.profileimg">
+                    <img v-else class="img-circle img-sm" src="/images/no-image-available.jpeg">
+
+                    <div class="comment-text">
+                      <span class="username">
+                        {{ comment.user.name }} <span class="text-muted">{{ comment.created_at }}</span>
+                        <span class="pull-right"><i class="fa fa-trash-o btn-box-tool red" @click="deletecomment(comment.id)"></i></span>
+                      </span><!-- /.username -->
+                      {{ comment.content }}
+                    </div>
+                    <!-- /.comment-text -->
+                  </div>
+                  <!-- /.box-comment -->
+                </div>
+                <!-- /.box-footer -->
+                <div class="box-footer">
+                  <img v-if="auth.profileimg" class="img-responsive img-circle img-sm" :src="'/uploads/profiles/' + auth.profileimg">
+                  <img v-else class="img-responsive img-circle img-sm" src="/images/no-image-available.jpeg">
+                  <!-- .img-push is used to add margin to elements next to floating images -->
+                  <div class="img-push input-group">
+                    <input type="text" class="form-control" :id="'comment' + event.id" placeholder="Press enter to post comment">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
                     </span>
                   </div>
                 </div>
-                <!-- /.user-block -->
-                <div class="box-tools">
-                  <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="makered(event.id)">
-                    <i class="fa fa-circle-o"></i>
-                  </button>
-                  <button type="button" class="btn btn-box-tool" @click="event.status = !event.status">
-                    <i v-if="event.status == 1" class="fa fa-minus"></i>
-                    <i v-else class="fa fa-window-maximize"></i>
-                  </button>
-                </div>
-                <!-- /.box-tools -->
+                <!-- /.box-footer -->
               </div>
-              <!-- /.box-header -->
-              
-              <div v-show="event.status == 1">
-              <div class="box-body" :data-box="'box' + event.id">
-                <div v-if="event.expense">
-                  <img class="completed" src="/images/completed.png">
-                </div>
-                <h4 class="eventdate">
-                  <span :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
-                    {{ formatDateWithWeekname(event.event_date) }}
-                  </span>
-                  
-                  <span v-if="event.apm == 1">{{ $t('event.morning') }}</span>
-                  <span v-else-if="event.apm == 2">{{ $t('event.afternoon') }}</span>
-                  <span v-else-if="event.apm == 3">{{ $t('event.night') }}</span>
-                  <span v-else-if="event.apm == 4">{{ $t('event.alldayT') }}</span>
-                  <span v-else>
-                    <span v-if="event.start_time">{{ event.start_time | formatTime(event.event_date) }}</span>
-                    〜
-                    <span v-if="event.end_time">{{ event.end_time | formatTime(event.event_date) }}</span>
-                  </span>
-                </h4>
-                <h5 v-if="event.typenames && event.typenames.length > 0">
-                  <span v-if="event.trucks && event.trucks.length > 0"><span v-for="truckname in event.trucks" class="label label-success"><i class="fa fa-truck"></i> {{ truckname }}</span></span>
-                  <span v-for="typename in event.typenames" class="label label-success"><i class="fa fa-tag"></i> {{ typename }}</span>
-                </h5>
-                <h5 v-if="event.carefulnames && event.carefulnames.length > 0">
-                  <span v-for="carefulname in event.carefulnames" class="label label-danger"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }}</span>
-                </h5>
-                <h5 v-if="(event.goods && event.goods.length > 0) || (event.totalname && event.totalname.length > 0)">
-                  <span v-if="event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ event.totalname }}</span>
-                  <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
-                </h5>
-                <h4>
-                  <span v-if="event.amount" class="marginr3">{{ formatNumberJPY(event.amount) }}</span>
-                  <small>
-                    <span v-if="event.partner" class="marginr3"><i class="fa fa-male"></i> {{ event.partner }}</span>
-                    <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }} {{ formatNumberJPY(event.productlist.price) }}</router-link></span>
-                    <span v-if="event.order_id" class="marginr3"><i class="fa fa-comments-o"></i> #{{ event.order_id }}</span>
-                    <span v-if="event.details && event.details.phone" class="marginr3"><i class="fa fa-phone"></i>  <a :href="'tel:' + event.details.phone">{{ event.details.phone }}</a></span>
-                    <span v-if="event.details && event.details.wechat"><i class="fa fa-wechat"></i>  {{ event.details.wechat }}</span>
-                  </small>
-                </h4>
-
-                <div class="row invoice-info">
-                  <div v-if="event.details && event.details.from_address" class="col-sm-6 invoice-col">
-                    From
-                    <address>
-                      <strong>{{ event.details.from_address }}</strong>
-                      <span v-if="event.details.from_elevator == 1"> {{ $t('event.elevator') }}</span>
-                      <span v-else-if="event.details.from_elevator == 2"> {{ $t('event.stairs') }}</span>
-                      <span v-else-if="event.details.from_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
-                      <span v-if="event.details.from_floor > 0 && event.details.from_floor < 10"> {{ event.details.from_floor }} {{ $t('event.floor') }}</span>
-                      <span v-else-if="event.details.from_floor > 9"> {{ event.details.from_floor }}+ {{ $t('event.floor') }}</span>
-                    </address>
-                  </div>
-                  <!-- /.col -->
-                  <div v-if="event.details && event.details.to_address" class="col-sm-6 invoice-col">
-                    To
-                    <address>
-                      <strong>{{ event.details.to_address }}</strong>
-                      <span v-if="event.details.to_elevator == 1"> {{ $t('event.elevator') }}</span>
-                      <span v-else-if="event.details.to_elevator == 2"> {{ $t('event.stairs') }}</span>
-                      <span v-else-if="event.details.to_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
-                      <span v-if="event.details.to_floor > 0 && event.details.to_floor < 10"> {{ event.details.to_floor }} {{ $t('event.floor') }}</span>
-                      <span v-else-if="event.details.to_floor > 9"> {{ event.details.to_floor }}+ {{ $t('event.floor') }}</span>
-                    </address>
-                  </div>
-                  <!-- /.col -->
-                </div>
-                <div v-if="event.images && event.images.length > 0" class="gallery">
-                  <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8">
-                    <template v-if="shopImg(imgfile)">
-                      <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
-                        <img :src="imgfile" :alt="imgfile">
-                      </a>
-                    </template>
-                    <template v-else>
-                      <a :href="'/uploads/' + imgfile | toBiggerImg" class="thumbnail" :title="imgfile | truncate(25)">
-                        <img :src="'/uploads/' + imgfile" :alt="imgfile">
-                      </a>
-                    </template>
-                  </div>
-                </div>
-
-                <span class="text-muted">{{ event.comments.length }} comments</span>
-                <div class="pull-right">
-                    <button class="btn btn-xs btn-warning" @click="$router.push('/admin/event/' + event.id + '/edit')">
-                      <i class="fa fa-pencil"></i>
-                    </button>
-                    <button class="btn btn-xs btn-success" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
-                      <i class="ace-icon fa fa-check-square-o"></i>
-                    </button>
-                </div>
               </div>
-                
-              <!-- /.box-body -->
-              <div v-if="event.comments.length > 0" class="box-footer box-comments">
-                <div v-for="comment in event.comments" class="box-comment">
-                  <!-- User image -->
-                  <img v-if="comment.user.profileimg" class="img-circle img-sm" :src="'/uploads/profiles/' + comment.user.profileimg">
-                  <img v-else class="img-circle img-sm" src="/images/no-image-available.jpeg">
-
-                  <div class="comment-text">
-                    <span class="username">
-                      {{ comment.user.name }} <span class="text-muted">{{ comment.created_at }}</span>
-                      <span class="pull-right"><i class="fa fa-trash-o btn-box-tool red" @click="deletecomment(comment.id)"></i></span>
-                    </span><!-- /.username -->
-                    {{ comment.content }}
-                  </div>
-                  <!-- /.comment-text -->
-                </div>
-                <!-- /.box-comment -->
-              </div>
-              <!-- /.box-footer -->
-              <div class="box-footer">
-                <img v-if="auth.profileimg" class="img-responsive img-circle img-sm" :src="'/uploads/profiles/' + auth.profileimg">
-                <img v-else class="img-responsive img-circle img-sm" src="/images/no-image-available.jpeg">
-                <!-- .img-push is used to add margin to elements next to floating images -->
-                <div class="img-push input-group">
-                  <input type="text" class="form-control" :id="'comment' + event.id" placeholder="Press enter to post comment">
-                  <span class="input-group-btn">
-                      <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
-                  </span>
-                </div>
-              </div>
-              <!-- /.box-footer -->
+              <!-- /.box -->
             </div>
-            </div>
-            <!-- /.box -->
+          </div>
+          <div v-else>
+            <span id="eventrs">{{ $t('global.loading') }}</span>
           </div>
         </div>
-        <div v-else>
-          <span id="eventrs">{{ $t('global.loading') }}</span>
-        </div>
-      </div>
-      <!-- /.col-md-12 -->
-      <transition name="modal">
-        <div v-show="showCompleteModal" class="modal-mask form-horizontal">
-          <div class="modal-wrapper">
-            <div class="modal-container">
+        <!-- /.col-md-12 -->
+        <transition name="modal">
+          <div v-show="showCompleteModal" class="modal-mask form-horizontal">
+            <div class="modal-wrapper">
+              <div class="modal-container">
 
-              <div class="modal-header">
-                <slot name="header">
-                  {{ $t('event.complete') }}{{ $t('event.event') }}
-                </slot>
-              </div>
+                <div class="modal-header">
+                  <slot name="header">
+                    {{ $t('event.complete') }}{{ $t('event.event') }}
+                  </slot>
+                </div>
 
-              <div class="modal-body">
-                <slot name="body">
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.finalprice') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.price">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zctingche') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.tingche">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zccanyin') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.canyin">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zcgaosu') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.gaosu">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zcjiayou') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.jiayou">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zcmaihuo') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.maihuo">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="col-xs-5 control-label">{{ $t('event.zcother') }}</label>
-                    <div class="col-xs-7">
-                      <input type="number" class="form-control" v-model.number="completeinfo.other">
-                    </div>
-                  </div>
-                  <div v-show="completeinfo.haspartner">
+                <div class="modal-body">
+                  <slot name="body">
                     <div class="form-group">
-                      <label class="col-xs-5 control-label">{{ $t('event.fxrmb') }}</label>
+                      <label class="col-xs-5 control-label">{{ $t('event.finalprice') }}</label>
                       <div class="col-xs-7">
-                        <input type="number" class="form-control" v-model.number="completeinfo.rmb">
+                        <input type="number" class="form-control" v-model.number="completeinfo.price">
                       </div>
                     </div>
                     <div class="form-group">
-                      <label class="col-xs-5 control-label">{{ $t('event.fxjpy') }}</label>
+                      <label class="col-xs-5 control-label">{{ $t('event.zctingche') }}</label>
                       <div class="col-xs-7">
-                        <input type="number" class="form-control" v-model.number="completeinfo.jpy">
+                        <input type="number" class="form-control" v-model.number="completeinfo.tingche">
                       </div>
                     </div>
-                  </div>
-                  <div class="payee" v-if="auth && auth.group_id == 1">
-                    <div class="col-xs-6 no-padding">
-                      <select2 id="payee" :options="user_list" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
+                    <div class="form-group">
+                      <label class="col-xs-5 control-label">{{ $t('event.zccanyin') }}</label>
+                      <div class="col-xs-7">
+                        <input type="number" class="form-control" v-model.number="completeinfo.canyin">
+                      </div>
                     </div>
-                    <div class="col-xs-6 no-padding">
-                      <label>
-                        <input type="radio" name="status" value="1" v-model="completeinfo.sta">
-                        {{ $t('event.notpayment') }} 
-                      </label>
-                      <label>
-                        <input type="radio" name="status" value="2" v-model="completeinfo.sta">
-                        {{ $t('event.paymented') }} 
-                      </label>
+                    <div class="form-group">
+                      <label class="col-xs-5 control-label">{{ $t('event.zcgaosu') }}</label>
+                      <div class="col-xs-7">
+                        <input type="number" class="form-control" v-model.number="completeinfo.gaosu">
+                      </div>
                     </div>
-                  </div>
-                </slot>
-              </div>
+                    <div class="form-group">
+                      <label class="col-xs-5 control-label">{{ $t('event.zcjiayou') }}</label>
+                      <div class="col-xs-7">
+                        <input type="number" class="form-control" v-model.number="completeinfo.jiayou">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-xs-5 control-label">{{ $t('event.zcmaihuo') }}</label>
+                      <div class="col-xs-7">
+                        <input type="number" class="form-control" v-model.number="completeinfo.maihuo">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-xs-5 control-label">{{ $t('event.zcother') }}</label>
+                      <div class="col-xs-7">
+                        <input type="number" class="form-control" v-model.number="completeinfo.other">
+                      </div>
+                    </div>
+                    <div v-show="completeinfo.haspartner">
+                      <div class="form-group">
+                        <label class="col-xs-5 control-label">{{ $t('event.fxrmb') }}</label>
+                        <div class="col-xs-7">
+                          <input type="number" class="form-control" v-model.number="completeinfo.rmb">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="col-xs-5 control-label">{{ $t('event.fxjpy') }}</label>
+                        <div class="col-xs-7">
+                          <input type="number" class="form-control" v-model.number="completeinfo.jpy">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="payee" v-show="auth && auth.group_id == 1">
+                      <div class="col-xs-6 no-padding">
+                        <select2 id="payee" :options="user_list" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
+                      </div>
+                      <div class="col-xs-6 no-padding">
+                        <label>
+                          <input type="radio" name="status" value="1" v-model="completeinfo.sta">
+                          {{ $t('event.notpayment') }} 
+                        </label>
+                        <label>
+                          <input type="radio" name="status" value="2" v-model="completeinfo.sta">
+                          {{ $t('event.paymented') }} 
+                        </label>
+                      </div>
+                    </div>
+                  </slot>
+                </div>
 
-              <div class="modal-footer text-left">
-                <slot name="footer">
-                  <button class="btn btn-xs btn-default" @click="showCompleteModal = false">
-                    {{ $t('global.Cancel') }}
-                  </button>
-                  <button class="btn btn-xs btn-primary pull-right" @click="completedo">
-                    {{ $t('global.Submit') }}
-                  </button>
-                </slot>
+                <div class="modal-footer text-left">
+                  <slot name="footer">
+                    <button class="btn btn-xs btn-default" @click="showCompleteModal = false">
+                      {{ $t('global.Cancel') }}
+                    </button>
+                    <button class="btn btn-xs btn-primary pull-right" @click="completedo">
+                      {{ $t('global.Submit') }}
+                    </button>
+                  </slot>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </transition>
-    </section>
+        </transition>
+      </section>
+    </div>
+    <quick-form :eventdate="eventdate" :eventid="eventid" v-if="showQuickForm" @hideform="quickformswitch(false)" @update="updateEvent" @addevent="addEvent"></quick-form>
+    <div class="gototoday" v-show="!showQuickForm"><a :href="'#date'+this.showYmd"> <i class="fa fa-bullseye fa-4x"></i></a></div>
   </div>
 </template>
 
@@ -307,51 +314,56 @@ import moment from 'moment'
 import baguetteBox from 'baguettebox.js'
 import UniverseNav from '../Public/UniverseNav'
 import Select2 from './Select2'
+import QuickForm from './QuickForm.vue';
 
 export default {
   data() {
     return {
-        auth: null,
-        events_list: [],
-        user_list: [],
-        events: [],
-        holidays: [],
-        otherMonth: false,
-        showCompleteModal: false,
-        showYmd: moment().format('YYYY-MM-DD'),
-        completeinfo: {
-          eventid: "",
-          eventkey: "",
-          haspartner: false,
-          price: 0,
+      auth: null,
+      events_list: [],
+      user_list: [],
+      events: [],
+      eventdate: "",
+      eventid: 0,
+      holidays: [],
+      otherMonth: false,
+      showCompleteModal: false,
+      showCompleted: false,
+      showQuickForm: false,
+      showYmd: moment().format('YYYY-MM-DD'),
+      completeinfo: {
+        eventid: "",
+        eventkey: "",
+        haspartner: false,
+        price: 0,
+        expenditure: 0,
+        tingche: 0,
+        canyin: 0,
+        gaosu: 0,
+        jiayou: 0,
+        maihuo: 0,
+        other: 0,
+        rmb: 0,
+        jpy: 0,
+        sta: 1,
+        payee: ""
+      },
+      fee: {
+        users: [],
+        finance: {
+          total: 0,
+          undone: 0,
           expenditure: 0,
-          tingche: 0,
-          canyin: 0,
-          gaosu: 0,
-          jiayou: 0,
-          maihuo: 0,
-          other: 0,
-          rmb: 0,
-          jpy: 0,
-          sta: 1,
-          payee: ""
-        },
-        fee: {
-          users: [],
-          finance: {
-            total: 0,
-            undone: 0,
-            expenditure: 0,
-            zctingche: 0,
-            zccanyin: 0,
-            zcgaosu: 0,
-            zcjiayou: 0,
-            zcmaihuo: 0,
-            zcother: 0,
-            fxrmb: 0,
-            fxjpy: 0
-          }
+          zctingche: 0,
+          zccanyin: 0,
+          zcgaosu: 0,
+          zcjiayou: 0,
+          zcmaihuo: 0,
+          zcother: 0,
+          fxrmb: 0,
+          fxjpy: 0
         }
+      }
     }
   },
   updated: function () {
@@ -359,14 +371,24 @@ export default {
       baguetteBox.run('.gallery', {
         noScrollbars: true
       });
+      if(!this.showQuickForm && this.eventid) {
+        var pos = $("#event"+this.eventid).offset().top;
+        $(window).scrollTop(pos);
+        this.eventid = 0;
+      } else if(!this.showQuickForm && this.eventdate) {
+        var pos = $("#date"+this.eventdate).offset().top;
+        $(window).scrollTop(pos);
+        this.eventdate = "";
+      }
     })
   },
   components: {
     Select2,
-    UniverseNav
+    UniverseNav,
+    QuickForm
   },
   methods: {
-    get_events(ym) {
+    get_events(ym, ymd = "") {
       this.events_list = [];
       $('#eventrs').html(this.$t('global.loading'));
       this.$http({
@@ -385,7 +407,13 @@ export default {
               var user = {};
               user.id = res.data.users[index].id;
               user.text = res.data.users[index].name;
-              this.user_list.push(user)
+              this.user_list.push(user);
+            }
+            // jump ymd
+            if(ymd) {
+              console.log(ymd);
+              var pos = $("#date"+ymd).offset().top;
+              $(window).scrollTop(pos);
             }
           }
       })
@@ -404,7 +432,36 @@ export default {
       this.fee.finance.fxrmb = 0;
       this.fee.finance.fxjpy = 0;
     },
-    setEvents() {
+    createEvent(date = '') {
+      this.eventid = 0;
+      this.eventdate = date;
+      this.showQuickForm = true;
+    },
+    editEvent(eventid) {
+      this.eventid = eventid;
+      this.showQuickForm = true;
+    },
+    updateEvent(event) {
+      this.showQuickForm = false;
+      for(var index in this.events_list) {
+        if(event.id == this.events_list[index].id) {
+          this.events_list[index] = event;
+        }
+      }
+    },
+    addEvent(ym) {
+      this.showQuickForm = false;
+      // console.log(ym);
+      this.showYmd = moment(ym + '-01').format('YYYY-MM-DD');
+      console.log(this.showYmd);
+      this.get_events(ym);
+      // this.events_list.push(event);
+      // this.eventdate = event.event_date;
+      // var ymd = event.event_date;
+      // this.get_events(ymd.substring(0,7), ymd);
+    },
+    setEvents(type = 1) {
+      // type 1 未完成 2 全部
       this.events = [];
       for(var i = 0; i < this.events_list.length; i++) {
         var eventObj = new Object();
@@ -454,7 +511,9 @@ export default {
           // 見積もり已完成  正在考虑
           eventObj.color = '#A9A9A9';
         }
-        this.events.push(eventObj);
+        if((type == 1 && this.events_list[i].status == 1) || type == 2) {
+          this.events.push(eventObj);
+        }
 
         // nav finance
         if(this.events_list[i].amount || this.events_list[i].expense) {
@@ -651,7 +710,7 @@ export default {
         }
       }
       this.showCompleteModal = true;
-  },
+    },
     completedo() {
       if($('#payee').val()) {
         this.completeinfo.payee = $('#payee').val();
@@ -683,6 +742,7 @@ export default {
         this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
           this.events_list[this.completeinfo.eventkey].expense = res.data;
           this.events_list[this.completeinfo.eventkey].status = 2;
+          this.setEvents();
           this.showCompleteModal = false;
         })
       }
@@ -692,6 +752,18 @@ export default {
         return true
       } else {
         return false
+      }
+    },
+    quickformswitch(showorhide) {
+      this.showQuickForm = showorhide;
+    }
+  },
+  watch: {
+    showCompleted() {
+      if(this.showCompleted) {
+        this.setEvents(2);
+      } else {
+        this.setEvents(1);
       }
     }
   },
@@ -734,6 +806,10 @@ export default {
   font-weight: 100;
   line-height: 23px;
 }
+.label {
+  display: inline-table;
+  margin: 1px;
+}
 .paddingl3 {
   padding-left: 3px;
 }
@@ -753,5 +829,61 @@ export default {
 }
 h5 {
   margin:3px 0;
+}
+label {
+  margin-bottom: 0;
+}
+.gototoday {
+  position: fixed;
+  width: 72px;
+  height: 72px;
+  right: 20px;
+  bottom: 56px;
+  z-index: 1030;
+  color: #959595;
+  filter: alpha(opacity=50);
+  -moz-opacity: 0.5;
+  opacity: 0.5;
+}
+.switch input {
+    display: none;
+}
+.switch label {
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.switch label:before {
+    padding: 6px 10px;
+    content: 'O N';
+    border-radius: 6px 0 0 6px;
+    background: linear-gradient(to bottom, #F0F0F0 0%, #DDD 100%);
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1) inset;
+    color: #333;
+}
+.switch label:after {
+    padding: 6px 10px;
+    content: 'OFF';
+    border-radius: 0 6px 6px 0;
+    background: #C30;
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1) inset;
+    color: #FFF;
+}
+.switch input + label:hover:before {
+    opacity: 0.5;
+}
+.switch input:checked + label:before {
+    background: #9C0;
+    color: #FFF;
+    opacity: 1;
+}
+.switch input:checked + label:after {
+    background: linear-gradient(to bottom, #F0F0F0 0%, #DDD 100%);
+    color: #333;
+}
+.switch input:checked + label:hover:after {
+    opacity: 0.5;
 }
 </style>

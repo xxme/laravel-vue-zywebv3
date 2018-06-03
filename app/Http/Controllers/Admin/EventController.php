@@ -181,10 +181,12 @@ class EventController extends Controller
     {
         $inputs = $request->all();
         $objEvent = Event::with(['details'])->findOrFail($id);
-        if($objEvent->product_list_id && !$inputs['product_list_id']){
+        if($objEvent->product_list_id && (!$inputs['product_list_id'] || $objEvent->product_list_id != $inputs['product_list_id'])){
             $objList = ProductList::find($objEvent->product_list_id);
-            $objList->event_id = null;
-            $objList->save();
+            if($objList) {
+                $objList->event_id = null;
+                $objList->save();
+            }
         }
         $objEvent->product_list_id = $inputs['product_list_id'];
         $objEvent->partner = $inputs['partner'];
@@ -226,7 +228,38 @@ class EventController extends Controller
                 $objList->save();
             }
         }
-        return response()->json($objEvent);
+        $event = Event::with(['comments' => function ($query) {
+                $query->with('user');
+            }, 'expense' => function ($query) {
+                $query->with('user');
+            }, 'user', 'details', 'productlist'])->findOrFail($id);
+        $types = Type::get(['id', 'name']);
+        foreach($types as $type) {
+            $typeArray[$type->id] = $type->name;
+        }
+        $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
+        if($event->comments) {
+            $event['comments'] = json_decode($event->comments, true);
+        }
+        if($event->total) {
+            $event['totalname'] = $typeArray[$event->total];
+        }
+        if($event->details) {
+            if($event->details->aboutgoods) {
+                $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+            }
+            if($event->details->carefully) {
+                $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
+            }
+            if($event->details->trucks) {
+                $event['trucks'] = $this->getTypeNames($event->details->trucks, $typeArray);
+            }
+            if($event->details->images) {
+                $event['images'] = json_decode($event->details->images, true);
+            }
+        }
+
+        return response()->json($event);
     }
 
     /**
@@ -300,16 +333,22 @@ class EventController extends Controller
             return "403";
         }
         $finances['data'] = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
-        $userprice = Expense::where('finalprice', '>', 0)->where('status', $type)
-        ->groupBy('user_id')
-        ->selectRaw('sum(finalprice) as sum, user_id')
-        ->pluck('sum','user_id');
-        
-        foreach($userprice as $key=>$up) {
-            $uname = User::find($key,['name']);
-            $user[$uname['name']] = $up;
+
+        if($type == 1) {
+            $userprice = Expense::where('finalprice', '>', 0)->where('status', $type)
+            ->groupBy('user_id')
+            ->selectRaw('sum(finalprice) as sum, user_id')
+            ->pluck('sum','user_id');
+            
+            $user = array();
+            foreach($userprice as $key=>$up) {
+                $uname = User::find($key,['name']);
+                $user[$uname['name']] = $up;
+            }
+            if($user) {
+                $finances['user'] = $user;
+            }
         }
-        $finances['user'] = $user;
 
         return $finances;
     }

@@ -181,7 +181,7 @@ Vue.component('todo', {
                 createEventButton: {
                     text: this.$i18n.t('event.addEvent'),
                     click: function() {
-                        router.push({ path: '/admin/event/create' })
+                        self.$parent.$emit('showform');
                     }
                 }
             }
@@ -197,6 +197,9 @@ Vue.component('todo', {
             Object.keys(this.holidays).forEach(function (holiday) {
                 $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
             });
+        },
+        showYmd(val) {
+            this.cal.fullCalendar('gotoDate', this.showYmd);
         }
     },
     computed: {
