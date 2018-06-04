@@ -220,6 +220,9 @@ tr.detail-row.open {
     background-repeat: no-repeat;
     background-position: top right;
 }
+.marginb5 {
+    margin-bottom: 5px;
+}
 
 @media screen and (min-width: 490px) {
     .costcontrol {

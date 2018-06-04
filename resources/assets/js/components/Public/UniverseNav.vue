@@ -1,75 +1,26 @@
 <template>
   <!-- universe_nav -->
     <div>
+        <div class="marginb5">
+            <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
+            <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
+            <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
+        </div>
         <div class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                <li :class="[otherMonth ? '' : 'active']"><a href="#quicknav" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.quicknav') }}</a></li>
-                <li :class="[otherMonth ? 'active' : '']"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
-                <li><a href="#timeline" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.timeline') }}</a></li>
-                <li v-if="auth && auth.group_id == 1"><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
+            <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
+                <li class="active"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
+                <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
             </ul>
             <div class="tab-content">
-                <div :class="[otherMonth ? '' : 'active', 'tab-pane']" id="quicknav">
-                    <!-- quicknav -->
-                    <div class="row margin">
-                        <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
-                        <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
-                    </div>
-                    <!-- ./quicknav -->
-                </div>
                 <!-- /.tab-pane -->
-                <div :class="[otherMonth ? 'active' : '', 'tab-pane']" id="topcalendar">
+                <div class="active tab-pane" id="topcalendar">
                     <todo :events="events" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" id="calendartodo"></todo>
                 </div>
                 <!-- /.tab-pane -->
-                <div class="tab-pane" id="timeline">
-                    <!-- The timeline -->
-                    <ul v-if="log_list.length > 0" class="timeline timeline-inverse">
-                        <!-- timeline time label -->
-                        <li class="time-label">
-                            <span class="bg-red">
-                                {{ timelineYmd }}
-                            </span>
-                        </li>
-                        <!-- /.timeline-label -->
-                        <!-- timeline item -->
-                        <li v-for="(log, key) in log_list" :key="log.id">
-                            <i :class="['fa', {'bg-blue' : log.log_type == 1, 'bg-yellow' : log.log_type == 2, 'bg-red' : log.log_type == 3}, { 'fa-calendar': log.type == 1, 'fa-book bg-aqua': log.type == 2, 'fa-comments': log.type == 3, 'fa-check-square-o bg-green': log.type == 6, 'fa-shopping-cart': log.type == 7 , 'fa-comments-o': log.type == 8 }]"></i>
-
-                            <div class="timeline-item">
-                                <span class="time"><i class="fa fa-clock-o"></i> {{ log.created_at | formatTime }}</span>
-
-                                <h3 class="timeline-header">
-                                    <a href="#">{{ log.user.name }}</a> 
-                                    <span v-if="log.log_type == 1 && log.type == 6">{{ $t('event.complete') }}{{ $t('event.event') }} </span>
-                                    <span v-else-if="log.log_type == 2 && log.type == 6">{{ $t('global.update') }}{{ $t('event.complete') }}{{ $t('global.data') }} </span>
-                                    <span v-else-if="log.log_type == 1">{{ $t('global.add') }} </span>
-                                    <span v-else-if="log.log_type == 2">{{ $t('global.update') }} </span>
-                                    <span v-else-if="log.log_type == 3">{{ $t('global.delete') }} </span>
-                                    <span v-if="log.type == 1">{{ log.content }} </span>
-                                    <span v-if="log.type == 1">{{ $t('event.event') }} </span>
-                                    <span v-else-if="log.type == 2">{{ $t('quicknav.typeofwork') }} </span>
-                                    <span v-else-if="log.type == 3">{{ $t('event.comment') }} </span>
-                                    <span v-else-if="log.type == 7">{{ $t('productlist.pagetitle') }} </span>
-                                    <span v-else-if="log.type == 8">{{ $t('estimate.pagetitle') }} </span>
-                                    <span v-if="log.type == 1 || log.type == 7 || log.type == 8">#{{ log.obj_id }}</span>
-                                </h3>
-                                <div v-if="log.type == 3 || log.type == 6 || log.type == 7" class="timeline-body">
-                                    <span>{{ log.content }}</span>
-                                </div>
-                            </div>
-                        </li>
-                        <!-- END timeline item -->
-                        <li>
-                            <i class="fa fa-clock-o bg-gray"></i>
-                        </li>
-                    </ul>
-                </div>
                 <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
                     <!-- statistics -->
                     <div class="box-header">
                         <h3 class="box-title">{{ showYm }}{{ $t('finance.finance') }}</h3>
-                        <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
                     </div>
                     <table class="table table-striped">
                         <tbody>
@@ -141,13 +92,14 @@ Vue.component('todo', {
     props: ['events', 'showYmd', 'holidays'],
     data () {
         return {
-            cal: null
+            cal: null,
+            showmonth : ""
         }
     },
     mounted () {
         var self = this
         this.cal = $(self.$el)
-        var router = this.$router
+        // var router = this.$router
         
         var args = {
             defaultView: 'month',
@@ -157,25 +109,40 @@ Vue.component('todo', {
             maxTime: '21:00:00',
             header: {
                 left: 'title createEventButton',
-                right: 'month agendaWeek agendaDay today prev,next'
+                right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
             },
             // 日付クリックイベント
             dayClick: function(date, jsEvent, view) {
-                window.location.hash = date.format();
+                self.$parent.$emit('showdata', date.format());
+                // window.location.hash = date.format();
             },
-            navLinks: true,
-            navLinkDayClick: function(date, jsEvent) {
-                router.push({ path: '/admin/event/create/' + date.format() })
-            },
+            // navLinks: true,
+            // navLinkDayClick: function(date, jsEvent) {
+            //     router.push({ path: '/admin/event/create/' + date.format() })
+            // },
             // イベントクリック
             eventClick: function(calEvent, jsEvent, view) {
-                self.$parent.$emit('makered', calEvent.id);
-                window.location.hash = 'event' + calEvent.id;
+                // self.$parent.$emit('makered', calEvent.id);
+                // window.location.hash = 'event' + calEvent.id;
+                self.$parent.$emit('showitem', calEvent.id);
             },
             viewRender: function(view, element){
                 var showdate = $('#calendartodo').fullCalendar('getDate');
-                self.$parent.$emit('update-events', moment(showdate).format('YYYY-MM'));
-                self.$emit('updateym', showdate);
+                if(!self.showmonth || self.showmonth != showdate.format('YYYY-MM')) {
+                    self.$parent.$emit('update-events', showdate.format('YYYY-MM'));
+                    self.$emit('updateym', showdate);
+                    self.showmonth = showdate.format('YYYY-MM');
+                }
+                if(showdate.format('YYYY-MM-DD') == moment().add(1, 'd').format('YYYY-MM-DD')) {
+                    $(".fc-tomorrowButton-button").prop("disabled", true);
+                    $(".fc-tomorrowButton-button").addClass('fc-state-disabled');
+                } else {
+                    $(".fc-tomorrowButton-button").prop("disabled", false);
+                    $(".fc-tomorrowButton-button").removeClass('fc-state-disabled');
+                }
+            },
+            eventRender: function(event, element) {
+                self.showdescription(event, element);
             },
             customButtons: {
                 createEventButton: {
@@ -183,23 +150,47 @@ Vue.component('todo', {
                     click: function() {
                         self.$parent.$emit('showform');
                     }
+                },
+                tomorrowButton: {
+                    text: this.$i18n.t('global.tomorrow'),
+                    click: function() {
+                        self.gotoDate();
+                    }
                 }
             }
         }
         
-        this.cal.fullCalendar(args)
+        this.cal.fullCalendar(args).on('click', '.fc-month-button', function() {
+            self.resetFirstDay();
+        }).on('click', '.fc-agendaWeek-button', function(){
+            self.setFirstDay();
+        });
     },
     watch: {
         getevents: function(val) {
             this.cal.fullCalendar('removeEventSources');
             this.cal.fullCalendar('addEventSource', this.events);
             
-            Object.keys(this.holidays).forEach(function (holiday) {
-                $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
-            });
+            // Object.keys(this.holidays).forEach(function (holiday) {
+            //     $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
+            // });
         },
         showYmd(val) {
             this.cal.fullCalendar('gotoDate', this.showYmd);
+        }
+    },
+    methods: {
+        gotoDate() {
+            $(this.$el).fullCalendar('gotoDate', moment().add(1, 'd'));
+        },
+        setFirstDay() {
+            $(this.$el).fullCalendar('option', 'firstDay', moment().subtract(1, 'd').day());
+        },
+        resetFirstDay() {
+            $(this.$el).fullCalendar('option', 'firstDay', 1);
+        },
+        showdescription(event, element) {
+            element.find('.fc-title').append("<br/>" + event.description); 
         }
     },
     computed: {
@@ -210,7 +201,7 @@ Vue.component('todo', {
 })
 
 export default {
-  props: ['otherMonth', 'showYmd', 'events', 'holidays', 'fee', 'auth'],
+  props: ['showYmd', 'events', 'holidays', 'fee', 'auth'],
   data() {
     return {
         timelineYmd: this.showYmd,
@@ -224,6 +215,11 @@ export default {
   watch: {
     timelineYmd: function (value) {
       this.get_logs(value);
+    },
+    holidays() {
+        for(var index in this.holidays) {
+            $('.fc-day[data-date="'+this.holidays[index].date+'"]').css('background-color', '#e06c97');
+        }
     }
   },
   methods: {

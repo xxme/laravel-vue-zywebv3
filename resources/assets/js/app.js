@@ -13,6 +13,7 @@ import VueRouter from 'vue-router';
 import VueI18n from 'vue-i18n';
 import EventsIndex from './components/Events/Index.vue';
 import EventForm from './components/Events/EventForm.vue';
+import EventContract from './components/Events/EventContract.vue';
 import ProductListsIndex from './components/ProductLists/Index.vue';
 import ProductListForm from './components/ProductLists/ListForm.vue';
 import EstimateIndex from './components/Estimates/Index.vue';
@@ -41,6 +42,7 @@ const router = new VueRouter({
         { path: '/admin/event/createbyproductlist/:listid', component: EventForm },
         { path: '/admin/event/createbyorder/:orderid', component: EventForm },
         { path: '/admin/event/:eventid/edit/', component: EventForm },
+        { path: '/admin/event/contract/:eventid', component: EventContract },
         { path: '/admin/productlist', component: ProductListsIndex },
         { path: '/admin/productlist/create', component: ProductListForm },
         { path: '/admin/productlist/:listid/edit/', component: ProductListForm },

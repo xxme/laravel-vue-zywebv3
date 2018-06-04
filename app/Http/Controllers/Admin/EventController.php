@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Event;
 use App\EventDetail;
@@ -12,6 +13,7 @@ use App\User;
 use App\ProductList;
 use App\Offer;
 use App\Expense;
+use App\Holidays;
 
 class EventController extends Controller
 {
@@ -64,16 +66,43 @@ class EventController extends Controller
 
         $init['users'] = User::where('group_id', '<', 3)->get(['id', 'name', 'profileimg']);
 
-        // get holidays
-        $ch = curl_init();
-        $timeout = 5;
-        curl_setopt ($ch, CURLOPT_URL, 'https://holidays-jp.github.io/api/v1/date.json');
-        curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        $init['holidays'] = json_decode(curl_exec($ch), true);
-        curl_close($ch);
+        $lastDateOfHoliday = Holidays::orderBy('date', 'desc')->first();
+        $syncFlag = false;
+        if($lastDateOfHoliday) {
+            $dt = Carbon::today();
+            $dt2 = new Carbon($lastDateOfHoliday['date']);
+            $dt->addMonth();
+            if($dt->gt($dt2)) {
+                $syncFlag = true;
+            }
+        }
+        
+        if(!$lastDateOfHoliday || $syncFlag) {
+            // get holidays
+            $init['holidays'] = $this->syncHolidays();
+        } else {
+            $init['holidays'] = Holidays::where('date', 'LIKE', "$ym%")->get(['date', 'title']);
+        }
         
         return $init;
+    }
+
+    private function syncHolidays() {
+        $content = file_get_contents("https://holidays-jp.github.io/api/v1/date.json");
+        $holidays = array();
+        if($content) {
+            $holidays = json_decode($content, true);
+            foreach($holidays as $key => $holiday) {
+                $hasData = Holidays::where('date', $key)->first();
+                if(!$hasData) {
+                    $obj = new Holidays();
+                    $obj->date = $key;
+                    $obj->title = $holiday;
+                    $obj->save();
+                }
+            }
+        }
+        return $holidays;
     }
 
     private function getTypeNames($ids, $typeArray, $decode = true) {
@@ -157,6 +186,37 @@ class EventController extends Controller
     public function show($id)
     {
         return Event::with(['details'])->findOrFail($id);
+    }
+
+    public function showbycontract($id)
+    {
+        $event = Event::with(['details'])->findOrFail($id);
+        $types = Type::get(['id', 'name']);
+        foreach($types as $type) {
+            $typeArray[$type->id] = $type->name;
+        }
+        $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
+        if($event->comments) {
+            $event['comments'] = json_decode($event->comments, true);
+        }
+        if($event->total) {
+            $event['totalname'] = $typeArray[$event->total];
+        }
+        if($event->details) {
+            if($event->details->aboutgoods) {
+                $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+            }
+            if($event->details->carefully) {
+                $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
+            }
+            if($event->details->trucks) {
+                $event['trucks'] = $this->getTypeNames($event->details->trucks, $typeArray);
+            }
+            if($event->details->images) {
+                $event['images'] = json_decode($event->details->images, true);
+            }
+        }
+        return response()->json($event); 
     }
 
     /**
@@ -353,6 +413,7 @@ class EventController extends Controller
         return $finances;
     }
 
+    //入金操作
     public function setReceived(Request $request) {
         $ids = $request->all();
         $finances = Expense::whereIn('id', $ids)->update(['status' => 2]);

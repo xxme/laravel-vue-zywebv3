@@ -44,11 +44,13 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/event/create/{date}', 'AdminController@vue');
         Route::get('/event/createbyproductlist/{listid}', 'AdminController@vue');
         Route::get('/event/createbyorder/{orderid}', 'AdminController@vue');
+        Route::get('/event/contract/{id}', 'AdminController@vue');
         Route::get('/finances', 'AdminController@vue');
 
         // get
         Route::get('/events/{ym}', 'EventController@index');
         Route::get('/events/finances/{type}', 'EventController@finances');
+        Route::get('/event/showbycontract/{id}', 'EventController@showbycontract');
         Route::get('/user/index/{id}', 'UserController@index')->name('admin.userindex');
         Route::get('/user/create/{id}', 'UserController@create');
         Route::get('/user/edit/{id}', 'UserController@edit')->name('admin.useredit');

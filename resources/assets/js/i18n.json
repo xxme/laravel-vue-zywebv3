@@ -24,6 +24,7 @@
             "noRes": "没有找到任何数据",
             "remove": "移除",
             "loadding": "处理中...",
+            "tomorrow": "明天",
             "notselectd": "请先选择要处理的项目",
             "manageronly": "舰长Only",
             "areYouSure": "确认要这样做吗?"
@@ -174,6 +175,26 @@
             "buildingtype4": "アパート",
             "buildingtype6": "一戸建",
             "buildingtype5": "办公楼"
+        },
+        "contract": {
+            "chinese": "中文",
+            "japanese": "日本語",
+            "title": "客户确认信息",
+            "workingtime": "工作时间",
+            "morning": "上午",
+            "afternoon": "下午",
+            "night": "晚上",
+            "allday": "时间不指定"
+        }
+    },
+    "ja": {
+        "contract": {
+            "title": "顧客様情報確認",
+            "workingtime": "作業日付及び時間",
+            "morning": "午前中",
+            "afternoon": "午後",
+            "night": "夜",
+            "allday": "時間不指定"
         }
     }
 }
