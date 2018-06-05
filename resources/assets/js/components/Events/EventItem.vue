@@ -1,11 +1,14 @@
 <template>
   <div>
-    <div class="col-md-12 no-padding" v-show="!showQuickForm">
+    <div class="col-md-12 no-padding" v-show="events_list.length > 0 && showflag">
       <div v-if="events_list.length > 0">
         <div v-for="(event, key) in events_list" :key="event.id">
           <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
-              <a :id="'date'+event.event_date"></a>
-              <h4 v-if="events_list.length > 1">{{ formatDateWithWeekname(event.event_date) }} <button class="btn btn-primary btn-xs pull-right" @click="createEvent(event.event_date)"><i class="fa fa-plus"></i></button></h4>
+            <h4>
+              <button class="btn btn-primary btn-xs" @click="$emit('editevent', 0, event.event_date)"><i class="fa fa-plus"></i></button>
+              {{ formatDateWithWeekname(event.event_date) }} <span v-show="events_list.length == 1"># {{ event.id }}</span>
+              <button class="btn btn-primary btn-xs pull-right" @click="$emit('showCalendar')"><i class="fa fa-calendar"></i></button>
+            </h4>
           </div>
           
           <!-- box -->
@@ -43,9 +46,6 @@
               <div class="box-tools">
                 <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract(event.id)">
                   <i class="fa fa-list-alt"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="makered(event.id)">
-                  <i class="fa fa-circle-o"></i>
                 </button>
                 <button type="button" class="btn btn-box-tool" v-if="event.expense" @click="event.status = !event.status">
                   <i v-if="event.status == 1" class="fa fa-minus"></i>
@@ -138,7 +138,7 @@
 
               <span class="text-muted">{{ event.comments.length }} comments</span>
               <div class="pull-right">
-                  <button class="btn btn-xs btn-warning" @click="editEvent(event.id)">
+                  <button class="btn btn-xs btn-warning" @click="$emit('editevent', event.id)">
                     <i class="fa fa-pencil"></i>
                   </button>
                   <button class="btn btn-xs btn-success" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
@@ -256,7 +256,7 @@
                 </div>
                 <div class="payee" v-show="auth && auth.group_id == 1">
                   <div class="col-xs-6 no-padding">
-                    <select2 id="payee" :options="user_list" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
+                    <select2 id="payee" :options="userlist" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
                   </div>
                   <div class="col-xs-6 no-padding">
                     <label>
@@ -286,32 +286,27 @@
         </div>
       </div>
     </transition>
-    <quick-form :eventdate="eventdate" :eventid="eventid" v-if="showQuickForm" @hideform="quickformswitch(false)" @update="updateEvent" @addevent="addEvent"></quick-form>
   </div>
 </template>
 
 <script>
 import moment from 'moment'
 import baguetteBox from 'baguettebox.js'
-import UniverseNav from '../Public/UniverseNav'
 import Select2 from './Select2'
-import QuickForm from './QuickForm.vue';
 
 export default {
-  props: ['eventdata', 'auth'],
+  props: ['auth', 'eventdata', 'showflag', 'userlist'],
   data() {
     return {
       // auth: null,
       events_list: [],
-      user_list: [],
-      events: [],
-      eventdate: "",
-      eventid: 0,
+      // user_list: [],
+      // events: [],
+      // eventid: 0,
       holidays: [],
       showCompleteModal: false,
       showCompleted: false,
-      showQuickForm: false,
-      showYmd: moment().format('YYYY-MM-DD'),
+      // showYmd: moment().format('YYYY-MM-DD'),
       completeinfo: {
         eventid: "",
         eventkey: "",
@@ -352,215 +347,21 @@ export default {
       baguetteBox.run('.gallery', {
         noScrollbars: true
       });
-      if(!this.showQuickForm && this.eventid) {
-        var pos = $("#event"+this.eventid).offset().top;
-        $(window).scrollTop(pos);
-        this.eventid = 0;
-      } else if(!this.showQuickForm && this.eventdate) {
-        var pos = $("#date"+this.eventdate).offset().top;
-        $(window).scrollTop(pos);
-        this.eventdate = "";
-      }
+      // if(!this.showfrom && this.eventid) {
+      //   var pos = $("#event"+this.eventid).offset().top;
+      //   $(window).scrollTop(pos);
+      //   this.eventid = 0;
+      // } else if(!this.showfrom && this.eventdate) {
+      //   var pos = $("#date"+this.eventdate).offset().top;
+      //   $(window).scrollTop(pos);
+      //   this.eventdate = "";
+      // }
     })
   },
   components: {
-    Select2,
-    UniverseNav,
-    QuickForm
+    Select2
   },
   methods: {
-    // get_events(ym, ymd = "") {
-    //   this.events_list = [];
-    //   $('#eventrs').html(this.$t('global.loading'));
-    //   this.$http({
-    //       url: '/admin/events/' + ym,
-    //       method: 'GET'
-    //   }).then(res =>  {
-    //       this.holidays = res.data.holidays;
-    //       this.resetFee();
-    //       if(res.data.events.length == 0) {
-    //         $('#eventrs').html(this.$t('global.noRes'));
-    //       } else {
-    //         this.events_list = res.data.events;
-    //         this.setEvents();
-    //         this.auth = res.data.auth;
-    //         for (var index in res.data.users) {
-    //           var user = {};
-    //           user.id = res.data.users[index].id;
-    //           user.text = res.data.users[index].name;
-    //           this.user_list.push(user);
-    //         }
-    //         // jump ymd
-    //         if(ymd) {
-    //           console.log(ymd);
-    //           var pos = $("#date"+ymd).offset().top;
-    //           $(window).scrollTop(pos);
-    //         }
-    //       }
-    //   })
-    // },
-    resetFee() {
-      this.fee.users = [];
-      this.fee.finance.total = 0;
-      this.fee.finance.undone = 0;
-      this.fee.finance.expenditure = 0;
-      this.fee.finance.zctingche = 0;
-      this.fee.finance.zccanyin = 0;
-      this.fee.finance.zcgaosu = 0;
-      this.fee.finance.zcjiayou = 0;
-      this.fee.finance.zcmaihuo = 0;
-      this.fee.finance.zcother = 0;
-      this.fee.finance.fxrmb = 0;
-      this.fee.finance.fxjpy = 0;
-    },
-    createEvent(date = '') {
-      this.eventid = 0;
-      this.eventdate = date;
-      this.showQuickForm = true;
-    },
-    editEvent(eventid) {
-      this.eventid = eventid;
-      this.showQuickForm = true;
-    },
-    updateEvent(event) {
-      this.showQuickForm = false;
-      for(var index in this.events_list) {
-        if(event.id == this.events_list[index].id) {
-          this.events_list[index] = event;
-        }
-      }
-    },
-    addEvent(ym) {
-      this.showQuickForm = false;
-      this.showYmd = moment(ym + '-01').format('YYYY-MM-DD');
-      // this.get_events(ym);
-    },
-    // setEvents(type = 1) {
-    //   // type 1 未完成 2 全部
-    //   this.events = [];
-    //   for(var i = 0; i < this.events_list.length; i++) {
-    //     var eventObj = new Object();
-    //     var amount = this.formatNumberJPY(this.events_list[i].amount);
-    //     var apm = '\n';
-    //     eventObj.id = this.events_list[i].id;
-    //     eventObj.start = this.events_list[i].event_date;
-    //     switch(+this.events_list[i].apm) {
-    //       case 1:
-    //         eventObj.start += 'T08:00:00';
-    //         eventObj.end = this.events_list[i].event_date + 'T12:00:00';
-    //         apm = ' '+this.$i18n.t('event.morning')+'\n';
-    //         break;
-    //       case 2:
-    //         eventObj.start += 'T12:00:00';
-    //         eventObj.end = this.events_list[i].event_date + 'T18:00:00';
-    //         apm = ' '+this.$i18n.t('event.afternoon')+'\n';
-    //         break;
-    //       case 3:
-    //         eventObj.start += 'T18:00:00';
-    //         eventObj.end = this.events_list[i].event_date + 'T21:00:00';
-    //         apm = ' '+this.$i18n.t('event.night')+'\n';
-    //         break;
-    //       case 5:
-    //         if(this.events_list[i].start_time) {
-    //           eventObj.start += 'T' + this.events_list[i].start_time;
-    //         }
-    //         if(this.events_list[i].end_time) {
-    //           eventObj.end = this.events_list[i].event_date + 'T' + this.events_list[i].end_time;
-    //         }
-    //         break;
-    //       default:
-    //         eventObj.allDay = true;
-    //         apm = ' '+this.$i18n.t('event.alldayT')+'\n';
-    //         break;
-    //     }
-        
-    //     eventObj.title = amount+apm+this.events_list[i].typenames.join(", ");
-    //     if(this.events_list[i].types.indexOf(5) > -1) {
-    //       // 見積
-    //       eventObj.color = '#d81b60';
-    //     } else if (this.events_list[i].types.indexOf(19) > -1) {
-    //       // 休み
-    //       eventObj.title += '('+this.events_list[i].user.name+')';
-    //       eventObj.color = '#001f3f';
-    //     } else if (this.events_list[i].types.indexOf(4) > -1) {
-    //       // 見積もり已完成  正在考虑
-    //       eventObj.color = '#A9A9A9';
-    //     }
-    //     if((type == 1 && this.events_list[i].status == 1) || type == 2) {
-    //       this.events.push(eventObj);
-    //     }
-
-    //     // nav finance
-    //     if(this.events_list[i].amount || this.events_list[i].expense) {
-          
-    //       var hasuserdata = false;
-    //       for(var index in this.fee.users) {
-    //         if(this.fee.users[index].id == this.events_list[i].user.id) {
-    //           hasuserdata = true;
-    //           if(this.events_list[i].expense) {
-    //             // completed
-    //             this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
-    //             this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
-    //           } else {
-    //             // undone
-    //             this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
-    //           }
-    //         }
-    //       }
-    //       if(!hasuserdata && (this.events_list[i].amount || this.events_list[i].expense)) {
-    //         var feeuser = new Object();
-    //         feeuser.id = this.events_list[i].user.id;
-    //         feeuser.name = this.events_list[i].user.name;
-    //         if(this.events_list[i].user.profileimg) {
-    //           feeuser.profileimg = this.events_list[i].user.profileimg;
-    //         }
-    //         if(this.events_list[i].expense) {
-    //           // completed
-    //           feeuser.total = this.events_list[i].expense.finalprice;
-    //           feeuser.completed = this.events_list[i].expense.finalprice;
-    //         } else {
-    //           // undone
-    //           feeuser.total = this.events_list[i].amount;
-    //         }
-    //         this.fee.users.push(feeuser);
-    //       }
-
-    //       // finance
-    //       if(this.events_list[i].amount || this.events_list[i].expense) {
-    //         if(this.events_list[i].expense) {
-    //           // completed
-    //           this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
-    //           this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
-    //           this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
-    //           this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
-    //           this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
-    //           this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
-    //           this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
-    //           this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
-    //           this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
-    //           this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
-    //         } else {
-    //           // undone
-    //           this.fee.finance.total += parseInt(this.events_list[i].amount);
-    //           this.fee.finance.undone += parseInt(this.events_list[i].amount);
-    //         }
-    //       }
-    //     }
-    //   }
-    // },
-    // makered(eventid) {
-    //   var dom = $(".col-md-12").find("[data-box='box" + eventid + "']");
-    //   if(dom.hasClass('makered')) {
-    //     dom.removeClass('makered');
-    //   } else {
-    //     $(".box-body").each(function(i) {
-    //       if($(this).hasClass('makered')){
-    //         $(this).removeClass('makered');
-    //       }
-    //     });
-    //     dom.addClass('makered');
-    //   }
-    // },
     formatDateWithWeekname(date) {
       if(this.$i18n.locale == 'cn') {
         moment.locale('cn', {weekdays: ["日","一","二","三","四","五","六"]});
@@ -700,9 +501,9 @@ export default {
       if(this.completeinfo.payee == this.auth.id) {
         var payeename = this.$t('event.myself');
       } else {
-        for(var key in this.user_list) {
-          if(this.user_list[key].id == this.completeinfo.payee) {
-            var payeename = this.user_list[key].text;
+        for(var key in this.userlist) {
+          if(this.userlist[key].id == this.completeinfo.payee) {
+            var payeename = this.userlist[key].text;
           }
         }
       }
@@ -728,9 +529,6 @@ export default {
       } else {
         return false
       }
-    },
-    quickformswitch(showorhide) {
-      this.showQuickForm = showorhide;
     }
   },
   watch: {
@@ -766,7 +564,7 @@ export default {
 }
 </script>
 <style>
-.input-group {
+.img-push {
   width: auto;
 }
 .fade-enter-active, .fade-leave-active {

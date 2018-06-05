@@ -14,7 +14,7 @@
     "axios": "^0.17",
     "baguettebox.js": "^1.10.0",
     "bootstrap-sass": "^3.3.7",
-    "cross-env": "^5.1",
+    "cross-env": "^5.1.6",
     "jquery": "^3.2",
     "jquery-datetimepicker": "^2.5.20",
     "laravel-mix": "^1.0",
@@ -26,8 +26,8 @@
     "font-awesome": "^4.7.0",
     "fullcalendar": "^3.9.0",
     "laravel-vue-pagination": "^1.2.0",
-    "moment": "^2.22.1",
-    "vue-i18n": "^7.6.0",
+    "moment": "^2.22.2",
+    "vue-i18n": "^7.8.0",
     "vue-router": "^3.0.1"
   }
 }

@@ -15,22 +15,105 @@
       </section>
       <!-- Main content -->
       <section class="content">
-        <universe-nav :showYmd="showYmd" :events="events" :holidays="holidays" :fee="fee" :auth="auth" v-on:update-events="get_events" @showform="createEvent" @showdata="showEvent" @showitem="showitem"></universe-nav>
-        <event-item :eventdata="show_list" :auth="auth"></event-item>
+        <div class="marginb5">
+          <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
+          <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
+          <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
+        </div>
+        <div class="nav-tabs-custom" v-show="!showformflag && showCalendarFlag">
+          <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
+            <li class="active"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
+            <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <!-- /.tab-pane -->
+            <div class="active tab-pane" id="topcalendar">
+              <todo :events="events" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @showevents="showevents" id="calendartodo"></todo>
+            </div>
+            <!-- /.tab-pane -->
+            <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
+              <!-- statistics -->
+              <div class="box-header">
+                <h3 class="box-title">{{ showYm }}{{ $t('finance.finance') }}</h3>
+              </div>
+              <table class="table table-striped">
+                <tbody>
+                  <tr v-if="fee.finance.total || fee.finance.expenditure">
+                    <td style="width: 50%">{{ $t('finance.total') }}:{{ fee.finance.total | formatNumberJPY }}</td>
+                    <td>{{ $t('finance.expenditure') }}:{{ fee.finance.expenditure | formatNumberJPY }}</td>
+                  </tr>
+                  <tr v-if="fee.finance.zcgaosu || fee.finance.zcjiayou">
+                    <td>{{ $t('finance.zcgaosu') }}:{{ fee.finance.zcgaosu | formatNumberJPY }}</td>
+                    <td>{{ $t('finance.zcjiayou') }}:{{ fee.finance.zcjiayou | formatNumberJPY }}</td>
+                  </tr>
+                  <tr v-if="fee.finance.zctingche || fee.finance.zccanyin">
+                    <td>{{ $t('finance.zctingche') }}:{{ fee.finance.zctingche | formatNumberJPY }}</td>
+                    <td>{{ $t('finance.zccanyin') }}:{{ fee.finance.zccanyin | formatNumberJPY }}</td>
+                  </tr>
+                  <tr v-if="fee.finance.zcmaihuo || fee.finance.zcother">
+                    <td>{{ $t('finance.zcmaihuo') }}:{{ fee.finance.zcmaihuo | formatNumberJPY }}</td>
+                    <td>{{ $t('finance.zcother') }}:{{ fee.finance.zcother | formatNumberJPY }}</td>
+                  </tr>
+                  <tr v-if="fee.finance.fxjpy || fee.finance.fxrmb">
+                    <td>{{ $t('event.fxjpy') }}:{{ fee.finance.fxjpy | formatNumberJPY }}</td>
+                    <td>{{ $t('event.fxrmb') }}:{{ fee.finance.fxrmb | formatNumberJPY }}</td>
+                  </tr>
+                  <tr>
+                    <td v-if="fee.finance.undone" colspan="2">{{ $t('finance.undone') }}:{{ fee.finance.undone | formatNumberJPY }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="box-header">
+                <h3 class="box-title">{{ showYm }}{{ $t('finance.proceeds') }}</h3>
+              </div>
+              <table class="table table-striped">
+                <tbody>
+                  <tr>
+                    <th style="width: 50px">{{ $t('finance.ranking') }}</th>
+                    <th style="width: 150px">{{ $t('finance.name') }}</th>
+                    <th>{{ $t('finance.amount') }}</th>
+                    <th>{{ $t('finance.completed') }}</th>
+                    <th style="width: 80px">{{ $t('finance.percentage') }}</th>
+                  </tr>
+                  <tr v-for="(user, key) in orderedFeeUsers" :key="user.id">
+                    <td :class="'medals'+key"><span v-if="key > 2">{{ key + 1}}.</span><span v-else>.</span></td>
+                    <td>
+                      <img v-if="user.profileimg" class="img-circle" width="30" :src="'/uploads/profiles/' + user.profileimg"> 
+                      <img v-else class="img-circle" width="30" src="/images/no-image-available.jpeg"> 
+                      {{ user.name }}
+                    </td>
+                    <td>{{ user.total | formatNumberJPY }}</td>
+                    <td>{{ user.completed | formatNumberJPY }}</td>
+                    <td><span :class="['badge', { 'bg-red': key == 0, 'bg-light-blue': key == 1, 'bg-green': key == 2, '': key > 2 }]">{{ percentage(user.total) }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <!-- ./statistics -->
+            </div>
+            <!-- /.tab-pane -->
+          </div>
+          <!-- /.tab-content -->
+        </div>
+        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" @editevent="editevent" @showCalendar="showCalendar"></event-item>
+        <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
       </section>
     </div>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import moment from 'moment'
 // import baguetteBox from 'baguettebox.js'
 import UniverseNav from '../Public/UniverseNav'
 // import Select2 from './Select2'
-// import QuickForm from './QuickForm.vue';
+import QuickForm from './QuickForm.vue';
 import EventItem from './EventItem.vue';
 
 export default {
+  mounted() {
+    this.get_formtypes()
+  },
   data() {
     return {
       auth: null,
@@ -41,27 +124,39 @@ export default {
       eventdate: "",
       eventid: 0,
       holidays: [],
-      showCompleteModal: false,
+      // showCompleteModal: false,
       showCompleted: false,
       showQuickForm: false,
+      showEventItem: false,
+      showformflag: false,
+      showCalendarFlag: true,
       showYmd: moment().format('YYYY-MM-DD'),
-      completeinfo: {
-        eventid: "",
-        eventkey: "",
-        haspartner: false,
-        price: 0,
-        expenditure: 0,
-        tingche: 0,
-        canyin: 0,
-        gaosu: 0,
-        jiayou: 0,
-        maihuo: 0,
-        other: 0,
-        rmb: 0,
-        jpy: 0,
-        sta: 1,
-        payee: ""
+      showYm: moment().format('YYYY年MM月'),
+      formoptions: {
+        worktype: [],
+        careful: [],
+        total: [],
+        aboutgoods: [],
+        truck: [],
+        product_list: []
       },
+      // completeinfo: {
+      //   eventid: "",
+      //   eventkey: "",
+      //   haspartner: false,
+      //   price: 0,
+      //   expenditure: 0,
+      //   tingche: 0,
+      //   canyin: 0,
+      //   gaosu: 0,
+      //   jiayou: 0,
+      //   maihuo: 0,
+      //   other: 0,
+      //   rmb: 0,
+      //   jpy: 0,
+      //   sta: 1,
+      //   payee: ""
+      // },
       fee: {
         users: [],
         finance: {
@@ -99,8 +194,8 @@ export default {
   components: {
     // Select2,
     EventItem,
-    UniverseNav
-    // QuickForm
+    UniverseNav,
+    QuickForm
   },
   methods: {
     get_events(ym, ymd = "") {
@@ -111,19 +206,20 @@ export default {
           method: 'GET'
       }).then(res =>  {
           this.holidays = res.data.holidays;
-          // this.resetFee();
+          this.auth = res.data.auth;
+          for (var index in res.data.users) {
+            var user = {};
+            user.id = res.data.users[index].id;
+            user.text = res.data.users[index].name;
+            this.user_list.push(user);
+          }
+          this.resetFee();
           if(res.data.events.length == 0) {
             $('#eventrs').html(this.$t('global.noRes'));
           } else {
             this.events_list = res.data.events;
             this.setEvents();
-            this.auth = res.data.auth;
-            for (var index in res.data.users) {
-              var user = {};
-              user.id = res.data.users[index].id;
-              user.text = res.data.users[index].name;
-              this.user_list.push(user);
-            }
+            
             // jump ymd
             // if(ymd) {
             //   var pos = $("#date"+ymd).offset().top;
@@ -132,13 +228,14 @@ export default {
           }
       })
     },
-    showEvent(date) {
+    showevents(date) {
       this.show_list = [];
       for(var index in this.events_list) {
         if(this.events_list[index].event_date == date) {
           this.show_list.push(this.events_list[index]);
         }
       }
+      this.checkCountShowList();
     },
     showitem(id) {
       this.show_list = [];
@@ -147,26 +244,33 @@ export default {
           this.show_list.push(this.events_list[index]);
         }
       }
+      this.checkCountShowList();
     },
-    // resetFee() {
-    //   this.fee.users = [];
-    //   this.fee.finance.total = 0;
-    //   this.fee.finance.undone = 0;
-    //   this.fee.finance.expenditure = 0;
-    //   this.fee.finance.zctingche = 0;
-    //   this.fee.finance.zccanyin = 0;
-    //   this.fee.finance.zcgaosu = 0;
-    //   this.fee.finance.zcjiayou = 0;
-    //   this.fee.finance.zcmaihuo = 0;
-    //   this.fee.finance.zcother = 0;
-    //   this.fee.finance.fxrmb = 0;
-    //   this.fee.finance.fxjpy = 0;
+    checkCountShowList() {
+      if(this.show_list.length > 0) {
+        this.showCalendarFlag = false;
+        this.showEventItem = true;
+      }
+    },
+    resetFee() {
+      this.fee.users = [];
+      this.fee.finance.total = 0;
+      this.fee.finance.undone = 0;
+      this.fee.finance.expenditure = 0;
+      this.fee.finance.zctingche = 0;
+      this.fee.finance.zccanyin = 0;
+      this.fee.finance.zcgaosu = 0;
+      this.fee.finance.zcjiayou = 0;
+      this.fee.finance.zcmaihuo = 0;
+      this.fee.finance.zcother = 0;
+      this.fee.finance.fxrmb = 0;
+      this.fee.finance.fxjpy = 0;
+    },
+    // createEvent(date = '') {
+    //   this.eventid = 0;
+    //   this.eventdate = date;
+    //   this.showQuickForm = true;
     // },
-    createEvent(date = '') {
-      this.eventid = 0;
-      this.eventdate = date;
-      this.showQuickForm = true;
-    },
     // editEvent(eventid) {
     //   this.eventid = eventid;
     //   this.showQuickForm = true;
@@ -187,7 +291,7 @@ export default {
     setEvents(type = 1) {
       // type 1 未完成 2 全部
       this.events = [];
-      for(var i = 0; i < this.events_list.length; i++) {
+      for(var i in this.events_list) {
         var eventObj = new Object();
         var amount = "";
         if(this.events_list[i].amount) {
@@ -492,8 +596,89 @@ export default {
     //     return false
     //   }
     // },
-    quickformswitch(showorhide) {
-      this.showQuickForm = showorhide;
+    percentage(usertotal) {
+        return Math.round(usertotal / this.fee.finance.total * 100) + '%';
+    },
+    updateym(showymd) {
+      var formated = moment(showymd).format('YYYY年MM月');
+      if(formated == moment().format('YYYY年MM月')) {
+        this.showYm = this.$t('finance.thismonth')
+      } else {
+        this.showYm = formated
+      }
+    },
+    addedevent(ymd) {
+      $('#calendartodo').fullCalendar('gotoDate', ymd);
+      this.get_events(ymd.substring(0,7));
+      this.showformflag = false;
+    },
+    editevent(id, date = '') {
+      this.eventid = id;
+      if(date) {
+        this.eventdate = date;
+      }
+      this.showEventItem = false;
+      this.showformflag = true;
+    },
+    get_formtypes() {
+      var eid = "";
+      if(this.eventid) {
+        eid = this.eventid;
+      }
+      this.$http({
+        url: '/api/get_types/' + eid,
+        method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data.types) {
+          var group_id = res.data.types[index].group_id;
+          var option = {};
+          option.id = res.data.types[index].id;
+          option.text = res.data.types[index].name;
+          switch (+group_id) {
+            case 1:
+              this.formoptions.worktype.push(option);
+              break;
+            case 2:
+              this.formoptions.careful.push(option);
+              break;
+            case 3:
+              this.formoptions.total.push(option);
+              break;
+            case 4:
+              this.formoptions.aboutgoods.push(option);
+              break;
+            case 5:
+              this.formoptions.truck.push(option);
+              break;
+            default:
+              break;
+          }
+        }
+        for (var index in res.data.productlists) {
+          var option = {};
+          option.id = res.data.productlists[index].id;
+          option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
+          this.formoptions.product_list.push(option);
+        }
+      })
+    },
+    showCalendar(){
+      this.showEventItem = false;
+      this.showCalendarFlag = true;
+    },
+    quickformswitch(showorhide, date = '') {
+      if(showorhide && date) {
+        this.eventdate = date
+      }
+      if(showorhide) {
+        //open
+        this.eventid = 0;
+        this.showEventItem = false;
+      } else {
+        //close
+        this.checkCountShowList();
+      }
+      this.showformflag = showorhide;
     }
   },
   watch: {
@@ -509,6 +694,13 @@ export default {
     formatTime(time, date) {
       return moment(date+' '+time).format('HH:mm');
     },
+    formatNumberJPY(number) {
+      if(number) {
+        return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
+      } else {
+        return '0';
+      }
+    },
     truncate: function (value, length) {
       if (!value) return ''
       var length = length ? parseInt(length, 10) : 20
@@ -522,8 +714,130 @@ export default {
     toBiggerImg(filename) {
       return filename.replace("_thumb", "");
     }
+  },
+  computed: {
+    orderedFeeUsers: function () {
+        return _.orderBy(this.fee.users, 'total', 'desc')
+    }
   }
 }
+
+Vue.component('todo', {
+  template: '<div></div>',
+  props: ['events', 'showYmd', 'holidays'],
+  data () {
+    return {
+      cal: null,
+      showmonth : ""
+    }
+  },
+  mounted () {
+    var self = this
+    this.cal = $(self.$el)
+    
+    var args = {
+      defaultView: 'month',
+      events: self.events,
+      defaultDate: moment().format('YYYY-MM-DD'),
+      minTime: '08:00:00',
+      maxTime: '21:00:00',
+      header: {
+        left: 'title createEventButton',
+        right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
+      },
+      // 日付クリックイベント
+      dayClick: function(date, jsEvent, view) {
+        self.$emit('showevents', date.format());
+      },
+      navLinks: true,
+      navLinkDayClick: function(date, jsEvent) {
+        self.$emit('showform', true, date.format());
+      },
+      // イベントクリック
+      eventClick: function(calEvent, jsEvent, view) {
+        self.$emit('showitem', calEvent.id);
+      },
+      viewRender: function(view, element){
+        var showdate = $('#calendartodo').fullCalendar('getDate');
+        var formatdate = showdate.format('YYYY-MM');
+        if(!self.showmonth || self.showmonth != formatdate) {
+          self.$emit('update-events', formatdate);
+          self.$emit('updateym', formatdate);
+          self.showmonth = formatdate;
+        }
+        if(showdate.format('YYYY-MM-DD') == moment().add(1, 'd').format('YYYY-MM-DD')) {
+          $(".fc-tomorrowButton-button").prop("disabled", true);
+          $(".fc-tomorrowButton-button").addClass('fc-state-disabled');
+        } else {
+          $(".fc-tomorrowButton-button").prop("disabled", false);
+          $(".fc-tomorrowButton-button").removeClass('fc-state-disabled');
+        }
+      },
+      eventRender: function(event, element) {
+        self.showdescription(event, element);
+      },
+      customButtons: {
+        createEventButton: {
+          text: this.$i18n.t('event.addEvent'),
+          click: function() {
+            self.$emit('showform', true);
+          }
+        },
+        tomorrowButton: {
+          text: this.$i18n.t('global.tomorrow'),
+          click: function() {
+            self.gotoDate();
+          }
+        }
+      }
+    }
+    
+    this.cal.fullCalendar(args)
+    .on('click', '.fc-month-button', function() {
+        self.resetFirstDay();
+    })
+    .on('click', '.fc-agendaWeek-button', function(){
+        self.setFirstDay();
+    });
+  },
+  watch: {
+    getevents: function(val) {
+      this.cal.fullCalendar('removeEventSources');
+      this.cal.fullCalendar('addEventSource', this.events);
+      
+      // Object.keys(this.holidays).forEach(function (holiday) {
+      //     $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
+      // });
+    },
+    showYmd(val) {
+      this.cal.fullCalendar('gotoDate', this.showYmd);
+    },
+    holidays() {
+      for(var index in this.holidays) {
+        $('.fc-day[data-date="'+this.holidays[index].date+'"]').css('background-color', '#ffe6f0');
+      }
+    }
+  },
+  methods: {
+    gotoDate() {
+      $(this.$el).fullCalendar('gotoDate', moment().add(1, 'd'));
+    },
+    setFirstDay() {
+      $(this.$el).fullCalendar('option', 'firstDay', moment().subtract(1, 'd').day());
+    },
+    resetFirstDay() {
+      $(this.$el).fullCalendar('option', 'firstDay', 1);
+    },
+    showdescription(event, element) {
+      element.find('.fc-title').append("<br/>" + event.description); 
+    }
+  },
+  computed: {
+    getevents: function() {
+      return this.events;
+    }
+  }
+})
 </script>
 <style scoped>
 .switch input {
@@ -535,7 +849,6 @@ export default {
     font-weight: bold;
     cursor: pointer;
 }
-
 .switch label:before {
     padding: 6px 10px;
     content: 'O N';

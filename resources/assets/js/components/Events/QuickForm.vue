@@ -1,173 +1,171 @@
 <template>
   <div>
-    <section class="content">
-      <div class="box box-primary">
-        <div class="box-header">
-          <a id="boxtitle"></a>
-          <h3 class="box-title">{{ boxtitle }} <small v-if="eventid">#{{ eventid }}</small></h3>
+    <div class="box box-primary">
+      <div class="box-header">
+        <a id="boxtitle"></a>
+        <h3 class="box-title">{{ boxtitle }} <small v-if="eventid">#{{ eventid }}</small></h3>
+      </div>
+      <div class="box-body">
+        <div class="col-xs-12 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-tags"></i></span>
+            <select2 :options="options.worktype" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
+          </div>
         </div>
-        <div class="box-body">
-          <div class="col-xs-12 no-padding">
+        <div class="col-xs-12 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-cube"></i></span>
+            <select2 :options="options.aboutgoods" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
+          </div>
+        </div>
+        <div class="col-xs-12 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
+            <select2 :options="options.careful" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
+          </div>
+        </div>
+        <div class="col-xs-12 no-padding"> 
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-tags"></i></span>
-              <select2 :options="options1" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
+              <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
+              <select2 :options="options.total" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
             </div>
           </div>
-          <div class="col-xs-12 no-padding">
+          <div class="col-xs-6 no-padding">
             <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-cube"></i></span>
-              <select2 :options="options4" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
+              <span class="input-group-addon"><i class="fa fa-truck"></i></span>
+              <select2 :options="options.truck" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
             </div>
           </div>
-          <div class="col-xs-12 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
-              <select2 :options="options2" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
-            </div>
+        </div> 
+        <!-- datepicker --> 
+        <div class="col-xs-6 no-padding">
+          <div class="input-group"> 
+            <div class="input-group-addon"> 
+              <i class="fa fa-calendar"></i> 
+            </div> 
+            <input type="text" name="eventdate" class="form-control datepicker" v-model="event.eventdate" :placeholder="$t('event.eventdate')" readonly /> 
           </div>
-          <div class="col-xs-12 no-padding"> 
-            <div class="col-xs-6 no-padding">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
-                <select2 :options="options3" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
-              </div>
-            </div>
-            <div class="col-xs-6 no-padding">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-truck"></i></span>
-                <select2 :options="options6" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
-              </div>
+        </div>
+        <div class="col-xs-6 no-padding">
+          <div class="input-group"> 
+            <div class="radio padding-left3">
+              <label>
+                <input type="radio" name="apm" value="1" v-model="event.apm">
+                {{ $t('event.morning') }} 
+              </label>
+              <label>
+                <input type="radio" name="apm" value="2" v-model="event.apm">
+                {{ $t('event.afternoon') }} 
+              </label>
+              <label>
+                <input type="radio" name="apm" value="3" v-model="event.apm">
+                {{ $t('event.night') }} 
+              </label>
+              <label>
+                <input type="radio" name="apm" value="4" v-model="event.apm">
+                {{ $t('event.allday') }} 
+              </label>
             </div>
           </div> 
-          <!-- datepicker --> 
-          <div class="col-xs-6 no-padding">
-            <div class="input-group"> 
-              <div class="input-group-addon"> 
-                <i class="fa fa-calendar"></i> 
-              </div> 
-              <input type="text" name="eventdate" class="form-control datepicker" v-model="event.eventdate" :placeholder="$t('event.eventdate')" readonly /> 
-            </div>
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group"> 
-              <div class="radio padding-left3">
-                <label>
-                  <input type="radio" name="apm" value="1" v-model="event.apm">
-                  {{ $t('event.morning') }} 
-                </label>
-                <label>
-                  <input type="radio" name="apm" value="2" v-model="event.apm">
-                  {{ $t('event.afternoon') }} 
-                </label>
-                <label>
-                  <input type="radio" name="apm" value="3" v-model="event.apm">
-                  {{ $t('event.night') }} 
-                </label>
-                <label>
-                  <input type="radio" name="apm" value="4" v-model="event.apm">
-                  {{ $t('event.allday') }} 
-                </label>
-              </div>
+        </div>
+        <div class="col-xs-6 no-padding">
+          <div class="input-group"> 
+            <div class="input-group-addon"> 
+              <input type="radio" name="apm" value="5" v-model="event.apm" /> 
             </div> 
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group"> 
-              <div class="input-group-addon"> 
-                <input type="radio" name="apm" value="5" v-model="event.apm" /> 
-              </div> 
-              <input type="text" id="stime" class="form-control datepickertime" disabled v-model="event.from.time" /> 
-              <div class="input-group-addon"> 
-                〜
-              </div> 
-              <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.to.time" /> 
+            <input type="text" id="stime" class="form-control datepickertime" disabled v-model="event.from.time" /> 
+            <div class="input-group-addon"> 
+              〜
             </div> 
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-male"></i></span>
-              <input type="text" class="form-control" name="partner" v-model="event.partner" :placeholder="$t('event.partner')">
-            </div>
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-jpy"></i></span>
-              <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')">
-            </div>
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-shopping-cart"></i></span>
-              <select2 :options="options5" :change="true" @change="getProductlist" id="product_list_id" :selected="event.product_list_id" :placeholder="$t('event.shoppingListId')" :multiple="false"></select2>
-            </div>
-          </div>
-          <div class="col-xs-12 no-padding">
-          <div class="col-xs-6 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-phone"></i></span>
-              <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
-            </div>
-          </div>
-          <div class="col-xs-6 no-padding">
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
-              <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
-            </div>
-          </div>
-          </div>
+            <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.to.time" /> 
+          </div> 
+        </div>
+        <div class="col-xs-6 no-padding">
           <div class="input-group">
-            <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
-            <input type="text" class="form-control" name="fromadd" v-model="event.from.address" :placeholder="$t('event.fromAddress')">
-            <span class="input-group-btn">
-              <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
-            </span>
-          </div>
-          <div class="input-group">
-            <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
-            <input type="text" class="form-control" name="toadd" v-model="event.to.address" :placeholder="$t('event.toAddress')">
-            <span class="input-group-btn">
-              <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
-            </span>
-          </div>
-          <div class="form-group">
-            <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
-          </div>
-          <div v-show="hasFile" class='col-xs-12 no-padding'>
-            <div class="gallery">
-              <div v-for="(file, key) in event.files" class="col-xs-2 no-padding marginb8">
-                <a :href="'/uploads/' + file" class="thumbnail" :title="file | truncate(25)">
-                  <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
-                </a>
-                <div class='text-right'>
-                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">{{ $t('global.remove') }}</button>
-                </div>
-              </div>
-              <div v-for="(img, key) in event.productlistimgs" class="col-xs-2 no-padding marginb8">
-                <a :href="img" class="thumbnail" :title="img | truncate(25)">
-                  <img :src="img" :alt="img">
-                </a>
-                <div class='text-right'>
-                  <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.productlistimgs[key], 2)">{{ $t('global.remove') }}</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <upload-file :fileAccept="fileAccept" @update-file="updateFiles" @update-loading="setLoading" @error-push="errorPush"></upload-file>
+            <span class="input-group-addon"><i class="fa fa-male"></i></span>
+            <input type="text" class="form-control" name="partner" v-model="event.partner" :placeholder="$t('event.partner')">
           </div>
         </div>
-        <!-- /.box-body -->
-        <div class="box-footer">
-          <div v-if="errors.length">
-            <b>{{ $t('event.PleaseCorrectTheFollowingError') }}:</b>
-            <ul>
-              <li v-for="error in errors">{{ error }}</li>
-            </ul>
+        <div class="col-xs-6 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-jpy"></i></span>
+            <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')">
           </div>
-          <button type="button" class="btn btn-default" @click="$emit('hideform', eventdate)">{{ $t('global.Cancel') }}</button>
-          <button @click="checkForm" type="button" class="btn btn-primary pull-right">{{ $t('global.Submit') }}</button> 
+        </div>
+        <div class="col-xs-6 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-shopping-cart"></i></span>
+            <select2 :options="options.product_list" :change="true" @change="getProductlist" id="product_list_id" :selected="event.product_list_id" :placeholder="$t('event.shoppingListId')" :multiple="false"></select2>
+          </div>
+        </div>
+        <div class="col-xs-12 no-padding">
+        <div class="col-xs-6 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+            <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
+          </div>
+        </div>
+        <div class="col-xs-6 no-padding">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
+            <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
+          </div>
+        </div>
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
+          <input type="text" class="form-control" name="fromadd" v-model="event.from.address" :placeholder="$t('event.fromAddress')">
+          <span class="input-group-btn">
+            <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
+          </span>
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
+          <input type="text" class="form-control" name="toadd" v-model="event.to.address" :placeholder="$t('event.toAddress')">
+          <span class="input-group-btn">
+            <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsTo }}</button>
+          </span>
+        </div>
+        <div class="form-group">
+          <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
+        </div>
+        <div v-show="hasFile" class='col-xs-12 no-padding'>
+          <div class="gallery">
+            <div v-for="(file, key) in event.files" class="col-xs-2 no-padding marginb8">
+              <a :href="'/uploads/' + file" class="thumbnail" :title="file | truncate(25)">
+                <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
+              </a>
+              <div class='text-right'>
+                <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">{{ $t('global.remove') }}</button>
+              </div>
+            </div>
+            <div v-for="(img, key) in event.productlistimgs" class="col-xs-2 no-padding marginb8">
+              <a :href="img" class="thumbnail" :title="img | truncate(25)">
+                <img :src="img" :alt="img">
+              </a>
+              <div class='text-right'>
+                <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.productlistimgs[key], 2)">{{ $t('global.remove') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <upload-file :fileAccept="fileAccept" @update-file="updateFiles" @update-loading="setLoading" @error-push="errorPush"></upload-file>
         </div>
       </div>
-    </section>
+      <!-- /.box-body -->
+      <div class="box-footer">
+        <div v-if="errors.length">
+          <b>{{ $t('event.PleaseCorrectTheFollowingError') }}:</b>
+          <ul>
+            <li v-for="error in errors">{{ error }}</li>
+          </ul>
+        </div>
+        <button type="button" class="btn btn-default" @click="$emit('closeform')">{{ $t('global.Cancel') }}</button>
+        <button @click="checkForm" type="button" class="btn btn-primary pull-right">{{ $t('global.Submit') }}</button> 
+      </div>
+    </div>
     
     <modal v-if="showConfirmModal" @close="showConfirmModal = false" @sure="setSure">
     </modal>
@@ -271,13 +269,15 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid'],
+  props: ['eventdate', 'eventid', 'formoptions'],
   mounted() {
     var self = this;
     this.setDatePicker()
-    this.get_types()
+    // this.get_types()
+    this.options = this.formoptions;
     if(self.eventid) {
-      this.event.id = self.eventid;
+      // this.event.id = self.eventid;
+      this.getEvent(self.eventid);
     } else if(self.eventdate) {
       this.event.eventdate = self.eventdate;
     }
@@ -289,12 +289,13 @@ export default {
   },
   data() {
     return {
-      options1: [],
-      options2: [],
-      options3: [],
-      options4: [],
-      options5: [],
-      options6: [],
+      options: [],
+      // options1: [],
+      // options2: [],
+      // options3: [],
+      // options4: [],
+      // options5: [],
+      // options6: [],
       value: [],
       placeholder: "",
       errors: [],
@@ -364,6 +365,9 @@ export default {
         this.event.from.time = "";
         this.event.to.time = "";
       }
+    },
+    eventdata() {
+      console.log(this.eventdata);
     }
   },
   computed: {
@@ -378,8 +382,8 @@ export default {
           noScrollbars: true
         });
       }
-      var pos = $("#boxtitle").offset().top;
-      $(window).scrollTop(pos);
+      // var pos = $("#boxtitle").offset().top;
+      // $(window).scrollTop(pos);
     })
   },
   methods: {
@@ -411,51 +415,51 @@ export default {
         }
       })
     },
-    get_types() {
-      var eid = "";
-      if(this.eventid) {
-        eid = this.eventid;
-      }
-      this.$http({
-        url: '/api/get_types/' + eid,
-        method: 'GET'
-      }).then(res =>  {
-        for (var index in res.data.types) {
-          var group_id = res.data.types[index].group_id;
-          var option = {};
-          option.id = res.data.types[index].id;
-          option.text = res.data.types[index].name;
-          switch (+group_id) {
-            case 1:
-              this.options1.push(option);
-              break;
-            case 2:
-              this.options2.push(option);
-              break;
-            case 3:
-              this.options3.push(option);
-              break;
-            case 4:
-              this.options4.push(option);
-              break;
-            case 5:
-              this.options6.push(option);
-              break;
-            default:
-              break;
-          }
-        }
-        for (var index in res.data.productlists) {
-          var option = {};
-          option.id = res.data.productlists[index].id;
-          option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
-          this.options5.push(option);
-        }
-        if(this.event.id) {
-          this.getEvent(this.event.id);
-        }
-      })
-    },
+    // get_types() {
+    //   var eid = "";
+    //   if(this.eventid) {
+    //     eid = this.eventid;
+    //   }
+    //   this.$http({
+    //     url: '/api/get_types/' + eid,
+    //     method: 'GET'
+    //   }).then(res =>  {
+    //     for (var index in res.data.types) {
+    //       var group_id = res.data.types[index].group_id;
+    //       var option = {};
+    //       option.id = res.data.types[index].id;
+    //       option.text = res.data.types[index].name;
+    //       switch (+group_id) {
+    //         case 1:
+    //           this.options1.push(option);
+    //           break;
+    //         case 2:
+    //           this.options2.push(option);
+    //           break;
+    //         case 3:
+    //           this.options3.push(option);
+    //           break;
+    //         case 4:
+    //           this.options4.push(option);
+    //           break;
+    //         case 5:
+    //           this.options6.push(option);
+    //           break;
+    //         default:
+    //           break;
+    //       }
+    //     }
+    //     for (var index in res.data.productlists) {
+    //       var option = {};
+    //       option.id = res.data.productlists[index].id;
+    //       option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
+    //       this.options5.push(option);
+    //     }
+    //     if(this.event.id) {
+    //       this.getEvent(this.event.id);
+    //     }
+    //   })
+    // },
     checkForm:function(e) {
       this.errors = [];
       if(!this.event.eventdate){
@@ -511,7 +515,9 @@ export default {
           // this.$router.push('/admin');
           var ymd = response.data.event_date;
           // this.get_events(ymd.substring(0,7), ymd);
-          this.$emit('addevent', ymd.substring(0,7));
+          this.$emit('addedevent', ymd);
+          // this.$emit('update-events', ymd.substring(0,7));
+          // this.$emit('closeform');
           this.loadingShow = false;
         }).catch(error => {
           this.errors.push(this.$t('global.calltheadministrator'));
