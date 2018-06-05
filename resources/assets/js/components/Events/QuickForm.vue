@@ -503,7 +503,8 @@ export default {
       this.loadingShow = true;
       if(this.event.id) {
         this.$http.put('/admin/event/' + this.event.id, this.event).then(response => {
-          this.$emit('update', response.data);
+          var ymd = response.data.event_date;
+          this.$emit('addedevent', ymd);
           this.loadingShow = false;
         }).catch(error => {
           this.errors.push(this.$t('global.calltheadministrator'));

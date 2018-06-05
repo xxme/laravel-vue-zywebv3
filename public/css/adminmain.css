@@ -212,8 +212,11 @@ tr.detail-row.open {
 .detail-row th {
     font-weight: 400;
 }
-.completedevent {
+.completedevent, .eventdescription {
     display: none;
+}
+.showdescription {
+    display: block!important;
 }
 .completedeventbg {
     background-image: url('../images/completed.png');

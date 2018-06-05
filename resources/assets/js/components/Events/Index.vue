@@ -104,9 +104,7 @@
 <script>
 import Vue from 'vue'
 import moment from 'moment'
-// import baguetteBox from 'baguettebox.js'
 import UniverseNav from '../Public/UniverseNav'
-// import Select2 from './Select2'
 import QuickForm from './QuickForm.vue';
 import EventItem from './EventItem.vue';
 
@@ -120,7 +118,7 @@ export default {
       events_list: [],
       user_list: [],
       show_list: [],
-      events: [],
+      events: {},
       eventdate: "",
       eventid: 0,
       holidays: [],
@@ -140,23 +138,6 @@ export default {
         truck: [],
         product_list: []
       },
-      // completeinfo: {
-      //   eventid: "",
-      //   eventkey: "",
-      //   haspartner: false,
-      //   price: 0,
-      //   expenditure: 0,
-      //   tingche: 0,
-      //   canyin: 0,
-      //   gaosu: 0,
-      //   jiayou: 0,
-      //   maihuo: 0,
-      //   other: 0,
-      //   rmb: 0,
-      //   jpy: 0,
-      //   sta: 1,
-      //   payee: ""
-      // },
       fee: {
         users: [],
         finance: {
@@ -192,7 +173,6 @@ export default {
   //   })
   // },
   components: {
-    // Select2,
     EventItem,
     UniverseNav,
     QuickForm
@@ -220,11 +200,6 @@ export default {
             this.events_list = res.data.events;
             this.setEvents();
             
-            // jump ymd
-            // if(ymd) {
-            //   var pos = $("#date"+ymd).offset().top;
-            //   $(window).scrollTop(pos);
-            // }
           }
       })
     },
@@ -266,31 +241,10 @@ export default {
       this.fee.finance.fxrmb = 0;
       this.fee.finance.fxjpy = 0;
     },
-    // createEvent(date = '') {
-    //   this.eventid = 0;
-    //   this.eventdate = date;
-    //   this.showQuickForm = true;
-    // },
-    // editEvent(eventid) {
-    //   this.eventid = eventid;
-    //   this.showQuickForm = true;
-    // },
-    // updateEvent(event) {
-    //   this.showQuickForm = false;
-    //   for(var index in this.events_list) {
-    //     if(event.id == this.events_list[index].id) {
-    //       this.events_list[index] = event;
-    //     }
-    //   }
-    // },
-    // addEvent(ym) {
-    //   this.showQuickForm = false;
-    //   this.showYmd = moment(ym + '-01').format('YYYY-MM-DD');
-    //   this.get_events(ym);
-    // },
     setEvents(type = 1) {
       // type 1 未完成 2 全部
       this.events = [];
+      var view = $('#calendartodo').fullCalendar('getView');
       for(var i in this.events_list) {
         var eventObj = new Object();
         var amount = "";
@@ -304,17 +258,17 @@ export default {
           case 1:
             eventObj.start += 'T08:00:00';
             eventObj.end = this.events_list[i].event_date + 'T12:00:00';
-            apm = ' '+this.$i18n.t('event.morning')+'\n';
+            apm = ' '+this.$i18n.t('event.morning');
             break;
           case 2:
             eventObj.start += 'T12:00:00';
             eventObj.end = this.events_list[i].event_date + 'T18:00:00';
-            apm = ' '+this.$i18n.t('event.afternoon')+'\n';
+            apm = ' '+this.$i18n.t('event.afternoon');
             break;
           case 3:
             eventObj.start += 'T18:00:00';
             eventObj.end = this.events_list[i].event_date + 'T21:00:00';
-            apm = ' '+this.$i18n.t('event.night')+'\n';
+            apm = ' '+this.$i18n.t('event.night');
             break;
           case 5:
             if(this.events_list[i].start_time) {
@@ -326,33 +280,122 @@ export default {
             break;
           default:
             eventObj.allDay = true;
-            apm = ' '+this.$i18n.t('event.alldayT')+'\n';
+            apm = ' '+this.$i18n.t('event.alldayT');
             break;
         }
         
-        eventObj.title = amount+apm+this.events_list[i].typenames.join(", ");
-        var description = "";
+        eventObj.title = amount+apm;
+        var truck = '';
+        if(this.events_list[i].trucks.length > 0) {
+          truck = '<i class="fa fa-truck"></i> '+this.events_list[i].trucks.join(", ")+'<br/>';
+        }
+        var typenames = '<b><i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'</b>'+'<br/>';
+        if(view && view.name == 'agendaDay') {
+          var description = '<div class="eventdescription showdescription">';
+        } else {
+          var description = '<div class="eventdescription">';
+        }
+        if(this.events_list[i].carefulnames.length > 0) {
+          description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
+        }
+        if(this.events_list[i].totalname) {
+          description += '<i class="fa fa-cubes"></i> '+this.events_list[i].totalname+'<br/>';
+        }
+        if(this.events_list[i].goods.length > 0) {
+          description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
+        }
         if(this.events_list[i].details.phone) {
-          description += this.events_list[i].details.phone;
+          description += '<i class="fa fa-phone"></i> '+this.events_list[i].details.phone;
         }
         if(this.events_list[i].details.wechat) {
-          if(description != "") {
-            description += ' ';
-          }
-          description += this.events_list[i].details.wechat;
+          description += ' <i class="fa fa-wechat"></i> '+this.events_list[i].details.wechat;
         }
-        eventObj.description = description;
-        if(this.events_list[i].types.indexOf(5) > -1) {
+        if(this.events_list[i].details.phone || this.events_list[i].details.wechat) {
+          description += '<br/>';
+        }
+        if(this.events_list[i].partner) {
+          description += ' <i class="fa fa-male"></i> '+this.events_list[i].partner;
+        }
+        if(this.events_list[i].product_list_id) {
+          description += ' <i class="fa fa-shopping-cart"></i> '+this.events_list[i].product_list_id;
+        }
+        if(this.events_list[i].order_id) {
+          description += ' <i class="fa fa-comments-o"></i> '+this.events_list[i].order_id;
+        }
+        if(this.events_list[i].partner || this.events_list[i].product_list_id || this.events_list[i].order_id) {
+          description += '<br/>';
+        }
+        if(this.events_list[i].details.from_address) {
+          description += 'From: '+this.events_list[i].details.from_address;
+          if(this.events_list[i].details.from_elevator == 1) {
+            description += ' '+this.$t('event.elevator');
+          } else if(this.events_list[i].details.from_elevator == 2) {
+            description += ' '+this.$t('event.stairs');
+          } else if(this.events_list[i].details.from_elevator == 3) {
+            description += ' '+this.$t('event.elevatorAndstairs');
+          }
+          if(this.events_list[i].details.from_floor) {
+            description += ' '+this.events_list[i].details.from_floor;
+            if(this.events_list[i].details.from_floor > 9) {
+              description += '+';
+            }
+            description += ' '+this.$t('event.floor');
+          }
+          description += '<br/>';
+        }
+        if(this.events_list[i].details.to_address) {
+          description += 'To: '+this.events_list[i].details.to_address;
+          if(this.events_list[i].details.to_elevator == 1) {
+            description += ' '+this.$t('event.elevator');
+          } else if(this.events_list[i].details.to_elevator == 2) {
+            description += ' '+this.$t('event.stairs');
+          } else if(this.events_list[i].details.to_elevator == 3) {
+            description += ' '+this.$t('event.elevatorAndstairs');
+          }
+          if(this.events_list[i].details.to_floor) {
+            description += ' '+this.events_list[i].details.to_floor;
+            if(this.events_list[i].details.to_floor > 9) {
+              description += '+';
+            }
+            description += ' '+this.$t('event.floor');
+          }
+          description += '<br/>';
+        }
+        if(this.events_list[i].images.length > 0) {
+          description += '<i class="fa fa-image"></i> '+this.events_list[i].images.length+' ';
+        }
+        if(this.events_list[i].comments.length > 0) {
+          description += '<i class="fa fa-comments"></i> '+this.events_list[i].comments.length+' ';
+        }
+        description += '</div>';
+        eventObj.description = truck + typenames + description;
+        if(this.events_list[i].types.indexOf('"5"') > -1) {
           // 見積
           eventObj.color = '#d81b60';
-        } else if (this.events_list[i].types.indexOf(19) > -1) {
+        } else if (this.events_list[i].types.indexOf('"19"') > -1) {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#001f3f';
-        } else if (this.events_list[i].types.indexOf(4) > -1) {
+        } else if (this.events_list[i].types.indexOf('"4"') > -1) {
           // 見積もり已完成  正在考虑
           eventObj.color = '#A9A9A9';
+        } else if (
+            this.events_list[i].types.indexOf('"12"') > -1 ||
+            this.events_list[i].types.indexOf('"13"') > -1 ||
+            this.events_list[i].types.indexOf('"14"') > -1 ||
+            this.events_list[i].types.indexOf('"15"') > -1 ||
+            this.events_list[i].types.indexOf('"16"') > -1
+          ) {
+          // 店内工作(邮寄纸箱)
+          eventObj.color = '#66aac9';
+          eventObj.start = this.events_list[i].event_date + 'T21:00:00';
+          eventObj.end = this.events_list[i].event_date + 'T23:59:59';
+        } else if(this.events_list[i].types.indexOf('"18"') > -1) {
+          // 店内工作(客人来店)
+          eventObj.color = '#66aac9';
         }
+        // 普通日程未完成
+        // if(this.events_list[i].status == 1)
         if((type == 1 && this.events_list[i].status == 1) || type == 2) {
           this.events.push(eventObj);
         }
@@ -608,9 +651,10 @@ export default {
       }
     },
     addedevent(ymd) {
-      $('#calendartodo').fullCalendar('gotoDate', ymd);
+      $('#calendartodo').fullCalendar('changeView', 'agendaDay', ymd);
       this.get_events(ymd.substring(0,7));
       this.showformflag = false;
+      this.showCalendarFlag = true;
     },
     editevent(id, date = '') {
       this.eventid = id;
@@ -740,7 +784,7 @@ Vue.component('todo', {
       events: self.events,
       defaultDate: moment().format('YYYY-MM-DD'),
       minTime: '08:00:00',
-      maxTime: '21:00:00',
+      maxTime: '23:00:00',
       header: {
         left: 'title createEventButton',
         right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
@@ -748,6 +792,7 @@ Vue.component('todo', {
       // 日付クリックイベント
       dayClick: function(date, jsEvent, view) {
         self.$emit('showevents', date.format());
+        self.gotoDate(date.format());
       },
       navLinks: true,
       navLinkDayClick: function(date, jsEvent) {
@@ -772,6 +817,12 @@ Vue.component('todo', {
           $(".fc-tomorrowButton-button").prop("disabled", false);
           $(".fc-tomorrowButton-button").removeClass('fc-state-disabled');
         }
+        if(view.name == 'agendaDay') {
+          $(".eventdescription").css('display', 'block');
+        } else {
+          $(".eventdescription").css('display', 'none');
+        }
+        $(".eventdescription").removeClass('showdescription');
       },
       eventRender: function(event, element) {
         self.showdescription(event, element);
@@ -819,8 +870,12 @@ Vue.component('todo', {
     }
   },
   methods: {
-    gotoDate() {
-      $(this.$el).fullCalendar('gotoDate', moment().add(1, 'd'));
+    gotoDate(date = '') {
+      if(date) {
+        $(this.$el).fullCalendar('gotoDate', date);
+      } else {
+        $(this.$el).fullCalendar('gotoDate', moment().add(1, 'd'));
+      }
     },
     setFirstDay() {
       $(this.$el).fullCalendar('option', 'firstDay', moment().subtract(1, 'd').day());
