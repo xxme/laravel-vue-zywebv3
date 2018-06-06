@@ -94,7 +94,7 @@
           </div>
           <!-- /.tab-content -->
         </div>
-        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" @editevent="editevent" @showCalendar="showCalendar"></event-item>
+        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
       </section>
     </div>
@@ -104,7 +104,6 @@
 <script>
 import Vue from 'vue'
 import moment from 'moment'
-import UniverseNav from '../Public/UniverseNav'
 import QuickForm from './QuickForm.vue';
 import EventItem from './EventItem.vue';
 
@@ -158,23 +157,11 @@ export default {
   },
   // updated: function () {
   //   this.$nextTick(function () {
-  //     baguetteBox.run('.gallery', {
-  //       noScrollbars: true
-  //     });
-  //     if(!this.showQuickForm && this.eventid) {
-  //       var pos = $("#event"+this.eventid).offset().top;
-  //       $(window).scrollTop(pos);
-  //       this.eventid = 0;
-  //     } else if(!this.showQuickForm && this.eventdate) {
-  //       var pos = $("#date"+this.eventdate).offset().top;
-  //       $(window).scrollTop(pos);
-  //       this.eventdate = "";
-  //     }
+  //     
   //   })
   // },
   components: {
     EventItem,
-    UniverseNav,
     QuickForm
   },
   methods: {
@@ -199,7 +186,6 @@ export default {
           } else {
             this.events_list = res.data.events;
             this.setEvents();
-            
           }
       })
     },
@@ -243,6 +229,12 @@ export default {
     },
     setEvents(type = 1) {
       // type 1 未完成 2 全部
+      // auto set showCompleted flag
+      if(type == 1) {
+        this.showCompleted = false;
+      } else {
+        this.showCompleted = true;
+      }
       this.events = [];
       var view = $('#calendartodo').fullCalendar('getView');
       for(var i in this.events_list) {
@@ -289,86 +281,112 @@ export default {
         if(this.events_list[i].trucks.length > 0) {
           truck = '<i class="fa fa-truck"></i> '+this.events_list[i].trucks.join(", ")+'<br/>';
         }
-        var typenames = '<b><i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'</b>'+'<br/>';
-        if(view && view.name == 'agendaDay') {
-          var description = '<div class="eventdescription showdescription">';
+        var typenames = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'<br/>';
+        if(this.events_list[i].status == 1) {
+          // 未完成
+          // description well show on agendaDay view only.
+          // completed well show on any views.
+          if(view && view.name == 'agendaDay') {
+            var description = '<div class="eventdescription showdescription">';
+          } else {
+            var description = '<div class="eventdescription">';
+          }
+          if(this.events_list[i].carefulnames.length > 0) {
+            description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
+          }
+          if(this.events_list[i].totalname) {
+            description += '<i class="fa fa-cubes"></i> '+this.events_list[i].totalname+'<br/>';
+          }
+          if(this.events_list[i].goods.length > 0) {
+            description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
+          }
+          if(this.events_list[i].details.phone) {
+            description += '<i class="fa fa-phone"></i> '+this.events_list[i].details.phone;
+          }
+          if(this.events_list[i].details.wechat) {
+            description += ' <i class="fa fa-wechat"></i> '+this.events_list[i].details.wechat;
+          }
+          if(this.events_list[i].details.phone || this.events_list[i].details.wechat) {
+            description += '<br/>';
+          }
+          if(this.events_list[i].partner) {
+            description += ' <i class="fa fa-male"></i> '+this.events_list[i].partner;
+          }
+          if(this.events_list[i].product_list_id) {
+            description += ' <i class="fa fa-shopping-cart"></i> '+this.events_list[i].product_list_id;
+          }
+          if(this.events_list[i].order_id) {
+            description += ' <i class="fa fa-comments-o"></i> '+this.events_list[i].order_id;
+          }
+          if(this.events_list[i].partner || this.events_list[i].product_list_id || this.events_list[i].order_id) {
+            description += '<br/>';
+          }
+          if(this.events_list[i].details.from_address) {
+            description += 'From: '+this.events_list[i].details.from_address;
+            if(this.events_list[i].details.from_elevator == 1) {
+              description += ' '+this.$t('event.elevator');
+            } else if(this.events_list[i].details.from_elevator == 2) {
+              description += ' '+this.$t('event.stairs');
+            } else if(this.events_list[i].details.from_elevator == 3) {
+              description += ' '+this.$t('event.elevatorAndstairs');
+            }
+            if(this.events_list[i].details.from_floor > 0) {
+              description += ' '+this.events_list[i].details.from_floor;
+              if(this.events_list[i].details.from_floor > 9) {
+                description += '+';
+              }
+              description += ' '+this.$t('event.floor');
+            }
+            description += '<br/>';
+          }
+          if(this.events_list[i].details.to_address) {
+            description += 'To: '+this.events_list[i].details.to_address;
+            if(this.events_list[i].details.to_elevator == 1) {
+              description += ' '+this.$t('event.elevator');
+            } else if(this.events_list[i].details.to_elevator == 2) {
+              description += ' '+this.$t('event.stairs');
+            } else if(this.events_list[i].details.to_elevator == 3) {
+              description += ' '+this.$t('event.elevatorAndstairs');
+            }
+            if(this.events_list[i].details.to_floor > 0) {
+              description += ' '+this.events_list[i].details.to_floor;
+              if(this.events_list[i].details.to_floor > 9) {
+                description += '+';
+              }
+              description += ' '+this.$t('event.floor');
+            }
+            description += '<br/>';
+          }
+          if(this.events_list[i].images.length > 0) {
+            description += '<i class="fa fa-image"></i> '+this.events_list[i].images.length+' ';
+          }
+          if(this.events_list[i].comments.length > 0) {
+            description += '<i class="fa fa-comments"></i> '+this.events_list[i].comments.length+' ';
+          }
+          description += '</div>';
+          eventObj.description = truck + '<b>' + typenames + '</b>' + description;
+          eventObj.completed = '';
         } else {
-          var description = '<div class="eventdescription">';
-        }
-        if(this.events_list[i].carefulnames.length > 0) {
-          description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
-        }
-        if(this.events_list[i].totalname) {
-          description += '<i class="fa fa-cubes"></i> '+this.events_list[i].totalname+'<br/>';
-        }
-        if(this.events_list[i].goods.length > 0) {
-          description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
-        }
-        if(this.events_list[i].details.phone) {
-          description += '<i class="fa fa-phone"></i> '+this.events_list[i].details.phone;
-        }
-        if(this.events_list[i].details.wechat) {
-          description += ' <i class="fa fa-wechat"></i> '+this.events_list[i].details.wechat;
-        }
-        if(this.events_list[i].details.phone || this.events_list[i].details.wechat) {
-          description += '<br/>';
-        }
-        if(this.events_list[i].partner) {
-          description += ' <i class="fa fa-male"></i> '+this.events_list[i].partner;
-        }
-        if(this.events_list[i].product_list_id) {
-          description += ' <i class="fa fa-shopping-cart"></i> '+this.events_list[i].product_list_id;
-        }
-        if(this.events_list[i].order_id) {
-          description += ' <i class="fa fa-comments-o"></i> '+this.events_list[i].order_id;
-        }
-        if(this.events_list[i].partner || this.events_list[i].product_list_id || this.events_list[i].order_id) {
-          description += '<br/>';
-        }
-        if(this.events_list[i].details.from_address) {
-          description += 'From: '+this.events_list[i].details.from_address;
-          if(this.events_list[i].details.from_elevator == 1) {
-            description += ' '+this.$t('event.elevator');
-          } else if(this.events_list[i].details.from_elevator == 2) {
-            description += ' '+this.$t('event.stairs');
-          } else if(this.events_list[i].details.from_elevator == 3) {
-            description += ' '+this.$t('event.elevatorAndstairs');
-          }
-          if(this.events_list[i].details.from_floor) {
-            description += ' '+this.events_list[i].details.from_floor;
-            if(this.events_list[i].details.from_floor > 9) {
-              description += '+';
+          // 完成
+          eventObj.completed = '<i class="ace-icon fa fa-check-square-o"></i> ';
+          
+          if(this.events_list[i].partner && this.events_list[i].expense.fxrmb == 0 && this.events_list[i].expense.fxjpy == 0) {
+            eventObj.completed += '<span style="color:#ffff4d">'+ this.$t('event.unpaid') +'</span>';
+          } else if(this.events_list[i].expense.finalprice > 0 || this.events_list[i].expense.expenditure > 0) {
+            if(this.events_list[i].expense.finalprice > 0) {
+              eventObj.completed += this.$t('event.receipt')+':';
+              eventObj.completed += this.$parent.$options.methods.formatNumberJPY(this.events_list[i].expense.finalprice);
             }
-            description += ' '+this.$t('event.floor');
-          }
-          description += '<br/>';
-        }
-        if(this.events_list[i].details.to_address) {
-          description += 'To: '+this.events_list[i].details.to_address;
-          if(this.events_list[i].details.to_elevator == 1) {
-            description += ' '+this.$t('event.elevator');
-          } else if(this.events_list[i].details.to_elevator == 2) {
-            description += ' '+this.$t('event.stairs');
-          } else if(this.events_list[i].details.to_elevator == 3) {
-            description += ' '+this.$t('event.elevatorAndstairs');
-          }
-          if(this.events_list[i].details.to_floor) {
-            description += ' '+this.events_list[i].details.to_floor;
-            if(this.events_list[i].details.to_floor > 9) {
-              description += '+';
+            if(this.events_list[i].expense.expenditure > 0) {
+              eventObj.completed += this.$t('event.expenditure')+':';
+              eventObj.completed += this.$parent.$options.methods.formatNumberJPY(this.events_list[i].expense.expenditure);
             }
-            description += ' '+this.$t('event.floor');
+          } else {
+            eventObj.completed += '<b>'+this.$t('finance.completed')+'</b>';
           }
-          description += '<br/>';
+          eventObj.description = truck + typenames;
         }
-        if(this.events_list[i].images.length > 0) {
-          description += '<i class="fa fa-image"></i> '+this.events_list[i].images.length+' ';
-        }
-        if(this.events_list[i].comments.length > 0) {
-          description += '<i class="fa fa-comments"></i> '+this.events_list[i].comments.length+' ';
-        }
-        description += '</div>';
-        eventObj.description = truck + typenames + description;
+        
         if(this.events_list[i].types.indexOf('"5"') > -1) {
           // 見積
           eventObj.color = '#d81b60';
@@ -376,8 +394,8 @@ export default {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#001f3f';
-        } else if (this.events_list[i].types.indexOf('"4"') > -1) {
-          // 見積もり已完成  正在考虑
+        } else if (this.events_list[i].types.indexOf('"4"') > -1 || this.events_list[i].status == 2) {
+          // 見積もり已完成  正在考虑  || 完成
           eventObj.color = '#A9A9A9';
         } else if (
             this.events_list[i].types.indexOf('"12"') > -1 ||
@@ -394,7 +412,7 @@ export default {
           // 店内工作(客人来店)
           eventObj.color = '#66aac9';
         }
-        // 普通日程未完成
+        // 普通未完成
         // if(this.events_list[i].status == 1)
         if((type == 1 && this.events_list[i].status == 1) || type == 2) {
           this.events.push(eventObj);
@@ -458,187 +476,6 @@ export default {
         }
       }
     },
-    // makered(eventid) {
-    //   var dom = $(".col-md-12").find("[data-box='box" + eventid + "']");
-    //   if(dom.hasClass('makered')) {
-    //     dom.removeClass('makered');
-    //   } else {
-    //     $(".box-body").each(function(i) {
-    //       if($(this).hasClass('makered')){
-    //         $(this).removeClass('makered');
-    //       }
-    //     });
-    //     dom.addClass('makered');
-    //   }
-    // },
-    // formatDateWithWeekname(date) {
-    //   if(this.$i18n.locale == 'cn') {
-    //     moment.locale('cn', {weekdays: ["日","一","二","三","四","五","六"]});
-    //     var weekname = moment(date).format('星期dddd');
-    //     moment.locale('ja', {weekdays: ["日","月","火","水","木","金","土"]});
-    //     weekname += moment(date).format('(dddd)');
-    //   } else {
-    //     moment.locale('ja');
-    //     weekname = moment(date).format('dddd');
-    //   }
-    //   if(this.holidays && this.holidays[date]) {
-    //     weekname += ' '+this.holidays[date];
-    //   }
-
-    //   return moment(date).format('YYYY年MM月DD日') + ' ' + weekname;
-    // },
-    // formatNumberJPY(number) {
-    //   if(number) {
-    //     return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(number);
-    //   } else {
-    //     return '';
-    //   }
-    // },
-    // getDateColor(date) {
-    //   moment.locale('cn', {weekdays: ["日","一","二","三","四","五","六"]});
-    //   if(moment(date).format('dddd') == '日' || this.holidays[date]) {
-    //     return 1;
-    //   } else if(moment(date).format('dddd') == '六') {
-    //     return 2;
-    //   }
-    //   return false;
-    // },
-    // sendcomment(eventid) {
-    //   var val = $('#comment'+eventid).val();
-    //   if(val) {
-    //     var formData = new FormData();
-    //     formData.append("event_id", eventid);
-    //     formData.append("content", val);
-    //     this.$http.post('/admin/comment', formData).then(response => {
-    //       var comment = response.data;
-    //       for(var key in this.events_list) {
-    //         if(this.events_list[key].id == eventid){
-    //           this.events_list[key].comments.push(comment);
-    //         }
-    //       }
-    //       $('#comment'+eventid).val('');
-    //     })
-    //   }
-    // },
-    // deleteevent(eventid, listid) {
-    //   var message = this.$t('event.delwarning');
-    //   if(listid) {
-    //     message += this.$t('event.listWellBeDel')
-    //   }
-    //   if(window.confirm(message)) {
-    //     this.$http.delete('/admin/event/'+eventid).then(response => {
-    //       if(response) {
-    //         for(var key in this.events_list) {
-    //           if(this.events_list[key].id == eventid){
-    //             this.events_list.splice(key, 1);
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
-    // },
-    // deletecomment(commentid) {
-    //   if(window.confirm('Are you sure delete comment?')) {
-    //     this.$http.delete('/admin/comment/'+commentid).then(response => {
-    //       if(response) {
-    //         for(var key in this.events_list) {
-    //           for(var k in this.events_list[key].comments) {
-    //             if(this.events_list[key].comments[k].id == commentid){
-    //               var index = this.events_list[key].comments.indexOf(this.events_list[key].comments[k]);
-    //               this.events_list[key].comments.splice(index, 1);
-    //             }
-    //           }
-    //         }
-    //       }
-    //     })
-    //   }
-    // },
-    // completeEvent(eventid) {
-    //   for(var key in this.events_list) {
-    //     if(this.events_list[key].id == eventid) {
-    //       if(this.events_list[key].expense) {
-    //         this.completeinfo.tingche = this.events_list[key].expense.zctingche;
-    //         this.completeinfo.canyin = this.events_list[key].expense.zccanyin;
-    //         this.completeinfo.gaosu = this.events_list[key].expense.zcgaosu;
-    //         this.completeinfo.jiayou = this.events_list[key].expense.zcjiayou;
-    //         this.completeinfo.maihuo = this.events_list[key].expense.zcmaihuo;
-    //         this.completeinfo.other = this.events_list[key].expense.zcother;
-    //         this.completeinfo.rmb = this.events_list[key].expense.fxrmb;
-    //         this.completeinfo.jpy = this.events_list[key].expense.fxjpy;
-    //         this.completeinfo.payee = this.events_list[key].expense.user_id;
-    //         this.completeinfo.sta = this.events_list[key].expense.status;
-    //         this.completeinfo.price = this.events_list[key].expense.finalprice;
-    //       } else {
-    //         this.completeinfo.tingche = 
-    //         this.completeinfo.canyin = 
-    //         this.completeinfo.gaosu = 
-    //         this.completeinfo.jiayou = 
-    //         this.completeinfo.maihuo = 
-    //         this.completeinfo.other = 
-    //         this.completeinfo.rmb = 
-    //         this.completeinfo.jpy = 0;
-    //         this.completeinfo.payee = "";
-    //         this.completeinfo.sta = 1;
-    //         if(this.events_list[key].amount) {
-    //           this.completeinfo.price = this.events_list[key].amount;
-    //         } else {
-    //           this.completeinfo.price = 0;
-    //         }
-    //       }
-    //       this.completeinfo.eventid = eventid;
-    //       this.completeinfo.eventkey = key;
-    //       if(this.events_list[key].partner) {
-    //         this.completeinfo.haspartner = true;
-    //       } else {
-    //         this.completeinfo.haspartner = false;
-    //       }
-    //     }
-    //   }
-    //   this.showCompleteModal = true;
-    // },
-    // completedo() {
-    //   if($('#payee').val()) {
-    //     this.completeinfo.payee = $('#payee').val();
-    //   } else {
-    //     this.completeinfo.payee = this.auth.id;
-    //   }
-    //   if(this.completeinfo.sta == 1) {
-    //     var status = this.$t('event.notpayment');
-    //   } else {
-    //     var status = this.$t('event.paymented');
-    //   }
-    //   if(this.completeinfo.payee == this.auth.id) {
-    //     var payeename = this.$t('event.myself');
-    //   } else {
-    //     for(var key in this.user_list) {
-    //       if(this.user_list[key].id == this.completeinfo.payee) {
-    //         var payeename = this.user_list[key].text;
-    //       }
-    //     }
-    //   }
-    //   if(this.completeinfo.price > 0) {
-    //     var finalprice = this.formatNumberJPY(this.completeinfo.price);
-    //   } else {
-    //     var finalprice = status = payeename = '';
-    //   }
-    //   if(window.confirm(this.$t('global.areYouSure') + 
-    //       payeename + ' ' + finalprice + status
-    //     )) {
-    //     this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
-    //       this.events_list[this.completeinfo.eventkey].expense = res.data;
-    //       this.events_list[this.completeinfo.eventkey].status = 2;
-    //       this.setEvents();
-    //       this.showCompleteModal = false;
-    //     })
-    //   }
-    // },
-    // shopImg(img) {
-    //   if(img.substring(0, 4) === 'http'){
-    //     return true
-    //   } else {
-    //     return false
-    //   }
-    // },
     percentage(usertotal) {
         return Math.round(usertotal / this.fee.finance.total * 100) + '%';
     },
@@ -663,6 +500,17 @@ export default {
       }
       this.showEventItem = false;
       this.showformflag = true;
+    },
+    completedevent(eventdata) {
+      for(var index in this.events_list) {
+        if(this.events_list[index].id == eventdata.event_id) {
+          this.events_list[index].expense = eventdata;
+          this.events_list[index].status = 2;
+        }
+      }
+      this.setEvents(2);
+      this.showEventItem = false;
+      this.showCalendarFlag = true;
     },
     get_formtypes() {
       var eid = "";
@@ -884,7 +732,10 @@ Vue.component('todo', {
       $(this.$el).fullCalendar('option', 'firstDay', 1);
     },
     showdescription(event, element) {
-      element.find('.fc-title').append("<br/>" + event.description); 
+      element.find('.fc-title').append("<br/>" + event.description);
+      if(event.completed) {
+        element.find('.fc-title').append(event.completed);
+      }
     }
   },
   computed: {

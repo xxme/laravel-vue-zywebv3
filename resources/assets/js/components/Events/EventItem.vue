@@ -173,7 +173,7 @@
               <div class="img-push input-group">
                 <input type="text" class="form-control" :id="'comment' + event.id" placeholder="Press enter to post comment">
                 <span class="input-group-btn">
-                    <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
+                  <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
                 </span>
               </div>
             </div>
@@ -295,7 +295,7 @@ import baguetteBox from 'baguettebox.js'
 import Select2 from './Select2'
 
 export default {
-  props: ['auth', 'eventdata', 'showflag', 'userlist'],
+  props: ['auth', 'eventdata', 'showflag', 'userlist', 'showCompleted'],
   data() {
     return {
       // auth: null,
@@ -305,7 +305,7 @@ export default {
       // eventid: 0,
       holidays: [],
       showCompleteModal: false,
-      showCompleted: false,
+      // showCompleted: false,
       // showYmd: moment().format('YYYY-MM-DD'),
       completeinfo: {
         eventid: "",
@@ -516,9 +516,10 @@ export default {
           payeename + ' ' + finalprice + status
         )) {
         this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
-          this.events_list[this.completeinfo.eventkey].expense = res.data;
-          this.events_list[this.completeinfo.eventkey].status = 2;
-          this.setEvents();
+          // this.events_list[this.completeinfo.eventkey].expense = res.data;
+          // this.events_list[this.completeinfo.eventkey].status = 2;
+          // this.setEvents();
+          this.$emit('completedevent', res.data);
           this.showCompleteModal = false;
         })
       }
@@ -532,13 +533,13 @@ export default {
     }
   },
   watch: {
-    showCompleted() {
-      if(this.showCompleted) {
-        this.setEvents(2);
-      } else {
-        this.setEvents(1);
-      }
-    },
+    // showCompleted() {
+    //   if(this.showCompleted) {
+    //     this.setEvents(2);
+    //   } else {
+    //     this.setEvents(1);
+    //   }
+    // },
     eventdata() {
       this.events_list = this.eventdata;
     }
