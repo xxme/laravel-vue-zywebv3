@@ -6,7 +6,7 @@
           {{ $t('event.pagetitle') }}
           <span class="pull-right">
             <div class="switch">
-            <small>{{ $t('finance.completed') }}</small>
+              <small>{{ $t('finance.completed') }}</small>
               <input id="switch" v-model="showCompleted" type="checkbox">
               <label for="switch"></label>
             </div>
@@ -19,6 +19,12 @@
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
           <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
+          <span class="pull-right">
+            <div class="switchestimates">
+              <input id="switchestimates" v-model="switchEstimates" type="checkbox">
+              <label for="switchestimates"></label>
+            </div>
+          </span>
         </div>
         <div class="nav-tabs-custom" v-show="!showformflag && showCalendarFlag">
           <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
@@ -28,7 +34,7 @@
           <div class="tab-content">
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
-              <todo :events="events" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @showevents="showevents" id="calendartodo"></todo>
+              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @showevents="showevents" id="calendartodo"></todo>
             </div>
             <!-- /.tab-pane -->
             <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
@@ -117,7 +123,12 @@ export default {
       events_list: [],
       user_list: [],
       show_list: [],
-      events: {},
+      eventDataSources: {
+        estimateundone: [],
+        estimatecompleted: [],
+        ordinaryundone: [],
+        ordinarycompleted: [],
+      },
       eventdate: "",
       eventid: 0,
       holidays: [],
@@ -127,6 +138,7 @@ export default {
       showEventItem: false,
       showformflag: false,
       showCalendarFlag: true,
+      switchEstimates: true,
       showYmd: moment().format('YYYY-MM-DD'),
       showYm: moment().format('YYYY年MM月'),
       formoptions: {
@@ -180,7 +192,7 @@ export default {
             user.text = res.data.users[index].name;
             this.user_list.push(user);
           }
-          this.resetFee();
+          this.setFee();
           if(res.data.events.length == 0) {
             $('#eventrs').html(this.$t('global.noRes'));
           } else {
@@ -227,15 +239,80 @@ export default {
       this.fee.finance.fxrmb = 0;
       this.fee.finance.fxjpy = 0;
     },
+    // nav finance
+    setFee() {
+      this.resetFee();
+      for(var i in this.events_list) {
+        if(this.events_list[i].amount || this.events_list[i].expense) {
+          var hasuserdata = false;
+          for(var index in this.fee.users) {
+            if(this.fee.users[index].id == this.events_list[i].user.id) {
+              hasuserdata = true;
+              if(this.events_list[i].expense) {
+                // completed
+                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
+                this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
+              } else {
+                // undone
+                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+              }
+            }
+          }
+          if(!hasuserdata && (this.events_list[i].amount || this.events_list[i].expense)) {
+            var feeuser = new Object();
+            feeuser.id = this.events_list[i].user.id;
+            feeuser.name = this.events_list[i].user.name;
+            if(this.events_list[i].user.profileimg) {
+              feeuser.profileimg = this.events_list[i].user.profileimg;
+            }
+            if(this.events_list[i].expense) {
+              // completed
+              feeuser.total = this.events_list[i].expense.finalprice;
+              feeuser.completed = this.events_list[i].expense.finalprice;
+            } else {
+              // undone
+              feeuser.total = this.events_list[i].amount;
+            }
+            this.fee.users.push(feeuser);
+          }
+
+          // finance
+          if(this.events_list[i].amount || this.events_list[i].expense) {
+            if(this.events_list[i].expense) {
+              // completed
+              this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
+              this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
+              this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
+              this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
+              this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
+              this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
+              this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
+              this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
+              this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
+              this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
+            } else {
+              // undone
+              this.fee.finance.total += parseInt(this.events_list[i].amount);
+              this.fee.finance.undone += parseInt(this.events_list[i].amount);
+            }
+          }
+        }
+      }
+    },
+    // type 1 未完成 2 全部
+    // eventswitch 1 普通任务 2 見積
     setEvents(type = 1) {
-      // type 1 未完成 2 全部
       // auto set showCompleted flag
       if(type == 1) {
         this.showCompleted = false;
       } else {
         this.showCompleted = true;
       }
-      this.events = [];
+      this.eventDataSources.estimateundone = [];
+      this.eventDataSources.estimatecompleted = [];
+      this.eventDataSources.ordinaryundone = [];
+      this.eventDataSources.ordinarycompleted = [];
+      // this.events = [];
       var view = $('#calendartodo').fullCalendar('getView');
       for(var i in this.events_list) {
         var eventObj = new Object();
@@ -387,16 +464,16 @@ export default {
           eventObj.description = truck + typenames;
         }
         
-        if(this.events_list[i].types.indexOf('"5"') > -1) {
+        if (this.events_list[i].types.indexOf('"4"') > -1 || this.events_list[i].status == 2) {
+          // 見積もり已完成  正在考虑  || 完成
+          eventObj.color = '#A9A9A9';
+        } else if(this.events_list[i].types.indexOf('"5"') > -1) {
           // 見積
           eventObj.color = '#d81b60';
         } else if (this.events_list[i].types.indexOf('"19"') > -1) {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#001f3f';
-        } else if (this.events_list[i].types.indexOf('"4"') > -1 || this.events_list[i].status == 2) {
-          // 見積もり已完成  正在考虑  || 完成
-          eventObj.color = '#A9A9A9';
         } else if (
             this.events_list[i].types.indexOf('"12"') > -1 ||
             this.events_list[i].types.indexOf('"13"') > -1 ||
@@ -412,68 +489,39 @@ export default {
           // 店内工作(客人来店)
           eventObj.color = '#66aac9';
         }
-        // 普通未完成
-        // if(this.events_list[i].status == 1)
-        if((type == 1 && this.events_list[i].status == 1) || type == 2) {
-          this.events.push(eventObj);
-        }
-
-        // nav finance
-        if(this.events_list[i].amount || this.events_list[i].expense) {
-          
-          var hasuserdata = false;
-          for(var index in this.fee.users) {
-            if(this.fee.users[index].id == this.events_list[i].user.id) {
-              hasuserdata = true;
-              if(this.events_list[i].expense) {
-                // completed
-                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
-                this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
-              } else {
-                // undone
-                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
-              }
-            }
-          }
-          if(!hasuserdata && (this.events_list[i].amount || this.events_list[i].expense)) {
-            var feeuser = new Object();
-            feeuser.id = this.events_list[i].user.id;
-            feeuser.name = this.events_list[i].user.name;
-            if(this.events_list[i].user.profileimg) {
-              feeuser.profileimg = this.events_list[i].user.profileimg;
-            }
-            if(this.events_list[i].expense) {
-              // completed
-              feeuser.total = this.events_list[i].expense.finalprice;
-              feeuser.completed = this.events_list[i].expense.finalprice;
+        
+        if(eventObj){
+          if(this.events_list[i].status == 1) {
+            // 未完成
+            if(this.events_list[i].types.indexOf('"5"') > -1) {
+              // 見積
+              this.eventDataSources.estimateundone.push(eventObj);
+            } else if(this.events_list[i].types.indexOf('"4"') > -1) {
+              // 見積完成
+              this.eventDataSources.estimatecompleted.push(eventObj);
             } else {
-              // undone
-              feeuser.total = this.events_list[i].amount;
+              // 普通任务
+              this.eventDataSources.ordinaryundone.push(eventObj);
             }
-            this.fee.users.push(feeuser);
-          }
-
-          // finance
-          if(this.events_list[i].amount || this.events_list[i].expense) {
-            if(this.events_list[i].expense) {
-              // completed
-              this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
-              this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
-              this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
-              this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
-              this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
-              this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
-              this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
-              this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
-              this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
-              this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
+          } else {
+            // 已完成
+            if(this.events_list[i].types.indexOf('"5"') > -1) {
+              // 見積
+              this.eventDataSources.estimatecompleted.push(eventObj);
+            } else if(this.events_list[i].types.indexOf('"4"') > -1) {
+              // 見積
+              this.eventDataSources.estimatecompleted.push(eventObj);
             } else {
-              // undone
-              this.fee.finance.total += parseInt(this.events_list[i].amount);
-              this.fee.finance.undone += parseInt(this.events_list[i].amount);
+              // 普通任务
+              this.eventDataSources.ordinarycompleted.push(eventObj);
             }
           }
         }
+        
+        // if((type == 1 && this.events_list[i].status == 1) || type == 2) {
+        //   this.events.push(eventObj);
+        // }
+
       }
     },
     percentage(usertotal) {
@@ -502,13 +550,16 @@ export default {
       this.showformflag = true;
     },
     completedevent(eventdata) {
+      var ymd = '';
       for(var index in this.events_list) {
         if(this.events_list[index].id == eventdata.event_id) {
           this.events_list[index].expense = eventdata;
           this.events_list[index].status = 2;
+          ymd = this.events_list[index].event_date;
         }
       }
       this.setEvents(2);
+      $('#calendartodo').fullCalendar('changeView', 'agendaDay', ymd);
       this.showEventItem = false;
       this.showCalendarFlag = true;
     },
@@ -574,13 +625,23 @@ export default {
     }
   },
   watch: {
-    showCompleted() {
-      if(this.showCompleted) {
-        this.setEvents(2);
-      } else {
-        this.setEvents(1);
-      }
-    }
+    // showCompleted() {
+    //   if(this.showCompleted) {
+    //     // this.setEvents(2);
+    //     if(this.switchEstimates) {
+    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.ordinarycompleted );
+    //     } else {
+    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.estimatecompleted );
+    //     }
+    //   } else {
+    //     // this.setEvents(1);
+    //     if(this.switchEstimates) {
+    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.ordinaryundone );
+    //     } else {
+    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.estimateundone );
+    //     }
+    //   }
+    // }
   },
   filters: {
     formatTime(time, date) {
@@ -616,7 +677,7 @@ export default {
 
 Vue.component('todo', {
   template: '<div></div>',
-  props: ['events', 'showYmd', 'holidays'],
+  props: ['events', 'showCompleted', 'switchEstimates', 'showYmd', 'holidays'],
   data () {
     return {
       cal: null,
@@ -626,10 +687,10 @@ Vue.component('todo', {
   mounted () {
     var self = this
     this.cal = $(self.$el)
-    
+
     var args = {
       defaultView: 'month',
-      events: self.events,
+      events: self.events.ordinaryundone,
       defaultDate: moment().format('YYYY-MM-DD'),
       minTime: '08:00:00',
       maxTime: '23:00:00',
@@ -702,7 +763,7 @@ Vue.component('todo', {
   watch: {
     getevents: function(val) {
       this.cal.fullCalendar('removeEventSources');
-      this.cal.fullCalendar('addEventSource', this.events);
+      this.cal.fullCalendar('addEventSource', val);
       
       // Object.keys(this.holidays).forEach(function (holiday) {
       //     $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
@@ -720,9 +781,9 @@ Vue.component('todo', {
   methods: {
     gotoDate(date = '') {
       if(date) {
-        $(this.$el).fullCalendar('gotoDate', date);
+        $(this.$el).fullCalendar('changeView', 'agendaDay', date);
       } else {
-        $(this.$el).fullCalendar('gotoDate', moment().add(1, 'd'));
+        $(this.$el).fullCalendar('changeView', 'agendaDay', moment().add(1, 'd'));
       }
     },
     setFirstDay() {
@@ -740,50 +801,69 @@ Vue.component('todo', {
   },
   computed: {
     getevents: function() {
-      return this.events;
+      if(this.showCompleted) {
+        if(this.switchEstimates) {
+          // var newArray = this.events.ordinarycompleted.concat(this.events.ordinaryundone);
+          return this.events.ordinarycompleted.concat(this.events.ordinaryundone);
+        } else {
+          return this.events.estimatecompleted.concat(this.events.estimateundone);
+        }
+      } else {
+        if(this.switchEstimates) {
+          return this.events.ordinaryundone;
+        } else {
+          return this.events.estimateundone;
+        }
+      }
     }
   }
 })
 </script>
 <style scoped>
-.switch input {
+.switch input, .switchestimates input {
     display: none;
 }
-.switch label {
-    padding: 12px;
+.switch label, .switchestimates label {
+    padding: 6px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
 }
-.switch label:before {
+.switch label:before, .switchestimates label:before {
     padding: 6px 10px;
-    content: 'O N';
+    content: '显示';
     border-radius: 6px 0 0 6px;
     background: linear-gradient(to bottom, #F0F0F0 0%, #DDD 100%);
     box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1) inset;
     color: #333;
 }
-.switch label:after {
+.switchestimates label:before {
+  content: '日程';
+}
+.switch label:after, .switchestimates label:after {
     padding: 6px 10px;
-    content: 'OFF';
+    content: '隐藏';
     border-radius: 0 6px 6px 0;
-    background: #C30;
+    background: #d81b60;
     box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1) inset;
     color: #FFF;
 }
-.switch input + label:hover:before {
+.switchestimates label:after {
+  content: '見積';
+}
+.switch input + label:hover:before, .switchestimates input + label:hover:before {
     opacity: 0.5;
 }
-.switch input:checked + label:before {
-    background: #9C0;
+.switch input:checked + label:before, .switchestimates input:checked + label:before {
+    background: #3a87ad;
     color: #FFF;
     opacity: 1;
 }
-.switch input:checked + label:after {
+.switch input:checked + label:after, .switchestimates input:checked + label:after {
     background: linear-gradient(to bottom, #F0F0F0 0%, #DDD 100%);
     color: #333;
 }
-.switch input:checked + label:hover:after {
+.switch input:checked + label:hover:after, .switchestimates input:checked + label:hover:after {
     opacity: 0.5;
 }
 </style>
