@@ -132,7 +132,6 @@ export default {
       eventdate: "",
       eventid: 0,
       holidays: [],
-      // showCompleteModal: false,
       showCompleted: false,
       showQuickForm: false,
       showEventItem: false,
@@ -167,11 +166,6 @@ export default {
       }
     }
   },
-  // updated: function () {
-  //   this.$nextTick(function () {
-  //     
-  //   })
-  // },
   components: {
     EventItem,
     QuickForm
@@ -203,9 +197,17 @@ export default {
     },
     showevents(date) {
       this.show_list = [];
-      for(var index in this.events_list) {
-        if(this.events_list[index].event_date == date) {
-          this.show_list.push(this.events_list[index]);
+      if(this.showCompleted) {
+        if(this.switchEstimates) {
+          this.show_list = this.events.ordinarycompleted.concat(this.events.ordinaryundone);
+        } else {
+          this.show_list = this.events.estimatecompleted.concat(this.events.estimateundone);
+        }
+      } else {
+        if(this.switchEstimates) {
+          this.show_list = this.events.ordinaryundone;
+        } else {
+          this.show_list = this.events.estimateundone;
         }
       }
       this.checkCountShowList();
@@ -624,25 +626,6 @@ export default {
       this.showformflag = showorhide;
     }
   },
-  watch: {
-    // showCompleted() {
-    //   if(this.showCompleted) {
-    //     // this.setEvents(2);
-    //     if(this.switchEstimates) {
-    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.ordinarycompleted );
-    //     } else {
-    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.estimatecompleted );
-    //     }
-    //   } else {
-    //     // this.setEvents(1);
-    //     if(this.switchEstimates) {
-    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.ordinaryundone );
-    //     } else {
-    //       $('calendartodo').fullCalendar( 'refetchEventSources', this.events.estimateundone );
-    //     }
-    //   }
-    // }
-  },
   filters: {
     formatTime(time, date) {
       return moment(date+' '+time).format('HH:mm');
@@ -803,7 +786,6 @@ Vue.component('todo', {
     getevents: function() {
       if(this.showCompleted) {
         if(this.switchEstimates) {
-          // var newArray = this.events.ordinarycompleted.concat(this.events.ordinaryundone);
           return this.events.ordinarycompleted.concat(this.events.ordinaryundone);
         } else {
           return this.events.estimatecompleted.concat(this.events.estimateundone);
