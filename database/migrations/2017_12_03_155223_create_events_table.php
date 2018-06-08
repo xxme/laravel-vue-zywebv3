@@ -20,6 +20,8 @@ class CreateEventsTable extends Migration
             $table->unsignedInteger('product_list_id')->nullable();  // 购物单id
             $table->string('partner')->nullable();  // 推广人id
             $table->unsignedInteger('amount')->nullable();  // 报价
+            $table->unsignedMediumInteger('deposit_jpy')->nullable();
+            $table->unsignedMediumInteger('deposit_rmb')->nullable();
             $table->unsignedTinyInteger('total')->nullable();  // 总量
             $table->date('event_date');
             $table->unsignedTinyInteger('apm');

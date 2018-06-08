@@ -186,13 +186,13 @@ export default {
             user.text = res.data.users[index].name;
             this.user_list.push(user);
           }
-          this.setFee();
           if(res.data.events.length == 0) {
             $('#eventrs').html(this.$t('global.noRes'));
           } else {
             this.events_list = res.data.events;
             this.setEvents();
           }
+          this.setFee();
       })
     },
     showevents(date) {
