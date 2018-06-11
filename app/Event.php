@@ -28,4 +28,9 @@ class Event extends Model
     public function productlist(){
         return $this->hasOne('App\ProductList');
     }
+    //定金 押金
+    public function deposit()
+    {
+        return $this->hasOne('App\Deposit');
+    }
 }

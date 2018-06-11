@@ -30,9 +30,11 @@ return [
     'typeofwork' => '工作分类',
     // nav / page titles and sub titles end
 
-    // product start
-    
-    // product end
+    // type start
+    'available' => '启用中',
+    'unavailable' => '未启用',
+    'areyousuredel' => '确定改变类型的状态吗?',
+    // type end
     
     'profile' => '个人设定',
     'signOut' => '注销',
@@ -51,6 +53,7 @@ return [
     'totalprice' => '总价',
     'actiondatetime' => '操作时间',
     'actionadd' => '创建',
+    'completeinfo' => '完成信息',
     'actionupdate' => '更新',
     'actiondel' => '删除',
     "comment" => "留言",

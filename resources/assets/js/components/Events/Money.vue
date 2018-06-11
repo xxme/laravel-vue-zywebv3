@@ -7,11 +7,11 @@
 			</h1>
 		</section>
 		<!-- Main content -->
-		<section class="content">
+		<section class="content" v-show="!showEventItem">
       <sample-nav></sample-nav>
 			<div class="box">
         <div class="col-xs-12" v-if="type == 1">
-          <h5>未入金统计</h5>
+          <h4>未入金统计</h4>
           <table class="table">
             <tbody>
               <tr v-for="(price, name) in user">
@@ -38,19 +38,47 @@
 						<tbody>
 							<tr>
                 <th style="width: 30px"><span v-if="type == 1">#</span><span v-else><i class="fa fa-flag"></i></span></th>
-								<th style="width: 120px">{{ $t('event.payee') }}</th>
-								<th>{{ $t('finance.completeDate') }}</th>
+								<th style="width: 100px">{{ $t('event.payee') }}</th>
+                <th style="width: 60px">{{ $t('event.event') }}</th>
+								<th>
+                  <template v-if="type == 1">{{ $t('finance.completeDate') }}</template>
+                  <template v-else>{{ $t('event.event') }}{{ $t('global.date') }}</template>
+                </th>
                 <th>{{ $t('finance.amount') }}</th>
+                <th>{{ $t('finance.cause') }}</th>
 							</tr>
               <template v-if="finances.data.length > 0">
                 <tr v-for="(list, index) in finances.data">
                   <td v-if="type == 1"><input type="checkbox" :value="list.id" v-model="checkedIds" v-if="list.status == 1"></td>
                   <td v-else><i class="fa fa-check-square-o"></i></td>
                   <td>
-                    {{ list.user.name }}
+                    <template v-if="type == 1">
+                      {{ list.user.name }}
+                    </template>
+                    <template v-else>
+                      <template v-if="list.expense">{{ list.expense.user.name }}</template>
+                      <template v-else>{{ $t('event.depositjpyL') }}</template>
+                    </template>
                   </td>
-                  <td>{{ list.created_at }}</td>
-                  <td>{{ list.finalprice | formatNumberJPY }}</td>
+                  <td>
+                    <span v-if="type == 1" class="blue" @click="showEvent(list.event_id)">#{{ list.event_id }}</span>
+                    <span v-else class="blue" @click="showEvent(list.id)">#{{ list.id }}</span>
+                  </td>
+                  <td>
+                    <template v-if="type == 1">{{ list.created_at }}</template>
+                    <template v-else>{{ list.event_date }}</template>
+                  </td>
+                  <td>
+                    <template v-if="type == 1">{{ list.finalprice | formatNumberJPY }}</template>
+                    <template v-else>
+                      <template v-if="list.expense">{{ list.expense.finalprice | formatNumberJPY }}</template>
+                      <template v-else>{{ list.deposit.jpy | formatNumberJPY }}</template>
+                    </template>
+                  </td>
+                  <td>
+                    <template v-if="type == 1">{{ list.cause }}</template>
+                    <template v-else-if="list.expense">{{ list.expense.cause }}</template>
+                  </td>
                 </tr>
               </template>
               <template v-else>
@@ -61,12 +89,13 @@
             </tbody>
           </table>
           <div class="marginlr10 pull-right">
-						<pagination :data="finances" @pagination-change-page="getList"></pagination>
+						<pagination :data="finances" :limit="2" @pagination-change-page="getList"></pagination>
 					</div>
         </div>
       </div>
     </section>
     <loading :loadingShow="loadingShow"></loading>
+    <event-item :eventdata="show_list" :auth="auth" :userlist="userlist" :showflag="showEventItem" :comefromfinances="true" @showFinances="showFinances" @updatecomplete="updatecomplete"></event-item>
   </div>
 </template>
 
@@ -74,6 +103,7 @@
 import SampleNav from '../Public/SampleNav'
 import Loading from '../Public/Loading'
 import pagination from 'laravel-vue-pagination'
+import EventItem from './EventItem.vue';
 
 export default {
   mounted() {
@@ -85,7 +115,11 @@ export default {
       checkedIds: [],
       checkedAmount: 0,
       loadingShow: false,
+      showEventItem: false,
       user: [],
+      show_list: [],
+      userlist: [],
+      auth: null,
       finances: {
         data: {
           length: 0
@@ -104,10 +138,10 @@ export default {
           alert(this.$t('global.manageronly'));
           this.$router.push('/admin');
         }
+        this.finances = res.data.data;
         if(res.data.data.data.length == 0) {
           $('#listrs').html(this.$t('global.noRes'));
         } else {
-          this.finances = res.data.data;
           this.user = res.data.user;
         }
       })
@@ -130,6 +164,35 @@ export default {
       } else {
         alert(this.$t('global.notselectd'));
       }
+    },
+    showEvent(eventid) {
+      this.show_list = [];
+      this.$http({
+        url: '/admin/event/item/' + eventid,
+        method: 'GET'
+      }).then(res =>  {
+        console.log(res.data.events);
+        this.show_list.push(res.data.events);
+        this.auth = res.data.auth;
+        for (var index in res.data.users) {
+            var user = {};
+            user.id = res.data.users[index].id;
+            user.text = res.data.users[index].name;
+            this.userlist.push(user);
+          }
+        this.showEventItem = true;
+      })
+    },
+    updatecomplete(expense) {
+      this.show_list[0].expense = expense;
+      for(var index in this.finances.data) {
+        if(this.finances.data[index].event_id == expense.event_id) {
+          this.finances.data[index] = expense;
+        }
+      }
+    },
+    showFinances() {
+      this.showEventItem = false;
     }
   },
   watch: {
@@ -141,7 +204,7 @@ export default {
         var amount = 0;
         for(var key in this.finances.data) {
           if(this.checkedIds.indexOf(this.finances.data[key].id) !== -1) {
-            amount += this.finances.data[key].finalprice
+            amount += parseInt(this.finances.data[key].finalprice)
           }
         }
         this.checkedAmount = amount;
@@ -160,6 +223,7 @@ export default {
   components: {
 		SampleNav,
 		pagination,
+    EventItem,
     Loading
 	}
 }

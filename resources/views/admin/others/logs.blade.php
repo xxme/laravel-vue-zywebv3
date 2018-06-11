@@ -50,9 +50,12 @@
                 @elseif($log->log_type == 3)
                 {{ __('messages.actiondel') }}
                 @endif
+                @if($log->type == 6)
+                {{ __('messages.completeinfo') }}
+                @endif
               </td>
               <td>
-                @if($log->type == 1)
+                @if($log->type == 1 || $log->type == 6)
                   {{ $log->content }} {{ __('messages.event') }}
                 @elseif($log->type == 2)
                   {{ __('messages.typeofwork') }}

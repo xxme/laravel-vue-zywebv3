@@ -5,19 +5,20 @@
         <div v-for="(event, key) in events_list" :key="event.id">
           <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
             <h4>
-              <button class="btn btn-primary btn-xs" @click="$emit('editevent', 0, event.event_date)"><i class="fa fa-plus"></i></button>
+              <button class="btn btn-primary btn-xs" v-if="!comefromfinances" @click="$emit('editevent', 0, event.event_date)"><i class="fa fa-plus"></i></button>
               {{ formatDateWithWeekname(event.event_date) }} <span v-show="events_list.length == 1"># {{ event.id }}</span>
-              <button class="btn btn-primary btn-xs pull-right" @click="$emit('showCalendar')"><i class="fa fa-calendar"></i></button>
+              <button class="btn btn-primary pull-right bigger-120" v-if="!comefromfinances" @click="$emit('showCalendar')">{{ $t('global.goback') }}</button>
+              <button class="btn btn-primary pull-right bigger-140" v-else @click="$emit('showFinances')"><i class="fa fa-money"></i></button>
             </h4>
           </div>
           
           <!-- box -->
-          <div :class="[event.status == 1 || showCompleted ? '' : 'completedevent', 'box box-widget']" :id="'event' + event.id">
+          <div class="box box-widget">
             <!-- box-header -->
             <div class="box-header with-border">
-              <div v-if="event.status == 1 || !event.expense" class="user-block">
-                <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg" :alt="event.user.name">
-                <img v-else class="img-circle" src="/images/no-image-available.jpeg" :alt="event.user.name">
+              <div class="user-block">
+                <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg">
+                <img v-else class="img-circle" src="/images/no-image-available.jpeg">
                 <span class="username">{{ event.user.name }}</span>
                 <span class="description">
                   #{{event.id}} {{ event.created_at }}
@@ -25,38 +26,17 @@
                   <span v-if="!event.expense" class="paddingl3"><i class="fa fa-trash-o red" @click="deleteevent(event.id, event.product_list_id)"></i></span>
                 </span>
               </div>
-              <div v-else class="user-block">
-                <span v-if="event.expense.user.name">{{ event.expense.user.name }}</span>
-                {{ $t('event.receipt') }}:
-                <span v-if="event.expense.finalprice" class="marginr3">{{ formatNumberJPY(event.expense.finalprice) }}</span>
-                <span v-else class="marginr3">0</span>
-                {{ $t('event.expenditure') }}:
-                <span v-if="event.expense.expenditure" class="marginr3">{{ formatNumberJPY(event.expense.expenditure) }}</span>
-                <span v-else class="marginr3">0</span>
-                <div v-if="event.partner">
-                  <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner}}</small></h4>
-                  <span v-else>
-                    {{ $t('event.fx') }}
-                    <span v-if="event.expense.fxrmb">{{ $t('event.rmb') }}:{{ formatNumberJPY(event.expense.fxrmb) }}</span>
-                    <span v-if="event.expense.fxjpy">{{ $t('event.jpy') }}:{{ formatNumberJPY(event.expense.fxjpy) }}</span>
-                  </span>
-                </div>
-              </div>
               <!-- /.user-block -->
               <div class="box-tools">
                 <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract(event.id)">
                   <i class="fa fa-list-alt"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" v-if="event.expense" @click="event.status = !event.status">
-                  <i v-if="event.status == 1" class="fa fa-minus"></i>
-                  <i v-else class="fa fa-window-maximize"></i>
                 </button>
               </div>
               <!-- /.box-tools -->
             </div>
             <!-- /.box-header -->
             
-            <div v-show="event.status == 1" :class="[event.expense ? 'completedeventbg' : '']">
+            <div :class="[event.expense ? 'completedeventbg' : '']">
             <div class="box-body" :data-box="'box' + event.id">
               <h4 class="eventdate">
                 <span :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
@@ -85,7 +65,11 @@
                 <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
               </h5>
               <h4>
-                <span v-if="event.amount" class="marginr3">{{ formatNumberJPY(event.amount) }}</span>
+                <span v-if="event.amount" class="marginr3">{{ formatNumberJPY(event.amount) }}</span> 
+                <span v-if="event.deposit">
+                  <span v-if="event.deposit.jpy > 0" class="marginr3">{{ $t('event.depositjpyL') }}{{ formatNumberJPY(event.deposit.jpy) }}</span>
+                  <span v-if="event.deposit.rmb > 0" class="marginr3">{{ $t('event.depositrmbL') }}{{ formatNumberJPY(event.deposit.rmb) }}</span>
+                </span>
                 <small>
                   <span v-if="event.partner" class="marginr3"><i class="fa fa-male"></i> {{ event.partner }}</span>
                   <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }} {{ formatNumberJPY(event.productlist.price) }}</router-link></span>
@@ -100,6 +84,14 @@
                   From
                   <address>
                     <strong>{{ event.details.from_address }}</strong>
+                    <template v-if="event.details.from_btype">
+                      <span v-if="event.details.from_btype == 1">{{ $t('offer.buildingtype1') }}</span>
+                      <span v-else-if="event.details.from_btype == 2">{{ $t('offer.buildingtype2') }}</span>
+                      <span v-else-if="event.details.from_btype == 3">{{ $t('offer.buildingtype3') }}</span>
+                      <span v-else-if="event.details.from_btype == 4">{{ $t('offer.buildingtype4') }}</span>
+                      <span v-else-if="event.details.from_btype == 5">{{ $t('offer.buildingtype5') }}</span>
+                      <span v-else-if="event.details.from_btype == 6">{{ $t('offer.buildingtype6') }}</span>
+                    </template>
                     <span v-if="event.details.from_elevator == 1"> {{ $t('event.elevator') }}</span>
                     <span v-else-if="event.details.from_elevator == 2"> {{ $t('event.stairs') }}</span>
                     <span v-else-if="event.details.from_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
@@ -112,6 +104,14 @@
                   To
                   <address>
                     <strong>{{ event.details.to_address }}</strong>
+                    <template v-if="event.details.to_btype">
+                      <span v-if="event.details.to_btype == 1">{{ $t('offer.buildingtype1') }}</span>
+                      <span v-else-if="event.details.to_btype == 2">{{ $t('offer.buildingtype2') }}</span>
+                      <span v-else-if="event.details.to_btype == 3">{{ $t('offer.buildingtype3') }}</span>
+                      <span v-else-if="event.details.to_btype == 4">{{ $t('offer.buildingtype4') }}</span>
+                      <span v-else-if="event.details.to_btype == 5">{{ $t('offer.buildingtype5') }}</span>
+                      <span v-else-if="event.details.to_btype == 6">{{ $t('offer.buildingtype6') }}</span>
+                    </template>
                     <span v-if="event.details.to_elevator == 1"> {{ $t('event.elevator') }}</span>
                     <span v-else-if="event.details.to_elevator == 2"> {{ $t('event.stairs') }}</span>
                     <span v-else-if="event.details.to_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
@@ -121,7 +121,7 @@
                 </div>
                 <!-- /.col -->
               </div>
-              <div v-if="event.images && event.images.length > 0" class="gallery">
+              <div v-if="event.images && event.images.length > 0" class="gallery col-xs-12 no-padding">
                 <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8">
                   <template v-if="shopImg(imgfile)">
                     <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
@@ -135,13 +135,31 @@
                   </template>
                 </div>
               </div>
+              <div v-if="event.expense">
+                <span v-if="event.expense.user.name">{{ event.expense.user.name }}</span>
+                <span v-if="event.expense.cause" class="marginr3">{{ event.expense.cause }}</span>
+                {{ $t('event.receipt') }}:
+                <span v-if="event.expense.finalprice" class="marginr3">{{ formatNumberJPY(event.expense.finalprice) }}</span>
+                <span v-else class="marginr3">0</span>
+                {{ $t('event.expenditure') }}:
+                <span v-if="event.expense.expenditure" class="marginr3">{{ formatNumberJPY(event.expense.expenditure) }}</span>
+                <span v-else class="marginr3">0</span>
+                <div v-if="event.partner">
+                  <h4 v-if="!event.expense.fxrmb && !event.expense.fxjpy" class="red">{{ $t('event.unpaid') }} <small><i class="fa fa-male"></i> #{{event.partner}}</small></h4>
+                  <span v-else>
+                    {{ $t('event.fx') }}
+                    <span v-if="event.expense.fxrmb">{{ $t('event.rmb') }}:{{ formatNumberJPY(event.expense.fxrmb) }}</span>
+                    <span v-if="event.expense.fxjpy">{{ $t('event.jpy') }}:{{ formatNumberJPY(event.expense.fxjpy) }}</span>
+                  </span>
+                </div>
+              </div>
 
               <span class="text-muted">{{ event.comments.length }} comments</span>
               <div class="pull-right">
-                  <button class="btn btn-xs btn-warning" @click="$emit('editevent', event.id)">
+                  <button class="btn btn-xs btn-warning bigger-120" v-if="!comefromfinances" @click="$emit('editevent', event.id)">
                     <i class="fa fa-pencil"></i>
                   </button>
-                  <button class="btn btn-xs btn-success" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
+                  <button class="btn btn-xs btn-success bigger-120" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
                     <i class="ace-icon fa fa-check-square-o"></i>
                   </button>
               </div>
@@ -254,6 +272,11 @@
                     </div>
                   </div>
                 </div>
+                <div v-if="completeinfo.price != completeinfo.receivable" class="form-group">
+                  <div class="col-xs-12">
+                    <textarea class="form-control" rows="2" v-model="completeinfo.cause" :placeholder="$t('event.cause')"></textarea>
+                  </div>
+                </div>
                 <div class="payee" v-show="auth && auth.group_id == 1">
                   <div class="col-xs-6 no-padding">
                     <select2 id="payee" :options="userlist" :selected="completeinfo.payee" :placeholder="$t('event.payee')" :multiple="false"></select2>
@@ -295,7 +318,7 @@ import baguetteBox from 'baguettebox.js'
 import Select2 from './Select2'
 
 export default {
-  props: ['auth', 'eventdata', 'showflag', 'userlist', 'showCompleted'],
+  props: ['auth', 'eventdata', 'showflag', 'userlist', 'showCompleted', 'comefromfinances'],
   data() {
     return {
       // auth: null,
@@ -312,6 +335,7 @@ export default {
         eventkey: "",
         haspartner: false,
         price: 0,
+        receivable: 0,
         expenditure: 0,
         tingche: 0,
         canyin: 0,
@@ -459,6 +483,8 @@ export default {
             this.completeinfo.payee = this.events_list[key].expense.user_id;
             this.completeinfo.sta = this.events_list[key].expense.status;
             this.completeinfo.price = this.events_list[key].expense.finalprice;
+            this.completeinfo.cause = this.events_list[key].expense.cause;
+            this.completeinfo.receivable = this.events_list[key].receivable;
           } else {
             this.completeinfo.tingche = 
             this.completeinfo.canyin = 
@@ -468,10 +494,10 @@ export default {
             this.completeinfo.other = 
             this.completeinfo.rmb = 
             this.completeinfo.jpy = 0;
-            this.completeinfo.payee = "";
+            this.completeinfo.payee = this.completeinfo.cause = "";
             this.completeinfo.sta = 1;
-            if(this.events_list[key].amount) {
-              this.completeinfo.price = this.events_list[key].amount;
+            if(this.events_list[key].receivable) {
+              this.completeinfo.price = this.events_list[key].receivable;
             } else {
               this.completeinfo.price = 0;
             }
@@ -483,11 +509,27 @@ export default {
           } else {
             this.completeinfo.haspartner = false;
           }
+          console.log(this.events_list[key]);
+          if(this.events_list[key].receivable > 0) {
+            this.completeinfo.receivable = this.events_list[key].receivable;
+          }
         }
       }
       this.showCompleteModal = true;
     },
     completedo() {
+      if(this.completeinfo.cause) {
+        var cause = this.completeinfo.cause;
+      } else {
+        var cause = "";
+      }
+      
+      if(this.completeinfo.receivable != this.completeinfo.price && !cause.trim()) {
+        alert(this.$t('event.cause'));
+        return;
+      } else if(this.completeinfo.receivable == this.completeinfo.price) {
+        this.completeinfo.cause = "";
+      }
       if($('#payee').val()) {
         this.completeinfo.payee = $('#payee').val();
       } else {
@@ -516,13 +558,17 @@ export default {
           payeename + ' ' + finalprice + status
         )) {
         this.$http.post('/admin/event/complete', this.completeinfo).then(res => {
-          // this.events_list[this.completeinfo.eventkey].expense = res.data;
-          // this.events_list[this.completeinfo.eventkey].status = 2;
-          // this.setEvents();
-          this.$emit('completedevent', res.data);
+          if(this.comefromfinances) {
+            this.$emit('updatecomplete', res.data);
+          } else {
+            this.$emit('completedevent', res.data);
+          }
           this.showCompleteModal = false;
         })
       }
+    },
+    contract(id) {
+      window.open('/admin/event/contract/' + id, '_blank');
     },
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){
@@ -533,13 +579,6 @@ export default {
     }
   },
   watch: {
-    // showCompleted() {
-    //   if(this.showCompleted) {
-    //     this.setEvents(2);
-    //   } else {
-    //     this.setEvents(1);
-    //   }
-    // },
     eventdata() {
       this.events_list = this.eventdata;
     }
@@ -575,7 +614,6 @@ export default {
   opacity: 0;
 }
 .gallery {
-  height: 85px;
   margin: 10px 0;
 }
 .label, .marginr3 {
@@ -586,6 +624,7 @@ export default {
 .label {
   display: inline-table;
   margin: 1px;
+  line-height: 15px;
 }
 .paddingl3 {
   padding-left: 3px;
@@ -603,6 +642,9 @@ export default {
   right: 60px;
   z-index: 10;
   opacity: 0.65;
+}
+.bigger-120 {
+  margin-left: 10px;
 }
 h5 {
   margin:3px 0;

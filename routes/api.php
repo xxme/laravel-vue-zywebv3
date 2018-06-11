@@ -20,12 +20,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::group(['middleware' => 'api'], function() {
     Route::get('get_types',  function() {
-        $rs['types'] = Type::orderBy('listorder', 'asc')->orderBy('id', 'asc')->get();
-        $rs['productlists'] = ProductList::where('event_id', null)->orderBy('updated_at', 'desc')->get();
+        $rs['types'] = Type::where('status', 1)->orderBy('listorder', 'asc')->orderBy('id', 'asc')->get();
         return response()->json($rs);
     });
-    Route::get('get_types/{event_id}',  function($event_id) {
-        $rs['types'] = Type::orderBy('listorder', 'asc')->get();
+    Route::get('get_productlist/{event_id}',  function($event_id) {
         $rs['productlists'] = ProductList::where('event_id', null)->orWhere('event_id', $event_id)->orderBy('updated_at', 'desc')->get();
         return response()->json($rs);
     });

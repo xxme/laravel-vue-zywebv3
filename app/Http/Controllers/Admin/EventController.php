@@ -14,6 +14,7 @@ use App\ProductList;
 use App\Offer;
 use App\Expense;
 use App\Holidays;
+use App\Deposit;
 
 class EventController extends Controller
 {
@@ -33,7 +34,7 @@ class EventController extends Controller
                 $query->with('user');
             }, 'expense' => function ($query) {
                 $query->with('user');
-            }, 'user', 'details', 'productlist'])->get();
+            }, 'user', 'details', 'productlist', 'deposit'])->get();
         $types = Type::get(['id', 'name']);
         foreach($types as $type) {
             $typeArray[$type->id] = $type->name;
@@ -60,12 +61,68 @@ class EventController extends Controller
                     $event['images'] = json_decode($event->details->images, true);
                 }
             }
+            // 应收金额计算
+            if($event->deposit) {
+                $event['receivable'] = $event->amount - $event->deposit->jpy;
+            } else {
+                $event['receivable'] = $event->amount;
+            }
         }
 
         $init['auth'] = auth()->user();
-
         $init['users'] = User::where('group_id', '<', 3)->get(['id', 'name', 'profileimg']);
+        $init['holidays'] = $this->getHolidays($ym);
+        
+        return $init;
+    }
 
+    public function item($id)
+    {
+        $event = Event::with(['comments' => function ($query) {
+                $query->with('user');
+            }, 'expense' => function ($query) {
+                $query->with('user');
+            }, 'user', 'details', 'productlist', 'deposit'])->find($id);
+        $types = Type::get(['id', 'name']);
+        foreach($types as $type) {
+            $typeArray[$type->id] = $type->name;
+        }
+        $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
+        if($event->comments) {
+            $event['comments'] = json_decode($event->comments, true);
+        }
+        if($event->total) {
+            $event['totalname'] = $typeArray[$event->total];
+        }
+        if($event->details) {
+            if($event->details->aboutgoods) {
+                $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+            }
+            if($event->details->carefully) {
+                $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
+            }
+            if($event->details->trucks) {
+                $event['trucks'] = $this->getTypeNames($event->details->trucks, $typeArray);
+            }
+            if($event->details->images) {
+                $event['images'] = json_decode($event->details->images, true);
+            }
+        }
+        // 应收金额计算
+        if($event->deposit) {
+            $event['receivable'] = $event->amount - $event->deposit->jpy;
+        } else {
+            $event['receivable'] = $event->amount;
+        }
+        $init['events'] = $event;
+        $init['auth'] = auth()->user();
+        $init['users'] = User::where('group_id', '<', 3)->get(['id', 'name', 'profileimg']);
+        $init['holidays'] = $this->getHolidays($event->event_date);
+        
+        return $init;
+    }
+
+    private function getHolidays($ym) {
         $lastDateOfHoliday = Holidays::orderBy('date', 'desc')->first();
         $syncFlag = false;
         if($lastDateOfHoliday) {
@@ -79,12 +136,11 @@ class EventController extends Controller
         
         if(!$lastDateOfHoliday || $syncFlag) {
             // get holidays
-            $init['holidays'] = $this->syncHolidays();
+            $holidays = $this->syncHolidays();
         } else {
-            $init['holidays'] = Holidays::where('date', 'LIKE', "$ym%")->get(['date', 'title']);
+            $holidays = Holidays::where('date', 'LIKE', "$ym%")->get(['date', 'title']);
         }
-        
-        return $init;
+        return $holidays;
     }
 
     private function syncHolidays() {
@@ -150,9 +206,11 @@ class EventController extends Controller
             $objEventDetail->from_address = $inputs['from']['address'];
             $objEventDetail->from_elevator = $inputs['from']['elevator'];
             $objEventDetail->from_floor = $inputs['from']['floors'];
+            $objEventDetail->from_btype = $inputs['from']['btype'];
             $objEventDetail->to_address = $inputs['to']['address'];
             $objEventDetail->to_elevator = $inputs['to']['elevator'];
             $objEventDetail->to_floor = $inputs['to']['floors'];
+            $objEventDetail->to_btype = $inputs['to']['btype'];
             $objEventDetail->phone = $inputs['phone'];
             $objEventDetail->wechat = $inputs['wechat'];
             $objEventDetail->save();
@@ -173,6 +231,13 @@ class EventController extends Controller
                 $objOffer->event_id = $event_id;
                 $objOffer->save();
             }
+            if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
+                $objDeposit = new Deposit();
+                $objDeposit->event_id = $event_id;
+                $objDeposit->jpy = $inputs['deposit_jpy'];
+                $objDeposit->rmb = $inputs['deposit_rmb'];
+                $objDeposit->save();
+            }
         }
         return response()->json($objEvent);
     }
@@ -185,12 +250,12 @@ class EventController extends Controller
      */
     public function show($id)
     {
-        return Event::with(['details'])->findOrFail($id);
+        return Event::with(['details', 'deposit'])->findOrFail($id);
     }
 
     public function showbycontract($id)
     {
-        $event = Event::with(['details'])->findOrFail($id);
+        $event = Event::with(['details', 'deposit'])->findOrFail($id);
         $types = Type::get(['id', 'name']);
         foreach($types as $type) {
             $typeArray[$type->id] = $type->name;
@@ -269,9 +334,11 @@ class EventController extends Controller
             $objEventDetail->from_address = $inputs['from']['address'];
             $objEventDetail->from_elevator = $inputs['from']['elevator'];
             $objEventDetail->from_floor = $inputs['from']['floors'];
+            $objEventDetail->from_btype = $inputs['from']['btype'];
             $objEventDetail->to_address = $inputs['to']['address'];
             $objEventDetail->to_elevator = $inputs['to']['elevator'];
             $objEventDetail->to_floor = $inputs['to']['floors'];
+            $objEventDetail->to_btype = $inputs['to']['btype'];
             $objEventDetail->phone = $inputs['phone'];
             $objEventDetail->wechat = $inputs['wechat'];
             $objEventDetail->save();
@@ -286,6 +353,16 @@ class EventController extends Controller
                 $objList = ProductList::find($inputs['product_list_id']);
                 $objList->event_id = $event_id;
                 $objList->save();
+            }
+            if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
+                $objDeposit = Deposit::where('event_id', $event_id)->first();
+                if(!$objDeposit) {
+                    $objDeposit = new Deposit();
+                }
+                $objDeposit->event_id = $event_id;
+                $objDeposit->jpy = $inputs['deposit_jpy'];
+                $objDeposit->rmb = $inputs['deposit_rmb'];
+                $objDeposit->save();
             }
         }
         $event = Event::with(['comments' => function ($query) {
@@ -375,6 +452,9 @@ class EventController extends Controller
                 $objExpense->zcgaosu + $objExpense->zcjiayou + 
                 $objExpense->zcmaihuo + $objExpense->zcother + 
                 $objExpense->fxjpy;
+        if($inputs['cause']) {
+            $objExpense->cause = $inputs['cause'];
+        }
         
         $objExpense->status = $inputs['sta'];
         \AdminLog::saveWithLog($objExpense, config('const.log_event_complete'), $action);
@@ -392,9 +472,10 @@ class EventController extends Controller
         if($auth->group_id != 1) {
             return "403";
         }
-        $finances['data'] = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
-
+        
         if($type == 1) {
+            //未入金
+            $finances['data'] = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
             $userprice = Expense::where('finalprice', '>', 0)->where('status', $type)
             ->groupBy('user_id')
             ->selectRaw('sum(finalprice) as sum, user_id')
@@ -408,6 +489,15 @@ class EventController extends Controller
             if($user) {
                 $finances['user'] = $user;
             }
+        } else {
+            //已入金
+            $finances['data'] = Event::orderBy('event_date', 'DESC')->whereHas('expense', function ($query) use ($type) {
+                $query->where('finalprice', '>', 0)->where('status', $type);
+            })->orWhereHas('deposit', function ($query) use ($type) {
+                $query->where('jpy', '>', 0);
+            })->with(['expense' => function($query) {
+                $query->with(['user']);
+            }, 'deposit'])->paginate(20);
         }
 
         return $finances;

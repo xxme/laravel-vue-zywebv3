@@ -51,6 +51,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/events/{ym}', 'EventController@index');
         Route::get('/events/finances/{type}', 'EventController@finances');
         Route::get('/event/showbycontract/{id}', 'EventController@showbycontract');
+        Route::get('/event/item/{id}', 'EventController@item');
         Route::get('/user/index/{id}', 'UserController@index')->name('admin.userindex');
         Route::get('/user/create/{id}', 'UserController@create');
         Route::get('/user/edit/{id}', 'UserController@edit')->name('admin.useredit');
@@ -71,6 +72,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/user/create', 'UserController@store');
         Route::post('/type/create_do', 'TypesController@create_do');
         Route::post('/type/updatetypes', 'TypesController@updatetypes');
+        Route::post('/type/updatestatus', 'TypesController@updatestatus');
         Route::post('/uploadimg', 'AdminController@updateImage');
         Route::post('/event/complete', 'EventController@complete');
         Route::post('/event/received', 'EventController@setReceived');

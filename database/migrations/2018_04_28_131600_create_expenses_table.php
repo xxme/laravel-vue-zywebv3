@@ -27,6 +27,7 @@ class CreateExpensesTable extends Migration
             $table->unsignedInteger('zcother')->default(0);
             $table->unsignedInteger('fxrmb')->default(0);
             $table->unsignedInteger('fxjpy')->default(0);
+            $table->string('cause')->nullable(); // 入金金额与报价+定金不相等时须填写理由
             $table->unsignedTinyInteger('status')->default(1); //1 入金していない 2 入金済み
             $table->timestamps();
             $table->foreign('event_id')->references('id')->on('events');

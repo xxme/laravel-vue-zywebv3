@@ -20,7 +20,11 @@
             "all": "全部",
             "details": "详情",
             "createduname": "创建者",
+            "createdat": "创建时间",
             "updatedat": "更新时间",
+            "date": "日期",
+            "time": "时间",
+            "goback": "返回",
             "noRes": "没有找到任何数据",
             "remove": "移除",
             "loadding": "处理中...",
@@ -106,6 +110,11 @@
             "elevator": "电梯",
             "stairs": "楼梯",
             "elevatorAndstairs": "电梯+楼梯",
+            "depositjpy": "定",
+            "depositrmb": "押",
+            "depositjpyL": "定金",
+            "depositrmbL": "押金",
+            "cause": "因收款金额与报价+定金不符，请填写理由",
             "timereverse": "开始时间不能比结束时间更晚",
             "noPhoneNumberAndWechat": "不填写联系方式提交，",
             "delwarning": "确定删除此日程吗?",
@@ -129,8 +138,9 @@
             "zcmaihuo": "买货支出",
             "zcother": "其它支出",
             "undone": "未完成收入预计",
-            "completeDate": "日程完成时间",
+            "completeDate": "完成时间",
             "checked": "已选",
+            "cause": "原因",
             "areyousurereceived": "确定要把已选定的标记为已入金吗?总金额",
             "moneymanage": "入金管理"
         },
@@ -169,6 +179,7 @@
         "offer": {
             "goback": "上一步",
             "gonext": "下一步",
+            "buildingtype": "建筑类型",
             "buildingtype1": "团地",
             "buildingtype2": "マンション",
             "buildingtype3": "高级マンション",
@@ -184,17 +195,55 @@
             "morning": "上午",
             "afternoon": "下午",
             "night": "晚上",
-            "allday": "时间不指定"
+            "total": "物品量",
+            "totalt1": "3立方米以内",
+            "totalt2": "5立方米以内",
+            "totalt3": "7.5立方米以内",
+            "totalt4": "10立方米以内",
+            "totalt5": "15立方米以内",
+            "totalt6": "20立方米以内",
+            "issuedate": "发行日",
+            "expiration": "有效期至",
+            "allday": "时间不指定",
+            "payee": "汇款银行"
         }
     },
     "ja": {
+        "global": {
+            "date": "日付",
+            "time": "時間"
+        },
         "contract": {
-            "title": "顧客様情報確認",
-            "workingtime": "作業日付及び時間",
+            "title": "見積書",
+            "workingtime": "作業日時",
             "morning": "午前中",
             "afternoon": "午後",
             "night": "夜",
-            "allday": "時間不指定"
+            "allday": "時間不指定",
+            "issuedate": "発行日",
+            "totalt1": "3立方メートル未満",
+            "totalt2": "5立方メートル未満",
+            "totalt3": "7.5立方メートル未満",
+            "totalt4": "10立方メートル未満",
+            "totalt5": "15立方メートル未満",
+            "totalt6": "20立方メートル未満",
+            "expiration": "有効期限",
+            "total": "荷物体積",
+            "payee": "お振込先"
+        },
+        "event": {
+            "amount": "見積金額",
+            "fromAddress": "出発地",
+            "toAddress": "到着地",
+            "depositjpyL": "保証金JPY",
+            "depositrmbL": "保証金RMB",
+            "floor": "階",
+            "elevator": "エレベータ付き",
+            "stairs": "エレベータ無し",
+            "elevatorAndstairs": "エレベータ＋階段"
+        },
+        "productlist": {
+            "total": "合計"
         }
     }
 }

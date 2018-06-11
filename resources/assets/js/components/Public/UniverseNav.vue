@@ -262,19 +262,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.medals0, .medals1, .medals2 {
-    background-image: url("/images/medals.png");
-    background-repeat: no-repeat;
-    background-size: auto 90%;
-    width: 33px;
-    position: absolute;
-    margin-top: 5px;
-}
-.medals1 {
-    background-position: -35px 0;
-}
-.medals2 {
-    background-position: -69px 0;
-}
-</style>

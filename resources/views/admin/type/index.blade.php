@@ -34,7 +34,7 @@
               <td>
                 <input type="text" class="form-control" name="name[{{ $type->id }}]" value="{{ $type->name }}" />
               </td>
-              <td>@empty($type->deleted_at)<span class="label label-success" onclick="changestatus('{{ $type->id }}')">Available @else <span class="label label-danger" onclick="'{{ $type->id }}'">Unavailable @endempty</span></td>
+              <td>@if($type->status == 1)<span class="label label-success" id="label{{ $type->id }}" onclick="changestatus('{{ $type->id }}', 2)">{{__('messages.available')}} @else <span class="label label-danger" id="label{{ $type->id }}" onclick="changestatus('{{ $type->id }}', 1)">{{__('messages.unavailable')}} @endif</span></td>
             </tr>
           @endforeach
         @endif
@@ -54,8 +54,36 @@
   </div>
 </div>
 <script>
-  function changestatus(id) {
-    
+  function changestatus(id, status) {
+    if(window.confirm('{{__("messages.areyousuredel")}} ID:'+id)) {
+      $.ajax({
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        type: 'post',
+        datatype: 'json',
+        data: {id: id, status: status},
+        url: "{{ url('admin/type/updatestatus') }}"
+      })
+      .done(function(data){
+        if(data.success){
+          if(status == 2) {
+            $('#label'+id).removeClass('label-success').addClass('label-danger');
+            $('#label'+id).html("{{__('messages.unavailable')}}");
+            $('#label'+id).attr("onclick","changestatus('"+id+"', 1)");
+          } else {
+            $('#label'+id).removeClass('label-danger').addClass('label-success');
+            $('#label'+id).html("{{__('messages.available')}}");
+            $('#label'+id).attr("onclick","changestatus('"+id+"', 2)");
+          }
+          $('.alert-success').show();
+        } else {
+          $('.alert-danger').find('span').html(data.message);
+          $('.alert-danger').show();
+        }
+        hidealert();
+      })
+    }
   }
   function formsubmit(){
     var formdata = $('form').serialize();

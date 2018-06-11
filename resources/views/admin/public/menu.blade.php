@@ -4,6 +4,9 @@
   <section class="sidebar">
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class="sidebar-menu" data-widget="tree">
+      <li>
+        <a><span>Powered by wjx</span></a>
+      </li>
       <li @if(Request::is('admin') || Request::is('admin/event/*')) class="active" @endif><a href="{{ url('/admin') }}"><i class="fa fa-calendar"></i> <span>{{ __('messages.events') }}</span></a></li>
       <li class="treeview @if(Request::is('admin/type/*')) active @endif">
         <a href="#">

@@ -140,6 +140,19 @@ class TypesController extends Controller
         
         return \Response::json(array('success' => true, 'message' => "ok"), 200);
     }
+
+    public function updatestatus(Request $request) {
+        // update status
+        $inputs = $request->all();
+        // dd($inputs);
+        $obj = Type::findOrFail($inputs['id']);
+        if($obj) {
+            $obj->status = $inputs['status'];
+            $obj->save();
+            return \Response::json(array('success' => true, 'message' => "ok"), 200);
+        }
+        return \Response::json(array('success' => false, 'message' => "error"), 200);
+    }
     /**
      * Remove the specified resource from storage.
      *

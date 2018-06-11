@@ -4,7 +4,7 @@
       <section class="content-header">
         <h1>
           {{ $t('event.pagetitle') }}
-          <span class="pull-right">
+          <span v-show="!showEventItem && !showformflag" class="pull-right">
             <div class="switch">
               <small>{{ $t('finance.completed') }}</small>
               <input id="switch" v-model="showCompleted" type="checkbox">
@@ -19,7 +19,7 @@
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
           <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
-          <span class="pull-right">
+          <span v-show="!showEventItem && !showformflag" class="pull-right">
             <div class="switchestimates">
               <input id="switchestimates" v-model="switchEstimates" type="checkbox">
               <label for="switchestimates"></label>
@@ -27,14 +27,10 @@
           </span>
         </div>
         <div class="nav-tabs-custom" v-show="!showformflag && showCalendarFlag">
-          <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
-            <li class="active"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
-            <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
-          </ul>
           <div class="tab-content">
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
-              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @showevents="showevents" id="calendartodo"></todo>
+              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" id="calendartodo"></todo>
             </div>
             <!-- /.tab-pane -->
             <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
@@ -99,6 +95,11 @@
             <!-- /.tab-pane -->
           </div>
           <!-- /.tab-content -->
+
+          <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
+            <li class="active"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
+            <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
+          </ul>
         </div>
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
@@ -194,23 +195,6 @@ export default {
           }
           this.setFee();
       })
-    },
-    showevents(date) {
-      this.show_list = [];
-      if(this.showCompleted) {
-        if(this.switchEstimates) {
-          this.show_list = this.events.ordinarycompleted.concat(this.events.ordinaryundone);
-        } else {
-          this.show_list = this.events.estimatecompleted.concat(this.events.estimateundone);
-        }
-      } else {
-        if(this.switchEstimates) {
-          this.show_list = this.events.ordinaryundone;
-        } else {
-          this.show_list = this.events.estimateundone;
-        }
-      }
-      this.checkCountShowList();
     },
     showitem(id) {
       this.show_list = [];
@@ -322,24 +306,24 @@ export default {
         if(this.events_list[i].amount) {
           amount = this.$parent.$options.methods.formatNumberJPY(this.events_list[i].amount);
         }
-        var apm = '\n';
+        var apm = ' ';
         eventObj.id = this.events_list[i].id;
         eventObj.start = this.events_list[i].event_date;
         switch(+this.events_list[i].apm) {
           case 1:
             eventObj.start += 'T08:00:00';
             eventObj.end = this.events_list[i].event_date + 'T12:00:00';
-            apm = ' '+this.$i18n.t('event.morning');
+            apm += this.$i18n.t('event.morning');
             break;
           case 2:
             eventObj.start += 'T12:00:00';
             eventObj.end = this.events_list[i].event_date + 'T18:00:00';
-            apm = ' '+this.$i18n.t('event.afternoon');
+            apm += this.$i18n.t('event.afternoon');
             break;
           case 3:
             eventObj.start += 'T18:00:00';
             eventObj.end = this.events_list[i].event_date + 'T21:00:00';
-            apm = ' '+this.$i18n.t('event.night');
+            apm += this.$i18n.t('event.night');
             break;
           case 5:
             if(this.events_list[i].start_time) {
@@ -351,7 +335,7 @@ export default {
             break;
           default:
             eventObj.allDay = true;
-            apm = ' '+this.$i18n.t('event.alldayT');
+            apm += this.$i18n.t('event.alldayT');
             break;
         }
         
@@ -360,16 +344,24 @@ export default {
         if(this.events_list[i].trucks.length > 0) {
           truck = '<i class="fa fa-truck"></i> '+this.events_list[i].trucks.join(", ")+'<br/>';
         }
-        var typenames = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'<br/>';
+        if(eventObj.title == ' ') {
+          eventObj.title = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ");
+          var typenames = '';
+        } else {
+          // eventObj.title2 = eventObj.title;
+          var typenames = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'<br/>';
+        }
+        
         if(this.events_list[i].status == 1) {
           // 未完成
           // description well show on agendaDay view only.
           // completed well show on any views.
-          if(view && view.name == 'agendaDay') {
-            var description = '<div class="eventdescription showdescription">';
-          } else {
-            var description = '<div class="eventdescription">';
-          }
+          // if(view && view.name == 'agendaDay') {
+          //   var description = '<div class="eventdescription showdescription">';
+          // } else {
+          //   var description = '<div class="eventdescription">';
+          // }
+          var description = '<div class="eventdescription">';
           if(this.events_list[i].carefulnames.length > 0) {
             description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
           }
@@ -378,6 +370,17 @@ export default {
           }
           if(this.events_list[i].goods.length > 0) {
             description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
+          }
+          if(this.events_list[i].deposit) {
+            if(this.events_list[i].deposit.jpy) {
+              description += this.$t('event.depositjpy')+this.$parent.$options.methods.formatNumberJPY(this.events_list[i].deposit.jpy)+' ';
+            }
+            if(this.events_list[i].deposit.rmb) {
+              description += this.$t('event.depositrmb')+this.$parent.$options.methods.formatNumberJPY(this.events_list[i].deposit.rmb)+' ';
+            }
+            if(this.events_list[i].deposit.jpy || this.events_list[i].deposit.rmb) {
+              description += '<br/>';
+            }
           }
           if(this.events_list[i].details.phone) {
             description += '<i class="fa fa-phone"></i> '+this.events_list[i].details.phone;
@@ -402,6 +405,19 @@ export default {
           }
           if(this.events_list[i].details.from_address) {
             description += 'From: '+this.events_list[i].details.from_address;
+            if(this.events_list[i].details.from_btype == 1) {
+              description += ' '+this.$t('offer.buildingtype1');
+            } else if(this.events_list[i].details.from_btype == 2) {
+              description += ' '+this.$t('offer.buildingtype2');
+            } else if(this.events_list[i].details.from_btype == 3) {
+              description += ' '+this.$t('offer.buildingtype3');
+            } else if(this.events_list[i].details.from_btype == 4) {
+              description += ' '+this.$t('offer.buildingtype4');
+            } else if(this.events_list[i].details.from_btype == 5) {
+              description += ' '+this.$t('offer.buildingtype5');
+            } else if(this.events_list[i].details.from_btype == 6) {
+              description += ' '+this.$t('offer.buildingtype6');
+            }
             if(this.events_list[i].details.from_elevator == 1) {
               description += ' '+this.$t('event.elevator');
             } else if(this.events_list[i].details.from_elevator == 2) {
@@ -420,6 +436,19 @@ export default {
           }
           if(this.events_list[i].details.to_address) {
             description += 'To: '+this.events_list[i].details.to_address;
+            if(this.events_list[i].details.to_btype == 1) {
+              description += ' '+this.$t('offer.buildingtype1');
+            } else if(this.events_list[i].details.to_btype == 2) {
+              description += ' '+this.$t('offer.buildingtype2');
+            } else if(this.events_list[i].details.to_btype == 3) {
+              description += ' '+this.$t('offer.buildingtype3');
+            } else if(this.events_list[i].details.to_btype == 4) {
+              description += ' '+this.$t('offer.buildingtype4');
+            } else if(this.events_list[i].details.to_btype == 5) {
+              description += ' '+this.$t('offer.buildingtype5');
+            } else if(this.events_list[i].details.to_btype == 6) {
+              description += ' '+this.$t('offer.buildingtype6');
+            }
             if(this.events_list[i].details.to_elevator == 1) {
               description += ' '+this.$t('event.elevator');
             } else if(this.events_list[i].details.to_elevator == 2) {
@@ -485,8 +514,10 @@ export default {
           ) {
           // 店内工作(邮寄纸箱)
           eventObj.color = '#66aac9';
-          eventObj.start = this.events_list[i].event_date + 'T21:00:00';
-          eventObj.end = this.events_list[i].event_date + 'T23:59:59';
+          if(this.events_list[i].apm != 4) {
+            eventObj.start = this.events_list[i].event_date + 'T21:00:00';
+            eventObj.end = this.events_list[i].event_date + 'T23:59:59';
+          }
         } else if(this.events_list[i].types.indexOf('"18"') > -1) {
           // 店内工作(客人来店)
           eventObj.color = '#66aac9';
@@ -494,7 +525,6 @@ export default {
         
         if(eventObj){
           if(this.events_list[i].status == 1) {
-            // 未完成
             if(this.events_list[i].types.indexOf('"5"') > -1) {
               // 見積
               this.eventDataSources.estimateundone.push(eventObj);
@@ -548,6 +578,7 @@ export default {
       if(date) {
         this.eventdate = date;
       }
+      this.get_productlist();
       this.showEventItem = false;
       this.showformflag = true;
     },
@@ -566,12 +597,8 @@ export default {
       this.showCalendarFlag = true;
     },
     get_formtypes() {
-      var eid = "";
-      if(this.eventid) {
-        eid = this.eventid;
-      }
       this.$http({
-        url: '/api/get_types/' + eid,
+        url: '/api/get_types/',
         method: 'GET'
       }).then(res =>  {
         for (var index in res.data.types) {
@@ -599,6 +626,18 @@ export default {
               break;
           }
         }
+      })
+    },
+    get_productlist() {
+      var eid = "";
+      if(this.eventid) {
+        eid = this.eventid;
+      }
+      this.formoptions.product_list = [];
+      this.$http({
+        url: '/api/get_productlist/' + eid,
+        method: 'GET'
+      }).then(res =>  {
         for (var index in res.data.productlists) {
           var option = {};
           option.id = res.data.productlists[index].id;
@@ -612,8 +651,17 @@ export default {
       this.showCalendarFlag = true;
     },
     quickformswitch(showorhide, date = '') {
-      if(showorhide && date) {
-        this.eventdate = date
+      if(showorhide) {
+        if(date) {
+          this.eventdate = date
+        } else {
+          var view = $('#calendartodo').fullCalendar('getView');
+          if(view.name == 'agendaDay') {
+            this.eventdate = $('#calendartodo').fullCalendar('getDate').format();
+          } else {
+            this.eventdate = ""
+          }
+        }
       }
       if(showorhide) {
         //open
@@ -672,23 +720,25 @@ Vue.component('todo', {
     this.cal = $(self.$el)
 
     var args = {
-      defaultView: 'month',
+      defaultView: 'agendaDay',
       events: self.events.ordinaryundone,
       defaultDate: moment().format('YYYY-MM-DD'),
       minTime: '08:00:00',
       maxTime: '23:00:00',
+      height: 1000,
+      contentHeight: 1000,
       header: {
         left: 'title createEventButton',
         right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
       },
       // 日付クリックイベント
-      dayClick: function(date, jsEvent, view) {
-        self.$emit('showevents', date.format());
-        self.gotoDate(date.format());
-      },
+      // dayClick: function(date, jsEvent, view) {
+      //   self.gotoDate(date.format());
+      // },
       navLinks: true,
       navLinkDayClick: function(date, jsEvent) {
-        self.$emit('showform', true, date.format());
+        self.gotoDate(date.format());
+        // self.$emit('showform', true, date.format());
       },
       // イベントクリック
       eventClick: function(calEvent, jsEvent, view) {
@@ -714,7 +764,8 @@ Vue.component('todo', {
         } else {
           $(".eventdescription").css('display', 'none');
         }
-        $(".eventdescription").removeClass('showdescription');
+        self.resetHolidays();
+        // $(".eventdescription").removeClass('showdescription');
       },
       eventRender: function(event, element) {
         self.showdescription(event, element);
@@ -748,17 +799,18 @@ Vue.component('todo', {
       this.cal.fullCalendar('removeEventSources');
       this.cal.fullCalendar('addEventSource', val);
       
-      // Object.keys(this.holidays).forEach(function (holiday) {
-      //     $("td[data-date = '"+holiday+"']").css("background-color", "#ffe6e6");
-      // });
+      var view = this.cal.fullCalendar('getView');
+      if(view.name == 'agendaDay') {
+        $(".eventdescription").css('display', 'block');
+      } else {
+        $(".eventdescription").css('display', 'none');
+      }
     },
     showYmd(val) {
       this.cal.fullCalendar('gotoDate', this.showYmd);
     },
     holidays() {
-      for(var index in this.holidays) {
-        $('.fc-day[data-date="'+this.holidays[index].date+'"]').css('background-color', '#ffe6f0');
-      }
+      this.resetHolidays();
     }
   },
   methods: {
@@ -772,30 +824,35 @@ Vue.component('todo', {
     setFirstDay() {
       $(this.$el).fullCalendar('option', 'firstDay', moment().subtract(1, 'd').day());
     },
+    resetHolidays() {
+      for(var i in this.holidays) {
+        $('.fc-day[data-date="'+this.holidays[i].date+'"]').css('background-color', '#ffe6f0');
+      }
+    },
     resetFirstDay() {
       $(this.$el).fullCalendar('option', 'firstDay', 1);
     },
     showdescription(event, element) {
-      element.find('.fc-title').append("<br/>" + event.description);
+      var title = element.find( '.fc-title' );
+      title.html( title.text() );
+      title.append("<br/>" + event.description);
       if(event.completed) {
-        element.find('.fc-title').append(event.completed);
+        title.append(event.completed);
       }
     }
   },
   computed: {
     getevents: function() {
-      if(this.showCompleted) {
-        if(this.switchEstimates) {
-          return this.events.ordinarycompleted.concat(this.events.ordinaryundone);
+      if(this.switchEstimates) {
+        //日程
+        if(this.showCompleted) {
+          return this.events.ordinarycompleted.concat(this.events.ordinaryundone).concat(this.events.estimateundone).concat(this.events.estimatecompleted);
         } else {
-          return this.events.estimatecompleted.concat(this.events.estimateundone);
+          return this.events.ordinaryundone.concat(this.events.estimateundone);
         }
       } else {
-        if(this.switchEstimates) {
-          return this.events.ordinaryundone;
-        } else {
-          return this.events.estimateundone;
-        }
+        //見積
+        return this.events.estimatecompleted.concat(this.events.estimateundone);
       }
     }
   }
@@ -847,5 +904,19 @@ Vue.component('todo', {
 }
 .switch input:checked + label:hover:after, .switchestimates input:checked + label:hover:after {
     opacity: 0.5;
+}
+.medals0, .medals1, .medals2 {
+    background-image: url("/images/medals.png");
+    background-repeat: no-repeat;
+    background-size: auto 90%;
+    width: 33px;
+    position: absolute;
+    margin-top: 5px;
+}
+.medals1 {
+    background-position: -35px 0;
+}
+.medals2 {
+    background-position: -69px 0;
 }
 </style>
