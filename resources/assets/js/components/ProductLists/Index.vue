@@ -7,7 +7,7 @@
 			</h1>
 		</section>
 		<!-- Main content -->
-		<section class="content">
+		<section class="content" v-if="!showformflag">
 			<!-- Main row -->
 			<sample-nav :linkurl="'/admin/productlist/create'"></sample-nav>
 			<div class="box">
@@ -64,7 +64,7 @@
 													<button class="btn btn-xs btn-warning" @click="$router.push('/admin/productlist/' + list.id + '/edit')">
 														<i class="fa fa-pencil"></i>
 													</button>
-													<button v-if="!list.event_id" class="btn btn-xs btn-primary" @click="$router.push('/admin/event/createbyproductlist/' + list.id)">
+													<button v-if="!list.event_id" class="btn btn-xs btn-primary" @click="createEvent(list.id)">
 														<i class="fa fa-calendar"></i>
 													</button>
 												</div>
@@ -114,6 +114,7 @@
 			<!-- /.row (main row) -->
 		</section>
 		<!-- /.content -->
+    <quick-form v-if="showformflag" :formoptions="formoptions" :productlistid="productlistid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
 	</div>
 </template>
 
@@ -121,6 +122,7 @@
 import SampleNav from '../Public/SampleNav'
 import baguetteBox from 'baguettebox.js'
 import pagination from 'laravel-vue-pagination'
+import QuickForm from '../Events/QuickForm.vue';
 
 export default {
 	data() {
@@ -130,17 +132,50 @@ export default {
 					length: 0
 				}
 			},
-			type: 2
+			type: 2,
+      showformflag: false,
+      productlistid: "",
+      formoptions: {
+        worktype: [],
+        careful: [],
+        total: [],
+        aboutgoods: [],
+        truck: [],
+        product_list: []
+      }
 		}
 	},
 	mounted() {
-		this.get_productlists();
+		this.get_productlists()
+    this.get_formtypes()
 	},
 	methods: {
 		showDetail(e) {
 			$(e.target).closest('tr').next().toggleClass('open');
 			$(e.target).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
 		},
+    createEvent(listid) {
+      this.get_list_for_create(listid);
+      this.productlistid = listid;
+      this.showformflag = true;
+    },
+    addedevent() {
+      console.log("ok");
+    },
+    get_list_for_create(listid) {
+      this.formoptions.product_list = [];
+      this.$http({
+        url: '/api/get_productlist/' + listid,
+        method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data.productlists) {
+          var option = {};
+          option.id = res.data.productlists[index].id;
+          option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
+          this.formoptions.product_list.push(option);
+        }
+      })
+    },
 		get_productlists(page = 1) {
       this.product_lists.data.length = 0;
 			$('.open').toggleClass('open');
@@ -190,6 +225,38 @@ export default {
           }
         })
       }
+    },
+    get_formtypes() {
+      this.$http({
+        url: '/api/get_types/',
+        method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data.types) {
+          var group_id = res.data.types[index].group_id;
+          var option = {};
+          option.id = res.data.types[index].id;
+          option.text = res.data.types[index].name;
+          switch (+group_id) {
+            case 1:
+              this.formoptions.worktype.push(option);
+              break;
+            case 2:
+              this.formoptions.careful.push(option);
+              break;
+            case 3:
+              this.formoptions.total.push(option);
+              break;
+            case 4:
+              this.formoptions.aboutgoods.push(option);
+              break;
+            case 5:
+              this.formoptions.truck.push(option);
+              break;
+            default:
+              break;
+          }
+        }
+      })
     }
 	},
 	watch: {
@@ -206,6 +273,7 @@ export default {
 	},
 	components: {
 		SampleNav,
+    QuickForm,
 		pagination
 	}
 }

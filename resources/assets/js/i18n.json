@@ -101,7 +101,7 @@
             "comment": "留言",
             "eventdate": "预定日期",
             "eventtime": "预定时间",
-            "apmAllDayOrTime": "上午、下午、晚上或全天",
+            "apmAllDayOrTime": "上、下午、晚上、全天或指定时间",
             "eventtimeChecked": "选择指定具体时间的情况下，",
             "PleaseCorrectTheFollowingError": "请修正以下错误后重试",
             "setDetails": "设置详情",

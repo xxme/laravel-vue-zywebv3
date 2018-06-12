@@ -23,9 +23,11 @@ class CreateEventDetailsTable extends Migration
             $table->string('from_address')->nullable();
             $table->unsignedTinyInteger('from_elevator')->nullable();
             $table->unsignedTinyInteger('from_floor')->nullable();
+            $table->unsignedTinyInteger('from_btype')->nullable();
             $table->string('to_address')->nullable();
             $table->unsignedTinyInteger('to_elevator')->nullable();
             $table->unsignedTinyInteger('to_floor')->nullable();
+            $table->unsignedTinyInteger('to_btype')->nullable();
             $table->string('phone')->nullable();
             $table->string('wechat')->nullable();
             $table->foreign('event_id')->references('id')->on('events');

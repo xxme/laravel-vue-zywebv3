@@ -56,7 +56,9 @@ export default {
     },
     value: function (value) {
       if(this.change) {
+        console.log("value", value);
         var self = this;
+        $(this.$el).select2({allowClear: true, data: options, placeholder: this.placeholder}).val(value).trigger("change");
         self.$emit('change', value);
       }
     }

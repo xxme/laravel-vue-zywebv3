@@ -348,7 +348,6 @@ export default {
           eventObj.title = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ");
           var typenames = '';
         } else {
-          // eventObj.title2 = eventObj.title;
           var typenames = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'<br/>';
         }
         
@@ -356,11 +355,6 @@ export default {
           // 未完成
           // description well show on agendaDay view only.
           // completed well show on any views.
-          // if(view && view.name == 'agendaDay') {
-          //   var description = '<div class="eventdescription showdescription">';
-          // } else {
-          //   var description = '<div class="eventdescription">';
-          // }
           var description = '<div class="eventdescription">';
           if(this.events_list[i].carefulnames.length > 0) {
             description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
@@ -372,10 +366,10 @@ export default {
             description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
           }
           if(this.events_list[i].deposit) {
-            if(this.events_list[i].deposit.jpy) {
+            if(this.events_list[i].deposit.jpy > 0) {
               description += this.$t('event.depositjpy')+this.$parent.$options.methods.formatNumberJPY(this.events_list[i].deposit.jpy)+' ';
             }
-            if(this.events_list[i].deposit.rmb) {
+            if(this.events_list[i].deposit.rmb > 0) {
               description += this.$t('event.depositrmb')+this.$parent.$options.methods.formatNumberJPY(this.events_list[i].deposit.rmb)+' ';
             }
             if(this.events_list[i].deposit.jpy || this.events_list[i].deposit.rmb) {

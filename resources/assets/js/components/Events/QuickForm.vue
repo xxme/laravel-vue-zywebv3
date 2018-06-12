@@ -289,15 +289,19 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid', 'formoptions'],
+  props: ['eventdate', 'eventid', 'formoptions', 'productlistid'],
   mounted() {
     var self = this;
     this.setDatePicker()
     this.options = this.formoptions;
+    
     if(self.eventid) {
       this.getEvent(self.eventid);
     } else if(self.eventdate) {
       this.event.eventdate = self.eventdate;
+    } else if(self.productlistid) {
+      console.log(self.productlistid);
+      this.setPerductListId(self.productlistid);
     }
   },
   components: {
@@ -384,6 +388,9 @@ export default {
     },
     eventdata() {
       console.log(this.eventdata);
+    // },
+    // productlistid() {
+    //   this.event.product_list_id = this.productlistid;
     }
   },
   computed: {
@@ -398,8 +405,10 @@ export default {
           noScrollbars: true
         });
       }
-      // var pos = $("#boxtitle").offset().top;
-      // $(window).scrollTop(pos);
+      // if(this.productlistid) {
+      //   // this.event.eventdate = this.productlistid;
+      //   $('#product_list_id').val(this.productlistid).trigger('change');
+      // }
     })
   },
   methods: {
@@ -615,6 +624,9 @@ export default {
         this.event.to.btype = res.data.details.to_btype;
         this.event.comment = "";
       })
+    },
+    setPerductListId(id) {
+      this.event.product_list_id = id;
     },
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){
