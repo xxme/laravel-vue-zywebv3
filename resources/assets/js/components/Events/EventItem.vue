@@ -441,15 +441,7 @@ export default {
         message += this.$t('event.listWellBeDel')
       }
       if(window.confirm(message)) {
-        this.$http.delete('/admin/event/'+eventid).then(response => {
-          if(response) {
-            for(var key in this.events_list) {
-              if(this.events_list[key].id == eventid){
-                this.events_list.splice(key, 1);
-              }
-            }
-          }
-        })
+        this.$emit('deleteevent', eventid)
       }
     },
     deletecomment(commentid) {
@@ -509,7 +501,6 @@ export default {
           } else {
             this.completeinfo.haspartner = false;
           }
-          console.log(this.events_list[key]);
           if(this.events_list[key].receivable > 0) {
             this.completeinfo.receivable = this.events_list[key].receivable;
           }

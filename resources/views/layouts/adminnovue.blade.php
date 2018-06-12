@@ -10,12 +10,12 @@
 
   <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
   <!-- Theme style -->
-  <link rel="stylesheet" href="/dist/css/AdminLTE.min.css?v={{ time() }}">
+  <link rel="stylesheet" href="/dist/css/AdminLTE.min.css?v=3.1.1">
   <!-- AdminLTE Skins. Choose a skin from the css/skins
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="/dist/css/skins/skin-blue.min.css">
   <!-- admin main -->
-  <link rel="stylesheet" href="/css/adminmain.css?v={{ time() }}">
+  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.1">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->

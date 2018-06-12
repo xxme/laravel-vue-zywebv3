@@ -300,7 +300,6 @@ export default {
     } else if(self.eventdate) {
       this.event.eventdate = self.eventdate;
     } else if(self.productlistid) {
-      console.log(self.productlistid);
       this.setPerductListId(self.productlistid);
     }
   },
@@ -406,8 +405,8 @@ export default {
         });
       }
       // if(this.productlistid) {
-      //   // this.event.eventdate = this.productlistid;
       //   $('#product_list_id').val(this.productlistid).trigger('change');
+      //   self.productlistid = "";
       // }
     })
   },
@@ -492,13 +491,8 @@ export default {
         });
       } else {
         this.$http.post('/admin/event', this.event).then(response => {
-          // this.$emit('addevent', response.data);
-          // this.$router.push('/admin');
           var ymd = response.data.event_date;
-          // this.get_events(ymd.substring(0,7), ymd);
           this.$emit('addedevent', ymd);
-          // this.$emit('update-events', ymd.substring(0,7));
-          // this.$emit('closeform');
           this.loadingShow = false;
         }).catch(error => {
           this.errors.push(this.$t('global.calltheadministrator'));
@@ -626,7 +620,10 @@ export default {
       })
     },
     setPerductListId(id) {
-      this.event.product_list_id = id;
+      var self = this;
+      setInterval(function() {
+        self.event.product_list_id = id;
+      },500)
     },
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){

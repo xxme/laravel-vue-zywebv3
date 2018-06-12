@@ -101,7 +101,7 @@
             <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
           </ul>
         </div>
-        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent"></event-item>
+        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
       </section>
     </div>
@@ -637,6 +637,19 @@ export default {
           option.id = res.data.productlists[index].id;
           option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
           this.formoptions.product_list.push(option);
+        }
+      })
+    },
+    deleteevent(eventid) {
+      this.$http.delete('/admin/event/'+eventid).then(response => {
+        if(response) {
+          for(var key in this.events_list) {
+            if(this.events_list[key].id == eventid){
+              this.events_list.splice(key, 1);
+            }
+          }
+          this.setEvents()
+          this.showCalendar()
         }
       })
     },

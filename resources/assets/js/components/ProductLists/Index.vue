@@ -58,7 +58,7 @@
 												<span>#{{ list.id }}</span> / 
 												<span>{{ $t('productlist.cost') }}{{ list.cost | formatNumberJPY }}</span> / 
 												<span>{{ $t('productlist.totalprice') }}{{ list.price | formatNumberJPY }}</span> / 
-												<span v-if="list.event_id">{{ $t('event.event') }} <router-link :to="'/admin/event/' + list.event.id + '/edit'">{{ list.event.event_date}} #{{ list.event.id }}</router-link></span>
+												<span v-if="list.event_id" @click="editevent(list.event_id)" class="blue">{{ $t('event.event') }} {{ list.event.event_date}} #{{ list.event.id }}</span>
 												<span v-else>{{ $t('productlist.untreated') }} <i class="fa fa-trash-o red" @click="deletelist(list.id)"></i></span>
 												<div class="pull-right">
 													<button class="btn btn-xs btn-warning" @click="$router.push('/admin/productlist/' + list.id + '/edit')">
@@ -114,7 +114,7 @@
 			<!-- /.row (main row) -->
 		</section>
 		<!-- /.content -->
-    <quick-form v-if="showformflag" :formoptions="formoptions" :productlistid="productlistid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
+    <quick-form v-if="showformflag" :eventid="eventid" :formoptions="formoptions" :productlistid="productlistid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
 	</div>
 </template>
 
@@ -135,6 +135,7 @@ export default {
 			type: 2,
       showformflag: false,
       productlistid: "",
+			eventid: "",
       formoptions: {
         worktype: [],
         careful: [],
@@ -155,17 +156,24 @@ export default {
 			$(e.target).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
 		},
     createEvent(listid) {
-      this.get_list_for_create(listid);
+			this.eventid = "";
+      this.get_list_for_form();
       this.productlistid = listid;
       this.showformflag = true;
     },
-    addedevent() {
-      console.log("ok");
+		editevent(eventid) {
+      this.eventid = eventid;
+      this.get_list_for_form(eventid);
+      this.showformflag = true;
     },
-    get_list_for_create(listid) {
+    addedevent() {
+			this.get_productlists()
+      this.quickformswitch(false)
+    },
+    get_list_for_form(eventid = 0) {
       this.formoptions.product_list = [];
       this.$http({
-        url: '/api/get_productlist/' + listid,
+        url: '/api/get_productlist/' + eventid,
         method: 'GET'
       }).then(res =>  {
         for (var index in res.data.productlists) {
@@ -226,6 +234,9 @@ export default {
         })
       }
     },
+		quickformswitch(flg) {
+			this.showformflag = flg;
+		},
     get_formtypes() {
       this.$http({
         url: '/api/get_types/',
