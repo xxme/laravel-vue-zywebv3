@@ -3,7 +3,7 @@
         <button type="button" class="btn bg-olive btn-sm" @click="uploadimg">
             <i class="fa fa-image"></i> Upload images
         </button>
-        <input type="file" id="file" @change="onFileChange" :accept="fileAccept" style="display: none" />
+        <input type="file" id="file" @change="onFileChange" :accept="fileAccept" multiple="multiple" style="display: none" />
     </div>
 </template>
 
@@ -19,13 +19,15 @@
             onFileChange(event) {
                 var self = this; //*** very important if can't call parent update fun
                 self.$emit('update-loading', true);
-                this.postFormData.append('file', event.target.files[0]);
+                for(var i in event.target.files) {
+                    this.postFormData.append('file[]', event.target.files[i]);
+                }
                 this.$http.post('/admin/uploadimg', this.postFormData)
                 .then(function (response) {
                     if(!response.data.errors) {
                         self.$emit('update-file', response.data);
                     } else {
-                        self.$emit('error-push', response.data.errors.file[0]);
+                        self.$emit('error-push', response.data.errors.file);
                     }
                     self.$emit('update-loading', false);
                 })

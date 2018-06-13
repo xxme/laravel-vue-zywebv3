@@ -289,18 +289,20 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid', 'formoptions', 'productlistid'],
+  props: ['eventdate', 'eventid', 'formoptions', 'productlistid', 'estimatedate'],
   mounted() {
     var self = this;
     this.setDatePicker()
     this.options = this.formoptions;
     
     if(self.eventid) {
-      this.getEvent(self.eventid);
+      this.getEvent(self.eventid)
     } else if(self.eventdate) {
-      this.event.eventdate = self.eventdate;
+      this.event.eventdate = self.eventdate
     } else if(self.productlistid) {
-      this.setPerductListId(self.productlistid);
+      this.setPerductListId(self.productlistid)
+    } else if(self.estimatedate) {
+      this.setEstimate(self.estimatedate)
     }
   },
   components: {
@@ -518,9 +520,11 @@ export default {
       this.loadingShow = switchTF;
     },
     updateFiles(file) {
-      var bigfile = file.replace("_thumb", "");
-      this.event.files.push(bigfile);
-      this.event.filethumbs.push(file);
+      for(var i in file) {
+        var bigfile = file[i].replace("_thumb", "");
+        this.event.files.push(bigfile);
+        this.event.filethumbs.push(file[i]);
+      }
       if(this.event.files.length > 0) {
         this.hasFile = true;
       } else {
@@ -618,6 +622,53 @@ export default {
         this.event.to.btype = res.data.details.to_btype;
         this.event.comment = "";
       })
+    },
+    setEstimate(data) {
+      if(data.event_id) {
+        // 编辑
+        this.event.id = data.event_id;
+      } else {
+        // 创建
+        this.event.eventdate = data.hopedate;
+        this.event.apm = data.apm;
+        this.event.from.address = data.from.adr;
+        this.event.from.elevator = data.from.elevator;
+        if(data.from.floor) {
+          this.event.from.floors = data.from.floor;
+        }
+        if(data.from.fbtype) {
+          this.event.from.btype = data.from.fbtype;
+        }
+        this.event.to.address = data.to.adr;
+        this.event.to.elevator = data.to.elevator;
+        if(data.to.floor) {
+          this.event.to.floors = data.to.floor;
+        }
+        if(data.to.tbtype) {
+          this.event.to.btype = data.to.tbtype;
+        }
+        this.event.phone = data.tel;
+        if(data.nickname) {
+          this.event.phone += ',' + data.nickname;
+        }
+        if(data.partner) {
+          this.event.partner = data.partner;
+        }
+        this.event.order_id = data.id;
+        if(data.items.note) {
+          this.event.comment = "客户留言:"+data.items.note+' ';
+        }
+        if(data.manager_note) {
+          this.event.comment += "备注:"+data.manager_note+' ';
+        }
+        for(var key in data.images) {
+          this.event.filethumbs.push(data.images[key]);
+          this.event.files.push(data.images[key].replace("_thumb", ""));
+        }
+        if(this.event.files.length > 0) {
+          this.hasFile = true;
+        }
+      }
     },
     setPerductListId(id) {
       var self = this;

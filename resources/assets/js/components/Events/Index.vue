@@ -30,7 +30,7 @@
           <div class="tab-content">
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
-              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" id="calendartodo"></todo>
+              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
             </div>
             <!-- /.tab-pane -->
             <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
@@ -105,12 +105,14 @@
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
       </section>
     </div>
+    <loading :loadingShow="loadingShow"></loading>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import moment from 'moment'
+import Loading from '../Public/Loading'
 import QuickForm from './QuickForm.vue';
 import EventItem from './EventItem.vue';
 
@@ -137,6 +139,7 @@ export default {
       showQuickForm: false,
       showEventItem: false,
       showformflag: false,
+      loadingShow: false,
       showCalendarFlag: true,
       switchEstimates: true,
       showYmd: moment().format('YYYY-MM-DD'),
@@ -169,10 +172,12 @@ export default {
   },
   components: {
     EventItem,
+    Loading,
     QuickForm
   },
   methods: {
     get_events(ym, ymd = "") {
+      this.loadingShow = true;
       this.events_list = [];
       $('#eventrs').html(this.$t('global.loading'));
       this.$http({
@@ -194,7 +199,12 @@ export default {
             this.setEvents();
           }
           this.setFee();
+          this.loadingShow = false;
       })
+    },
+    reloadEvents() {
+      var ym = moment($('#calendartodo').fullCalendar('getDate')).format('YYYY-MM');
+      this.get_events(ym);
     },
     showitem(id) {
       this.show_list = [];
@@ -240,7 +250,9 @@ export default {
                 this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
               } else {
                 // undone
-                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+                if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+                  this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+                }
               }
             }
           }
@@ -257,7 +269,9 @@ export default {
               feeuser.completed = this.events_list[i].expense.finalprice;
             } else {
               // undone
-              feeuser.total = this.events_list[i].amount;
+              if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+                feeuser.total = this.events_list[i].amount;
+              }
             }
             this.fee.users.push(feeuser);
           }
@@ -278,8 +292,10 @@ export default {
               this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
             } else {
               // undone
-              this.fee.finance.total += parseInt(this.events_list[i].amount);
-              this.fee.finance.undone += parseInt(this.events_list[i].amount);
+              if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+                this.fee.finance.total += parseInt(this.events_list[i].amount);
+                this.fee.finance.undone += parseInt(this.events_list[i].amount);
+              }
             }
           }
         }
@@ -543,11 +559,6 @@ export default {
             }
           }
         }
-        
-        // if((type == 1 && this.events_list[i].status == 1) || type == 2) {
-        //   this.events.push(eventObj);
-        // }
-
       }
     },
     percentage(usertotal) {
@@ -735,7 +746,7 @@ Vue.component('todo', {
       height: 1000,
       contentHeight: 1000,
       header: {
-        left: 'title createEventButton',
+        left: 'title createEventButton reloadEventsButton',
         right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
       },
       // 日付クリックイベント
@@ -782,6 +793,12 @@ Vue.component('todo', {
           text: this.$i18n.t('event.addEvent'),
           click: function() {
             self.$emit('showform', true);
+          }
+        },
+        reloadEventsButton: {
+          text: this.$i18n.t('global.reload'),
+          click: function() {
+            self.$emit('reload');
           }
         },
         tomorrowButton: {

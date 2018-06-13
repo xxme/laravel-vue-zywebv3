@@ -41,38 +41,48 @@ class AdminController extends Controller
     // post only
     public function updateImage(Request $request){
         $dt = Carbon::now();
-        $validator = \Validator::make($request->all(),
-            [
-                'file' => 'required|image|mimes:jpeg,png,jpg,gif,bmp|max:10240',
-            ],
-            [
-                'file.image' => 'The file must be an image (jpeg, png, bmp, or gif)'
-            ]);
+        $input_data = $request->all();
+        $validator = \Validator::make(
+            $input_data, [
+            'image_file.*' => 'required|mimes:jpg,jpeg,png,bmp|max:10240'
+            ],[
+                'image_file.*.required' => 'Please upload an image',
+                'image_file.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+                'image_file.*.max' => 'Sorry! Maximum allowed size for an image is 20MB',
+            ]
+        );
         if ($validator->fails())
             return array(
                 'fail' => true,
                 'errors' => $validator->errors()
             );
-        $extension = $request->file('file')->getClientOriginalExtension();
-        $filename = $request->file('file')->getClientOriginalName();
-        $image = $imgThumb = Image::make($request->file('file')->getRealPath())->orientate();
-        $width = $height = 1080;
-        $widthThumb = 70;
-        $heightThumb = 80;
-        $image->height() > $image->width() ? $width = $widthThumb = null : $height = $heightThumb = null;
+        $files = $request->file('file');
+        $thumbs = array();
+        foreach($files as $file) {
+            $extension = $file->getClientOriginalExtension();
+            $filename = $file->getClientOriginalName();
+            $image = $imgThumb = Image::make($file->getRealPath())->orientate();
+            $width = $height = 1080;
+            $widthThumb = 70;
+            $heightThumb = 80;
+            $image->height() > $image->width() ? $width = $widthThumb = null : $height = $heightThumb = null;
 
-        \File::exists(public_path() . '/uploads/'.$dt->year.$dt->month .'/') or \File::makeDirectory(public_path() . '/uploads/'.$dt->year.$dt->month .'/', 0777, true);
-        $uniqid = uniqid() . '_' . time();
-        $fileNameWithPath = $dt->year.$dt->month .'/' . $uniqid;
+            \File::exists(public_path() . '/uploads/'.$dt->year.$dt->month .'/') or \File::makeDirectory(public_path() . '/uploads/'.$dt->year.$dt->month .'/', 0777, true);
+            $uniqid = uniqid() . '_' . time();
+            $fileNameWithPath = $dt->year.$dt->month .'/' . $uniqid;
 
-        $image->resize($width, $height, function ($constraint) {
-            $constraint->aspectRatio();
-        })->save(public_path() . '/uploads/'. $fileNameWithPath . '.' . $extension);
-        $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
-            $constraint->aspectRatio();
-        })->save(public_path() . '/uploads/'. $fileNameWithPath . '_thumb.' . $extension);
+            $image->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save(public_path() . '/uploads/'. $fileNameWithPath . '.' . $extension);
+            $thumbname = $fileNameWithPath . '_thumb.' . $extension;
+            array_push($thumbs, $thumbname);
+            $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
+                $constraint->aspectRatio();
+            })->save(public_path() . '/uploads/'. $thumbname);
+
+        }
         
-        return response()->json($fileNameWithPath . '_thumb.' . $extension);
+        return response()->json($thumbs);
     }
 
     public function getLogByYmd($ymd) {

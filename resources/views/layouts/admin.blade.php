@@ -33,7 +33,7 @@
       window.Laravel.csrfToken = "{{csrf_token()}}";
   </script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini sidebar-collapse">
     <div class="wrapper">
       @include('admin.public.menu')
       <!-- Content Wrapper. Contains page content -->
@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.1.1"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.1.1.5"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 

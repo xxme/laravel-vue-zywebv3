@@ -7,7 +7,7 @@
 			</h1>
 		</section>
 		<!-- Main content -->
-		<section class="content">
+		<section class="content" v-if="!showformflag">
 			<!-- Main row -->
 			<sample-nav></sample-nav>
 			<div class="box">
@@ -70,10 +70,10 @@
                           <i class="fa fa-phone"></i> <a :href="'tel:'+list.tel">{{ list.tel }}</a><span v-if="list.nickname"> {{ list.nickname }} </span>
                           <span v-if="list.partner"><i class="fa fa-male"></i> {{ list.partner }}</span>
                           <br />
-                          <span v-if="list.event_id"><i class="fa fa-calendar"></i> <router-link :to="'/admin/event/' + list.event.id + '/edit'">{{ list.event.event_date}} #{{ list.event.id }}</router-link></span>
+                          <span v-if="list.event_id" @click="editevent(list.event.id)" class="blue"><i class="fa fa-calendar"></i> {{ list.event.event_date}} #{{ list.event.id }}</span>
                           <div class="pull-right" v-if="!list.event_id">
                             <button class="btn btn-xs btn-warning" @click="showNote(list.id)"><i class="fa fa-pencil"></i></button>
-                            <button class="btn btn-xs btn-primary" @click="$router.push('/admin/event/createbyorder/' + list.id)"><i class="fa fa-calendar"></i></button>
+                            <button class="btn btn-xs btn-primary" @click="createEvent(list.id)"><i class="fa fa-calendar"></i></button>
                           </div>
                         </div>
                         <p v-if="list.manager_note">{{ list.manager_note }}</p>
@@ -342,6 +342,7 @@
       </div>
     </transition>
     <loading :loadingShow="loadingShow"></loading>
+    <quick-form v-if="showformflag" :eventid="eventid" :formoptions="formoptions" :estimatedate="estimatedate" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
 	</div>
 </template>
 
@@ -352,6 +353,7 @@ import Loading from '../Public/Loading'
 import moment from 'moment'
 import baguetteBox from 'baguettebox.js'
 import pagination from 'laravel-vue-pagination'
+import QuickForm from '../Events/QuickForm.vue';
 
 export default {
 	data() {
@@ -367,8 +369,19 @@ export default {
         images: [],
         thumbs: []
       },
+      formoptions: {
+        worktype: [],
+        careful: [],
+        total: [],
+        aboutgoods: [],
+        truck: [],
+        product_list: []
+      },
+      estimatedate: {},
+      eventid: "",
       holidays: [],
       showNoteModal: false,
+      showformflag: false,
       hasFile: false,
       loadingShow: false,
       errors: [],
@@ -378,8 +391,45 @@ export default {
 	},
 	mounted() {
 		this.get_estimates();
+    this.get_formtypes();
 	},
 	methods: {
+    createEvent(listid) {
+			this.eventid = "";
+      this.get_list_for_form();
+      for(var i in this.estimates.data) {
+        if(this.estimates.data[i].id == listid) {
+          this.estimatedate = this.estimates.data[i];
+        }
+      }
+      this.showformflag = true;
+    },
+    get_list_for_form(eventid = 0) {
+      this.formoptions.product_list = [];
+      this.$http({
+        url: '/api/get_productlist/' + eventid,
+        method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data.productlists) {
+          var option = {};
+          option.id = res.data.productlists[index].id;
+          option.text = '#'+res.data.productlists[index].id+' '+this.$parent.$options.methods.formatNumberJPY(res.data.productlists[index].price);
+          this.formoptions.product_list.push(option);
+        }
+      })
+    },
+    editevent(eventid) {
+      this.eventid = eventid;
+      this.get_list_for_form(eventid);
+      this.showformflag = true;
+    },
+    addedevent() {
+			this.get_estimates()
+      this.quickformswitch(false)
+    },
+    quickformswitch(flg) {
+			this.showformflag = flg;
+		},
 		showDetail(e) {
 			$(e.target).closest('tr').next().toggleClass('open');
 			$(e.target).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
@@ -453,9 +503,11 @@ export default {
       }
     },
     updateFiles(file) {
-      var bigfile = file.replace("_thumb", "");
-      this.estimate.images.push(bigfile);
-      this.estimate.thumbs.push(file);
+      for(var i in file) {
+        var bigfile = file[i].replace("_thumb", "");
+        this.estimate.images.push(bigfile);
+        this.estimate.thumbs.push(file[i]);
+      }
       if(this.estimate.thumbs.length > 0) {
         this.hasFile = true;
       } else {
@@ -491,6 +543,38 @@ export default {
     },
     errorPush(message) {
       this.errors.push(message);
+    },
+    get_formtypes() {
+      this.$http({
+        url: '/api/get_types/',
+        method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data.types) {
+          var group_id = res.data.types[index].group_id;
+          var option = {};
+          option.id = res.data.types[index].id;
+          option.text = res.data.types[index].name;
+          switch (+group_id) {
+            case 1:
+              this.formoptions.worktype.push(option);
+              break;
+            case 2:
+              this.formoptions.careful.push(option);
+              break;
+            case 3:
+              this.formoptions.total.push(option);
+              break;
+            case 4:
+              this.formoptions.aboutgoods.push(option);
+              break;
+            case 5:
+              this.formoptions.truck.push(option);
+              break;
+            default:
+              break;
+          }
+        }
+      })
     },
     formatDateWithWeekname(date) {
       if(this.$i18n.locale == 'cn') {
@@ -540,6 +624,7 @@ export default {
 		SampleNav,
 		pagination,
     UploadFile,
+    QuickForm,
     Loading
 	}
 }
