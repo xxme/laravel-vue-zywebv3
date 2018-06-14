@@ -9,52 +9,32 @@
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-tags"></i></span>
-            <div class="checkboxgroup">
-              <label class="checkbox-inline" v-for="option in options.worktype">
-                <input type="checkbox" v-model="event.worktype" :value="option.id">{{ option.text }}
-              </label>
-            </div>
+            <select2 :options="options.worktype" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-cube"></i></span>
-            <div class="checkboxgroup">
-              <label class="checkbox-inline" v-for="option in options.aboutgoods">
-                <input type="checkbox" v-model="event.aboutgoods" :value="option.id">{{ option.text }}
-              </label>
-            </div>
+            <select2 :options="options.aboutgoods" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
-            <div class="checkboxgroup">
-              <label class="checkbox-inline" v-for="option in options.careful">
-                <input type="checkbox" v-model="event.careful" :value="option.id">{{ option.text }}
-              </label>
-            </div>
+            <select2 :options="options.careful" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
           </div>
         </div>
         <div class="col-xs-12 no-padding"> 
           <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
-              <div class="checkboxgroup">
-                <label class="checkbox-inline" v-for="option in options.total">
-                  <input type="checkbox" v-model="event.total" :value="option.id">{{ option.text }}
-                </label>
-              </div>
+              <select2 :options="options.total" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
             </div>
           </div>
           <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-truck"></i></span>
-              <div class="checkboxgroup">
-                <label class="checkbox-inline" v-for="option in options.truck">
-                  <input type="checkbox" v-model="event.truck" :value="option.id">{{ option.text }}
-                </label>
-              </div>
+              <select2 :options="options.truck" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
             </div>
           </div>
         </div> 
@@ -137,10 +117,10 @@
             <input type="number" class="form-control" v-model.number="event.deposit_jpy">
             <span class="input-group-addon" @click="event.deposit_jpy += 10000"><i class="fa fa-plus blue"></i></span>
             <span class="input-group-addon" @click="event.deposit_jpy > 10000 ? event.deposit_jpy -= 10000 : event.deposit_jpy = 0"><i class="fa fa-minus blue"></i></span>
-          </div>
+        </div>
         </div>
         <div class="col-xs-6 no-padding">
-          <div class="input-group">
+        <div class="input-group">
             <span class="input-group-addon deposit">{{ $t('event.depositrmb') }}</span>
             <input type="number" class="form-control" v-model.number="event.deposit_rmb">
             <span class="input-group-addon" @click="event.deposit_rmb += 100"><i class="fa fa-plus blue"></i></span>
@@ -225,6 +205,9 @@
             <option value="0">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
           </select>
+          <select name="frombtype" v-model="event.from.btype">
+            <option v-for="(btype, key) of buildingtypes" :value="key">{{ btype }}</option>
+          </select>
         </div>
         <div class="form-group">
           <label>{{ $t('event.toAddress') }}</label>
@@ -244,6 +227,9 @@
           <select name="tofloors" v-model="event.to.floors">
             <option value="0">{{ $t('global.unset') }}</option>
             <option v-for="floor of floors" :value="floor"><div v-if="floor > 9">{{ floor }}+</div><div v-else>{{ floor }}</div></option>
+          </select>
+          <select name="tobtype" v-model="event.to.btype">
+            <option v-for="(btype, key) of buildingtypes" :value="key">{{ btype }}</option>
           </select>
         </div>
       </div>
@@ -303,16 +289,23 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid', 'formoptions'],
+  props: ['eventdate', 'eventid', 'copyid', 'formoptions', 'productlistid', 'estimatedate'],
   mounted() {
     var self = this;
     this.setDatePicker()
     this.options = this.formoptions;
-    console.log(this.formoptions);
+    
     if(self.eventid) {
-      this.getEvent(self.eventid);
+      this.getEvent(self.eventid)
+    } else if(self.copyid) {
+      this.getEvent(self.copyid, true)
+      this.boxtitle += 'コピー'
     } else if(self.eventdate) {
-      this.event.eventdate = self.eventdate;
+      this.event.eventdate = self.eventdate
+    } else if(self.productlistid) {
+      this.setPerductListId(self.productlistid)
+    } else if(self.estimatedate) {
+      this.setEstimate(self.estimatedate)
     }
   },
   components: {
@@ -341,7 +334,7 @@ export default {
       fileAccept: "image/*",
       boxtitle: this.eventid ? this.$t('global.edit') : this.$t('global.add'),
       buildingtypes: [
-        '0', 
+        this.$t('offer.buildingtype'), 
         this.$t('offer.buildingtype1'), 
         this.$t('offer.buildingtype2'), 
         this.$t('offer.buildingtype3'), 
@@ -358,16 +351,18 @@ export default {
           address: "",
           elevator: "",
           floors: "0",
+          btype: "0"
         },
         to: {
           time: "",
           address: "",
           elevator: "",
           floors: "0",
+          btype: "0"
         },
-        worktype: [],
-        aboutgoods: [],
-        careful: [],
+        worktype: "",
+        aboutgoods: "",
+        careful: "",
         total: "",
         truck: "",
         wechat: "",
@@ -397,6 +392,9 @@ export default {
     },
     eventdata() {
       console.log(this.eventdata);
+    // },
+    // productlistid() {
+    //   this.event.product_list_id = this.productlistid;
     }
   },
   computed: {
@@ -411,8 +409,10 @@ export default {
           noScrollbars: true
         });
       }
-      // var pos = $("#boxtitle").offset().top;
-      // $(window).scrollTop(pos);
+      // if(this.productlistid) {
+      //   $('#product_list_id').val(this.productlistid).trigger('change');
+      //   self.productlistid = "";
+      // }
     })
   },
   methods: {
@@ -496,13 +496,8 @@ export default {
         });
       } else {
         this.$http.post('/admin/event', this.event).then(response => {
-          // this.$emit('addevent', response.data);
-          // this.$router.push('/admin');
           var ymd = response.data.event_date;
-          // this.get_events(ymd.substring(0,7), ymd);
           this.$emit('addedevent', ymd);
-          // this.$emit('update-events', ymd.substring(0,7));
-          // this.$emit('closeform');
           this.loadingShow = false;
         }).catch(error => {
           this.errors.push(this.$t('global.calltheadministrator'));
@@ -516,6 +511,8 @@ export default {
         this.event.to.elevator = "";
         this.event.from.floors = "0";
         this.event.to.floors = "0";
+        this.event.from.btype = "0";
+        this.event.to.btype = "0";
       }
     },
     setSure() {
@@ -526,9 +523,11 @@ export default {
       this.loadingShow = switchTF;
     },
     updateFiles(file) {
-      var bigfile = file.replace("_thumb", "");
-      this.event.files.push(bigfile);
-      this.event.filethumbs.push(file);
+      for(var i in file) {
+        var bigfile = file[i].replace("_thumb", "");
+        this.event.files.push(bigfile);
+        this.event.filethumbs.push(file[i]);
+      }
       if(this.event.files.length > 0) {
         this.hasFile = true;
       } else {
@@ -577,13 +576,15 @@ export default {
         })
       }
     },
-    getEvent(eventid) {
+    getEvent(eventid, iscopy = false) {
       this.$http({
         url: '/admin/event/' + eventid,
         method: 'GET'
       }).then(res =>  {
-        this.event.id = eventid;
-        this.event.worktype = JSON.parse(res.data.types);
+        if(!iscopy) {
+          this.event.id = eventid;
+          this.event.worktype = JSON.parse(res.data.types);
+        }
         this.event.aboutgoods = JSON.parse(res.data.details.aboutgoods);
         this.event.careful = JSON.parse(res.data.details.carefully);
         this.event.truck = JSON.parse(res.data.details.trucks);
@@ -620,10 +621,69 @@ export default {
         }
         this.event.from.floors = res.data.details.from_floor;
         this.event.from.elevator = res.data.details.from_elevator;
+        if(res.data.details.from_btype) {
+          this.event.from.btype = res.data.details.from_btype;
+        }
         this.event.to.floors = res.data.details.to_floor;
         this.event.to.elevator = res.data.details.to_elevator;
+        if(res.data.details.to_btype) {
+          this.event.to.btype = res.data.details.to_btype;
+        }
         this.event.comment = "";
       })
+    },
+    setEstimate(data) {
+      if(data.event_id) {
+        // 编辑
+        this.event.id = data.event_id;
+      } else {
+        // 创建
+        this.event.eventdate = data.hopedate;
+        this.event.apm = data.apm;
+        this.event.from.address = data.from.adr;
+        this.event.from.elevator = data.from.elevator;
+        if(data.from.floor) {
+          this.event.from.floors = data.from.floor;
+        }
+        if(data.from.fbtype) {
+          this.event.from.btype = data.from.fbtype;
+        }
+        this.event.to.address = data.to.adr;
+        this.event.to.elevator = data.to.elevator;
+        if(data.to.floor) {
+          this.event.to.floors = data.to.floor;
+        }
+        if(data.to.tbtype) {
+          this.event.to.btype = data.to.tbtype;
+        }
+        this.event.phone = data.tel;
+        if(data.nickname) {
+          this.event.phone += ',' + data.nickname;
+        }
+        if(data.partner) {
+          this.event.partner = data.partner;
+        }
+        this.event.order_id = data.id;
+        if(data.items.note) {
+          this.event.comment = "客户留言:"+data.items.note+' ';
+        }
+        if(data.manager_note) {
+          this.event.comment += "备注:"+data.manager_note+' ';
+        }
+        for(var key in data.images) {
+          this.event.filethumbs.push(data.images[key]);
+          this.event.files.push(data.images[key].replace("_thumb", ""));
+        }
+        if(this.event.files.length > 0) {
+          this.hasFile = true;
+        }
+      }
+    },
+    setPerductListId(id) {
+      var self = this;
+      setInterval(function() {
+        self.event.product_list_id = id;
+      },500)
     },
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){
@@ -662,9 +722,3 @@ Vue.component('modal', {
   }
 })
 </script>
-
-<style>
-.checkbox-inline {
-  margin-left: 10px;
-}
-</style>

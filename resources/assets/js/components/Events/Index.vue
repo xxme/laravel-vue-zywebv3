@@ -101,8 +101,8 @@
             <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
           </ul>
         </div>
-        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent"></event-item>
-        <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
+        <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
+        <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
       </section>
     </div>
     <loading :loadingShow="loadingShow"></loading>
@@ -134,6 +134,7 @@ export default {
       },
       eventdate: "",
       eventid: 0,
+      copyid: 0,
       holidays: [],
       showCompleted: false,
       showQuickForm: false,
@@ -583,6 +584,12 @@ export default {
       if(date) {
         this.eventdate = date;
       }
+      this.get_productlist();
+      this.showEventItem = false;
+      this.showformflag = true;
+    },
+    copyEvent(id) {
+      this.copyid = id;
       this.get_productlist();
       this.showEventItem = false;
       this.showformflag = true;

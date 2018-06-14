@@ -115,7 +115,7 @@ tr.detail-row.open {
 }
 
 .modal-container {
-    width: 300px;
+    width: 315px;
     margin: 0px auto;
     padding: 20px 30px;
     background-color: #fff;
@@ -245,9 +245,14 @@ tr.detail-row.open {
     color: #FFF;
     padding-left: 10px;
 }
-.checkboxgroup {
+.checkedgroup {
     border: 1px solid #ccc;
     display: table-cell;
+    vertical-align: middle;
+    padding: 0 12px;
+}
+.inputplaceholder {
+    color: rgb(117, 117, 117);
 }
 
 @media screen and (min-width: 490px) {

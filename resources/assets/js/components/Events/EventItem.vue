@@ -28,6 +28,9 @@
               </div>
               <!-- /.user-block -->
               <div class="box-tools">
+                <button type="button" class="btn btn-box-tool" @click="$emit('copyevent', event.id)">
+                  <i class="fa fa-files-o"></i>
+                </button>
                 <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract(event.id)">
                   <i class="fa fa-list-alt"></i>
                 </button>

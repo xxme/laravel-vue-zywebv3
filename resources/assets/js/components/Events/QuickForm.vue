@@ -9,13 +9,33 @@
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-tags"></i></span>
-            <select2 :options="options.worktype" id="worktype" :selected="event.worktype" :placeholder="$t('event.workType')"></select2>
+            <div class="checkedgroup">
+              <template v-if="selected.worktype.length > 0">
+                <span class="label label-success" v-for="(type, key) in selected.worktype"><i class="fa fa-tag"></i> {{ type }}</span>
+              </template>
+              <template v-else>
+                <span class="inputplaceholder">{{ $t('event.workType') }}</span>
+              </template>
+            </div>
+            <span class="input-group-btn">
+              <button type="button" class="btn bg-olive btn-flat" @click="showType(1)">{{ $t('global.setting') }}</button>
+            </span>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-cube"></i></span>
-            <select2 :options="options.aboutgoods" id="aboutgoods" :selected="event.aboutgoods" :placeholder="$t('event.aboutgoods')"></select2>
+            <div class="checkedgroup">
+              <template v-if="selected.aboutgoods.length > 0">
+                <span class="label label-primary" v-for="(type, key) in selected.aboutgoods"><i class="fa fa-cube"></i> {{ type }}</span>
+              </template>
+              <template v-else>
+                <span class="inputplaceholder">{{ $t('event.aboutgoods') }}</span>
+              </template>
+            </div>
+            <span class="input-group-btn">
+              <button type="button" class="btn bg-olive btn-flat" @click="showType(2)">{{ $t('global.setting') }}</button>
+            </span>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
@@ -242,6 +262,24 @@
         </button>
       </div>
     </modal>
+    <modal v-if="showTypeModal" @close="showTypeModal = false">
+      <h4 slot="header">{{ typeboxtitle }}</h4>
+      <div slot="body">
+        <label class="checkbox-inline" v-for="(type, key) in clicktypes">
+          <template v-if="showingType == 1">
+            <input type="checkbox" v-model="clickedworktype" :value="type"> {{ type.text }}
+          </template>
+          <template v-else-if="showingType == 2">
+            <input type="checkbox" v-model="clickedaboutgoods" :value="type"> {{ type.text }}
+          </template>
+        </label>
+      </div>
+      <div slot="footer">
+        <button class="btn btn-xs btn-primary pull-right" @click="showTypeModal = false">
+          Close
+        </button>
+      </div>
+    </modal>
     <script type="text/x-template" id="modal-template">
       <transition name="modal">
         <div class="modal-mask">
@@ -289,7 +327,7 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid', 'formoptions', 'productlistid', 'estimatedate'],
+  props: ['eventdate', 'eventid', 'copyid', 'formoptions', 'productlistid', 'estimatedate'],
   mounted() {
     var self = this;
     this.setDatePicker()
@@ -297,6 +335,9 @@ export default {
     
     if(self.eventid) {
       this.getEvent(self.eventid)
+    } else if(self.copyid) {
+      this.getEvent(self.copyid, true)
+      this.boxtitle += 'コピー'
     } else if(self.eventdate) {
       this.event.eventdate = self.eventdate
     } else if(self.productlistid) {
@@ -318,6 +359,7 @@ export default {
       errors: [],
       showModal: false,
       showConfirmModal: false,
+      showTypeModal: false,
       loadingShow: false,
       warning: {
         message: "",
@@ -330,6 +372,9 @@ export default {
       hasFile: false,
       fileAccept: "image/*",
       boxtitle: this.eventid ? this.$t('global.edit') : this.$t('global.add'),
+      typeboxtitle: "",
+      clicktypes: [],
+      showingType: 0,
       buildingtypes: [
         this.$t('offer.buildingtype'), 
         this.$t('offer.buildingtype1'), 
@@ -357,11 +402,11 @@ export default {
           floors: "0",
           btype: "0"
         },
-        worktype: "",
-        aboutgoods: "",
-        careful: "",
-        total: "",
-        truck: "",
+        worktype: [],
+        aboutgoods: [],
+        careful: [],
+        total: [],
+        truck: [],
         wechat: "",
         phone: "",
         partner: null,
@@ -374,7 +419,19 @@ export default {
         deposit_jpy: 0,
         deposit_rmb: 0,
         comment: ""
-      }
+      },
+      selected: {
+        worktype: [],
+        aboutgoods: [],
+        careful: [],
+        total: [],
+        truck: []
+      },
+      clickedworktype: [],
+      clickedaboutgoods: [],
+      clickedcareful: [],
+      clickedtotal: [],
+      clickedtruck: []
     }
   },
   watch: {
@@ -387,11 +444,52 @@ export default {
         this.event.to.time = "";
       }
     },
-    eventdata() {
-      console.log(this.eventdata);
-    // },
-    // productlistid() {
-    //   this.event.product_list_id = this.productlistid;
+    clickedworktype: function(val) {
+      var listvalue = [];
+      var listtext = [];
+      for(var i in val) {
+        listvalue.push(val[i].id);
+        listtext.push(val[i].text);
+      }
+      this.setType(listvalue, listtext);
+    },
+    clickedaboutgoods: function(val) {
+      if(this.showingType) {
+        var listvalue = [];
+        var listtext = [];
+        for(var i in val) {
+          listvalue.push(val[i].id);
+          listtext.push(val[i].text);
+        }
+        this.setType(listvalue, listtext);
+      }
+    },
+    clickedtotal: function(val) {
+      var listvalue = [];
+      var listtext = [];
+      for(var i in val) {
+        listvalue.push(val[i].id);
+        listtext.push(val[i].text);
+      }
+      this.setType(listvalue, listtext);
+    },
+    clickedcareful: function(val) {
+      var listvalue = [];
+      var listtext = [];
+      for(var i in val) {
+        listvalue.push(val[i].id);
+        listtext.push(val[i].text);
+      }
+      this.setType(listvalue, listtext);
+    },
+    clickedtruck: function(val) {
+      var listvalue = [];
+      var listtext = [];
+      for(var i in val) {
+        listvalue.push(val[i].id);
+        listtext.push(val[i].text);
+      }
+      this.setType(listvalue, listtext);
     }
   },
   computed: {
@@ -475,11 +573,11 @@ export default {
       }
     },
     submitForm() {
-      this.event.worktype = $('#worktype').val();
-      this.event.aboutgoods = $('#aboutgoods').val();
-      this.event.careful = $('#careful').val();
-      this.event.total = $('#total').val();
-      this.event.truck = $('#truck').val();
+      // this.event.worktype = $('#worktype').val();
+      // this.event.aboutgoods = $('#aboutgoods').val();
+      // this.event.careful = $('#careful').val();
+      // this.event.total = $('#total').val();
+      // this.event.truck = $('#truck').val();
       this.event.product_list_id = $('#product_list_id').val();
       this.loadingShow = true;
       if(this.event.id) {
@@ -510,6 +608,18 @@ export default {
         this.event.to.floors = "0";
         this.event.from.btype = "0";
         this.event.to.btype = "0";
+      }
+    },
+    setType(listvalue, listtext) {
+      switch (this.showingType) {
+        case 1:
+          this.event.worktype = listvalue;
+          this.selected.worktype = listtext;
+          break;
+        case 2:
+          this.event.aboutgoods = listvalue;
+          this.selected.aboutgoods = listtext;
+          break;
       }
     },
     setSure() {
@@ -544,6 +654,21 @@ export default {
         }
       }
     },
+    showType(type) {
+      // 1 worktype 2 aboutgoods
+      this.showingType = type;
+      switch (type) {
+        case 1:
+          this.typeboxtitle = this.$i18n.t('event.workType');
+          this.clicktypes = this.options.worktype;
+          break;
+        case 2:
+          this.typeboxtitle = this.$i18n.t('event.aboutgoods');
+          this.clicktypes = this.options.aboutgoods;
+          break;
+      }
+      this.showTypeModal = true;
+    },
     errorPush(message) {
       this.errors.push(message);
     },
@@ -573,14 +698,42 @@ export default {
         })
       }
     },
-    getEvent(eventid) {
+    getEvent(eventid, iscopy = false) {
       this.$http({
         url: '/admin/event/' + eventid,
         method: 'GET'
       }).then(res =>  {
-        this.event.id = eventid;
-        this.event.worktype = JSON.parse(res.data.types);
+        if(!iscopy) {
+          this.event.id = eventid;
+          this.event.worktype = JSON.parse(res.data.types);
+          var listtext = [];
+          for(var i in this.event.worktype) {
+            for(var key in this.options.worktype) {
+              if(this.options.worktype[key].id == this.event.worktype[i]) {
+                var type = new Object();
+                type.id = this.event.worktype[i];
+                type.text = this.options.worktype[key].text;
+                this.clickedworktype.push(type);
+                listtext.push(this.options.worktype[key].text);
+              }
+            }
+          }
+          this.selected.worktype = listtext;
+        }
         this.event.aboutgoods = JSON.parse(res.data.details.aboutgoods);
+        var listtext = [];
+        for(var i in this.event.aboutgoods) {
+          for(var key in this.options.aboutgoods) {
+            if(this.options.aboutgoods[key].id == this.event.aboutgoods[i]) {
+              var type = new Object();
+              type.id = this.event.aboutgoods[i];
+              type.text = this.options.aboutgoods[key].text;
+              this.clickedaboutgoods.push(type);
+              listtext.push(this.options.aboutgoods[key].text);
+            }
+          }
+        }
+        this.selected.aboutgoods = listtext;
         this.event.careful = JSON.parse(res.data.details.carefully);
         this.event.truck = JSON.parse(res.data.details.trucks);
         this.event.total = res.data.total;
@@ -616,10 +769,14 @@ export default {
         }
         this.event.from.floors = res.data.details.from_floor;
         this.event.from.elevator = res.data.details.from_elevator;
-        this.event.from.btype = res.data.details.from_btype;
+        if(res.data.details.from_btype) {
+          this.event.from.btype = res.data.details.from_btype;
+        }
         this.event.to.floors = res.data.details.to_floor;
         this.event.to.elevator = res.data.details.to_elevator;
-        this.event.to.btype = res.data.details.to_btype;
+        if(res.data.details.to_btype) {
+          this.event.to.btype = res.data.details.to_btype;
+        }
         this.event.comment = "";
       })
     },
@@ -713,3 +870,12 @@ Vue.component('modal', {
   }
 })
 </script>
+
+<style>
+.checkbox-inline {
+  margin-left: 10px;
+}
+.label {
+  font-size: 13px;
+}
+</style>
