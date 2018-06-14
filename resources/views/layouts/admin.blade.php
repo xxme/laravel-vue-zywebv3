@@ -19,7 +19,7 @@
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="/dist/css/skins/skin-blue.min.css">
   <!-- admin main -->
-  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.1">
+  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.1.8">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.1.1.5"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.1.1.8"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 

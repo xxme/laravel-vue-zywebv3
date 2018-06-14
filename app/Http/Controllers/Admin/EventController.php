@@ -45,7 +45,7 @@ class EventController extends Controller
                 $event['comments'] = json_decode($event->comments, true);
             }
             if($event->total) {
-                $event['totalname'] = $typeArray[$event->total];
+                $event['totalname'] = $this->getTypeNames($event->total, $typeArray);
             }
             if($event->details) {
                 if($event->details->aboutgoods) {
@@ -188,7 +188,7 @@ class EventController extends Controller
         $objEvent->order_id = $inputs['order_id'];
         $objEvent->partner = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
-        $objEvent->total = $inputs['total'];
+        $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
         $objEvent->event_date = $inputs['eventdate'];
         $objEvent->apm = $inputs['apm'];
         $objEvent->start_time = $inputs['from']['time'];
@@ -316,7 +316,7 @@ class EventController extends Controller
         $objEvent->product_list_id = $inputs['product_list_id'];
         $objEvent->partner = $inputs['partner'];
         $objEvent->amount = $inputs['amount'];
-        $objEvent->total = $inputs['total'];
+        $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
         $objEvent->event_date = $inputs['eventdate'];
         $objEvent->apm = $inputs['apm'];
         $objEvent->start_time = $inputs['from']['time'];
@@ -379,7 +379,7 @@ class EventController extends Controller
             $event['comments'] = json_decode($event->comments, true);
         }
         if($event->total) {
-            $event['totalname'] = $typeArray[$event->total];
+            $event['totalname'] = $this->getTypeNames($event->total, $typeArray);
         }
         if($event->details) {
             if($event->details->aboutgoods) {

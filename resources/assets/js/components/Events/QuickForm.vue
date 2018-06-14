@@ -9,7 +9,7 @@
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-tags"></i></span>
-            <div class="checkedgroup">
+            <div class="checkedgroup" @click="showType(1)">
               <template v-if="selected.worktype.length > 0">
                 <span class="label label-success" v-for="(type, key) in selected.worktype"><i class="fa fa-tag"></i> {{ type }}</span>
               </template>
@@ -17,15 +17,12 @@
                 <span class="inputplaceholder">{{ $t('event.workType') }}</span>
               </template>
             </div>
-            <span class="input-group-btn">
-              <button type="button" class="btn bg-olive btn-flat" @click="showType(1)">{{ $t('global.setting') }}</button>
-            </span>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-cube"></i></span>
-            <div class="checkedgroup">
+            <div class="checkedgroup" @click="showType(2)">
               <template v-if="selected.aboutgoods.length > 0">
                 <span class="label label-primary" v-for="(type, key) in selected.aboutgoods"><i class="fa fa-cube"></i> {{ type }}</span>
               </template>
@@ -33,28 +30,46 @@
                 <span class="inputplaceholder">{{ $t('event.aboutgoods') }}</span>
               </template>
             </div>
-            <span class="input-group-btn">
-              <button type="button" class="btn bg-olive btn-flat" @click="showType(2)">{{ $t('global.setting') }}</button>
-            </span>
           </div>
         </div>
         <div class="col-xs-12 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
-            <select2 :options="options.careful" id="careful" :selected="event.careful" :placeholder="$t('event.typeofcareful')"></select2>
+            <div class="checkedgroup" @click="showType(3)">
+              <template v-if="selected.careful.length > 0">
+                <span class="label label-danger" v-for="(type, key) in selected.careful"><i class="fa fa-exclamation-triangle"></i> {{ type }}</span>
+              </template>
+              <template v-else>
+                <span class="inputplaceholder">{{ $t('event.typeofcareful') }}</span>
+              </template>
+            </div>
           </div>
         </div>
         <div class="col-xs-12 no-padding"> 
           <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
-              <select2 :options="options.total" id="total" :selected="event.total" :placeholder="$t('event.typeoftotal')" :multiple="false"></select2>
+              <div class="checkedgroup" @click="showType(4)">
+                <template v-if="selected.total.length > 0">
+                  <span class="label label-primary" v-for="(type, key) in selected.total"><i class="fa fa-cubes"></i> {{ type }}</span>
+                </template>
+                <template v-else>
+                  <span class="inputplaceholder">{{ $t('event.typeoftotal') }}</span>
+                </template>
+              </div>
             </div>
           </div>
           <div class="col-xs-6 no-padding">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-truck"></i></span>
-              <select2 :options="options.truck" id="truck" :selected="event.truck" :placeholder="$t('event.typeoftruck')"></select2>
+              <div class="checkedgroup" @click="showType(5)">
+                <template v-if="selected.truck.length > 0">
+                  <span class="label label-primary" v-for="(type, key) in selected.truck"><i class="fa fa-truck"></i> {{ type }}</span>
+                </template>
+                <template v-else>
+                  <span class="inputplaceholder">{{ $t('event.typeoftruck') }}</span>
+                </template>
+              </div>
             </div>
           </div>
         </div> 
@@ -272,11 +287,20 @@
           <template v-else-if="showingType == 2">
             <input type="checkbox" v-model="clickedaboutgoods" :value="type"> {{ type.text }}
           </template>
+          <template v-else-if="showingType == 3">
+            <input type="checkbox" v-model="clickedcareful" :value="type"> {{ type.text }}
+          </template>
+          <template v-else-if="showingType == 4">
+            <input type="checkbox" v-model="clickedtotal" :value="type"> {{ type.text }}
+          </template>
+          <template v-else-if="showingType == 5">
+            <input type="checkbox" v-model="clickedtruck" :value="type"> {{ type.text }}
+          </template>
         </label>
       </div>
       <div slot="footer">
         <button class="btn btn-xs btn-primary pull-right" @click="showTypeModal = false">
-          Close
+          Ok
         </button>
       </div>
     </modal>
@@ -448,7 +472,7 @@ export default {
       var listvalue = [];
       var listtext = [];
       for(var i in val) {
-        listvalue.push(val[i].id);
+        listvalue.push(val[i].id.toString());
         listtext.push(val[i].text);
       }
       this.setType(listvalue, listtext);
@@ -458,7 +482,7 @@ export default {
         var listvalue = [];
         var listtext = [];
         for(var i in val) {
-          listvalue.push(val[i].id);
+          listvalue.push(val[i].id.toString());
           listtext.push(val[i].text);
         }
         this.setType(listvalue, listtext);
@@ -468,7 +492,7 @@ export default {
       var listvalue = [];
       var listtext = [];
       for(var i in val) {
-        listvalue.push(val[i].id);
+        listvalue.push(val[i].id.toString());
         listtext.push(val[i].text);
       }
       this.setType(listvalue, listtext);
@@ -477,7 +501,7 @@ export default {
       var listvalue = [];
       var listtext = [];
       for(var i in val) {
-        listvalue.push(val[i].id);
+        listvalue.push(val[i].id.toString());
         listtext.push(val[i].text);
       }
       this.setType(listvalue, listtext);
@@ -486,7 +510,7 @@ export default {
       var listvalue = [];
       var listtext = [];
       for(var i in val) {
-        listvalue.push(val[i].id);
+        listvalue.push(val[i].id.toString());
         listtext.push(val[i].text);
       }
       this.setType(listvalue, listtext);
@@ -545,7 +569,7 @@ export default {
         this.errors.push(this.$t('event.eventdate') + this.$t('global.required'));
         return;
       }
-      if($("#worktype").val() == '') {
+      if(this.event.worktype.length == 0) {
         this.errors.push(this.$t('event.workType') + this.$t('global.required'));
         return;
       }
@@ -620,6 +644,18 @@ export default {
           this.event.aboutgoods = listvalue;
           this.selected.aboutgoods = listtext;
           break;
+        case 3:
+          this.event.careful = listvalue;
+          this.selected.careful = listtext;
+          break;
+        case 4:
+          this.event.total = listvalue;
+          this.selected.total = listtext;
+          break;
+        case 5:
+          this.event.truck = listvalue;
+          this.selected.truck = listtext;
+          break;
       }
     },
     setSure() {
@@ -655,7 +691,7 @@ export default {
       }
     },
     showType(type) {
-      // 1 worktype 2 aboutgoods
+      // 1 worktype 2 aboutgoods 3 careful 4 total 5 truck
       this.showingType = type;
       switch (type) {
         case 1:
@@ -665,6 +701,18 @@ export default {
         case 2:
           this.typeboxtitle = this.$i18n.t('event.aboutgoods');
           this.clicktypes = this.options.aboutgoods;
+          break;
+        case 3:
+          this.typeboxtitle = this.$i18n.t('event.typeofcareful');
+          this.clicktypes = this.options.careful;
+          break;
+        case 4:
+          this.typeboxtitle = this.$i18n.t('event.typeoftotal');
+          this.clicktypes = this.options.total;
+          break;
+        case 5:
+          this.typeboxtitle = this.$i18n.t('event.typeoftruck');
+          this.clicktypes = this.options.truck;
           break;
       }
       this.showTypeModal = true;
@@ -735,8 +783,47 @@ export default {
         }
         this.selected.aboutgoods = listtext;
         this.event.careful = JSON.parse(res.data.details.carefully);
+        var listtext = [];
+        for(var i in this.event.careful) {
+          for(var key in this.options.careful) {
+            if(this.options.careful[key].id == this.event.careful[i]) {
+              var type = new Object();
+              type.id = this.event.careful[i];
+              type.text = this.options.careful[key].text;
+              this.clickedcareful.push(type);
+              listtext.push(this.options.careful[key].text);
+            }
+          }
+        }
+        this.selected.careful = listtext;
         this.event.truck = JSON.parse(res.data.details.trucks);
-        this.event.total = res.data.total;
+        var listtext = [];
+        for(var i in this.event.truck) {
+          for(var key in this.options.truck) {
+            if(this.options.truck[key].id == this.event.truck[i]) {
+              var type = new Object();
+              type.id = this.event.truck[i];
+              type.text = this.options.truck[key].text;
+              this.clickedtruck.push(type);
+              listtext.push(this.options.truck[key].text);
+            }
+          }
+        }
+        this.selected.truck = listtext;
+        this.event.total = JSON.parse(res.data.total);
+        var listtext = [];
+        for(var i in this.event.total) {
+          for(var key in this.options.total) {
+            if(this.options.total[key].id == this.event.total[i]) {
+              var type = new Object();
+              type.id = this.event.total[i];
+              type.text = this.options.total[key].text;
+              this.clickedtotal.push(type);
+              listtext.push(this.options.total[key].text);
+            }
+          }
+        }
+        this.selected.total = listtext;
         this.event.amount = res.data.amount;
         this.event.eventdate = res.data.event_date;
         this.event.from.address = res.data.details.from_address;
@@ -877,5 +964,6 @@ Vue.component('modal', {
 }
 .label {
   font-size: 13px;
+  margin: 1px;
 }
 </style>

@@ -64,7 +64,7 @@
                 <span v-for="carefulname in event.carefulnames" class="label label-danger"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }}</span>
               </h5>
               <h5 v-if="(event.goods && event.goods.length > 0) || (event.totalname && event.totalname.length > 0)">
-                <span v-if="event.totalname" class="label label-primary"><i class="fa fa-cubes"></i> {{ event.totalname }}</span>
+                <span v-if="event.totalname.length > 0" class="label label-primary"><i class="fa fa-cubes"></i> <span v-for="(totalname, key) in event.totalname"> {{ totalname }} <template v-if="key + 1 != event.totalname.length"><i class="fa fa-plus"></i></template></span></span>
                 <span v-for="goodsname in event.goods" class="label label-primary"><i class="fa fa-cube"></i> {{ goodsname }}</span>
               </h5>
               <h4>

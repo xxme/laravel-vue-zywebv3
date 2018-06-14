@@ -240,7 +240,7 @@ export default {
     setFee() {
       this.resetFee();
       for(var i in this.events_list) {
-        if(this.events_list[i].amount || this.events_list[i].expense) {
+        if(this.events_list[i].amount || this.events_list[i].expense || (this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0)) {
           var hasuserdata = false;
           for(var index in this.fee.users) {
             if(this.fee.users[index].id == this.events_list[i].user.id) {
@@ -252,7 +252,13 @@ export default {
               } else {
                 // undone
                 if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                  this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+                  if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                    // 定金
+                    this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
+                    this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+                  } else {
+                    this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+                  }
                 }
               }
             }
@@ -261,17 +267,26 @@ export default {
             var feeuser = new Object();
             feeuser.id = this.events_list[i].user.id;
             feeuser.name = this.events_list[i].user.name;
+            feeuser.total = 0;
+            feeuser.completed = 0;
             if(this.events_list[i].user.profileimg) {
               feeuser.profileimg = this.events_list[i].user.profileimg;
             }
+            
             if(this.events_list[i].expense) {
               // completed
-              feeuser.total = this.events_list[i].expense.finalprice;
-              feeuser.completed = this.events_list[i].expense.finalprice;
+              feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].expense.finalprice);
+              feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].expense.finalprice);
             } else {
               // undone
               if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                feeuser.total = this.events_list[i].amount;
+                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                  // 定金
+                  feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
+                  feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+                } else {
+                  feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount);
+                }
               }
             }
             this.fee.users.push(feeuser);
@@ -294,8 +309,13 @@ export default {
             } else {
               // undone
               if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                this.fee.finance.total += parseInt(this.events_list[i].amount);
-                this.fee.finance.undone += parseInt(this.events_list[i].amount);
+                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                  this.fee.finance.total += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+                  this.fee.finance.undone += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+                } else {
+                  this.fee.finance.total += parseInt(this.events_list[i].amount);
+                  this.fee.finance.undone += parseInt(this.events_list[i].amount);
+                }
               }
             }
           }
@@ -376,8 +396,8 @@ export default {
           if(this.events_list[i].carefulnames.length > 0) {
             description += '<i class="fa fa-exclamation-triangle"></i> '+this.events_list[i].carefulnames.join(", ")+'<br/>';
           }
-          if(this.events_list[i].totalname) {
-            description += '<i class="fa fa-cubes"></i> '+this.events_list[i].totalname+'<br/>';
+          if(this.events_list[i].totalname.length > 0) {
+            description += '<i class="fa fa-cubes"></i> '+this.events_list[i].totalname.join(" <i class='fa fa-plus'></i> ")+'<br/>';
           }
           if(this.events_list[i].goods.length > 0) {
             description += '<i class="fa fa-cube"></i> '+this.events_list[i].goods.join(", ")+'<br/>';
@@ -580,6 +600,7 @@ export default {
       this.showCalendarFlag = true;
     },
     editevent(id, date = '') {
+      this.copyid = 0;
       this.eventid = id;
       if(date) {
         this.eventdate = date;
@@ -589,6 +610,7 @@ export default {
       this.showformflag = true;
     },
     copyEvent(id) {
+      this.eventid = 0;
       this.copyid = id;
       this.get_productlist();
       this.showEventItem = false;
