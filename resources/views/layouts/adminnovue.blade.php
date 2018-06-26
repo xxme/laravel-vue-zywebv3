@@ -10,12 +10,12 @@
 
   <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
   <!-- Theme style -->
-  <link rel="stylesheet" href="/dist/css/AdminLTE.min.css?v=3.1.1">
+  <link rel="stylesheet" href="/dist/css/AdminLTE.min.css?v=3.1.2">
   <!-- AdminLTE Skins. Choose a skin from the css/skins
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="/dist/css/skins/skin-blue.min.css">
   <!-- admin main -->
-  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.1">
+  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.2">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -74,7 +74,7 @@
           <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
             <span class="sr-only">Toggle navigation</span>
           </a>
-          <span class="version">V3.1.1</span>
+          <span class="version">V3.1.2</span>
 
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">

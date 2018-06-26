@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="col-md-12 no-padding" v-show="events_list.length > 0 && showflag">
+    <div class="col-md-12 no-padding" v-show="events_list.length > 0 && showflag && !showContract">
       <div v-if="events_list.length > 0">
         <div v-for="(event, key) in events_list" :key="event.id">
           <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
@@ -31,7 +31,7 @@
                 <button type="button" class="btn btn-box-tool" @click="$emit('copyevent', event.id)">
                   <i class="fa fa-files-o"></i>
                 </button>
-                <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract(event.id)">
+                <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract()">
                   <i class="fa fa-list-alt"></i>
                 </button>
               </div>
@@ -312,27 +312,24 @@
         </div>
       </div>
     </transition>
+    <contract v-if="showContract" :eventdata="eventdata" @close="showContract = false"></contract>
   </div>
 </template>
 
 <script>
 import moment from 'moment'
 import baguetteBox from 'baguettebox.js'
+import Contract from './EventContract.vue'
 import Select2 from './Select2'
 
 export default {
   props: ['auth', 'eventdata', 'showflag', 'userlist', 'showCompleted', 'comefromfinances'],
   data() {
     return {
-      // auth: null,
       events_list: [],
-      // user_list: [],
-      // events: [],
-      // eventid: 0,
       holidays: [],
       showCompleteModal: false,
-      // showCompleted: false,
-      // showYmd: moment().format('YYYY-MM-DD'),
+      showContract: false,
       completeinfo: {
         eventid: "",
         eventkey: "",
@@ -386,7 +383,8 @@ export default {
     })
   },
   components: {
-    Select2
+    Select2,
+    Contract
   },
   methods: {
     formatDateWithWeekname(date) {
@@ -562,7 +560,9 @@ export default {
       }
     },
     contract(id) {
-      window.open('/admin/event/contract/' + id, '_blank');
+      this.showContract = true;
+      $('.marginb5').hide();
+      $('.content-header').hide();
     },
     shopImg(img) {
       if(img.substring(0, 4) === 'http'){
