@@ -110,9 +110,9 @@ export default {
 		total: function () {
 			var total = 0;
 			for(var index in this.rows) {
-				total += this.rows[index].price * this.rows[index].quantity;
+				total += parseInt(this.rows[index].price) * parseInt(this.rows[index].quantity);
 			}
-			this.totalprice = total += this.cost;
+			this.totalprice = total += parseInt(this.cost);
 			return total;
 		}
 	},

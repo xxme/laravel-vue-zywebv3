@@ -19,7 +19,7 @@
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="/dist/css/skins/skin-blue.min.css">
   <!-- admin main -->
-  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.2">
+  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.2.2c">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -33,14 +33,14 @@
       window.Laravel.csrfToken = "{{csrf_token()}}";
   </script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini sidebar-collapse">
+<body class="skin-blue sidebar-collapse sidebar-mini">
     <div class="wrapper">
       @include('admin.public.menu')
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper" id="app">
         <router-view></router-view>
       </div>
-      <header class="main-header">
+      <header class="main-header controldiv">
         <!-- Header Navbar: style can be found in header.less -->
         <nav class="navbar navbar-static-top">
           <!-- Sidebar toggle button-->
@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.1.2.0"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.1.2.2e"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 

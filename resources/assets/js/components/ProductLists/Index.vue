@@ -84,9 +84,9 @@
 														<td>{{ item.quantity }}</td>
 														<td>{{ item.price | formatNumberJPY }}</td>
 														<td>
-															<div :class="'gallery'+index+i">
+															<div class="gallery">
 																<a :href="item.image">
-																	<i v-if="item.image" :atl="item.title" class="fa fa-image bigger-120"></i>
+																	<i v-if="item.image" :atl="item.title" :data-sku="item.sku" class="fa fa-image bigger-120"></i>
 																</a>
 															</div>
 														</td>
@@ -196,25 +196,14 @@ export default {
 					$('#listrs').html(this.$t('global.noRes'));
 				} else {
 					this.product_lists = res.data;
-					var classname = [];
-					for(var index in res.data.data) {
-						for(var key in res.data.data[index].items) {
-							var item = Object();
-							item.sku = res.data.data[index].items[key].sku;
-							item.key = '.gallery' + index + key;
-							classname.push(item);
-						}
-					}
 					var i18ndrop = this.$t('productlist.drop');
 					this.$nextTick(function () {
-						for(var index in classname) {
-							baguetteBox.run(classname[index].key, {
-								noScrollbars: true,
-								captions: function(element) {
-									return "<a href='https://shop.koyoshieki.com/wp-admin/edit.php?s="+classname[index].sku+"&post_type=product' target='_blank'><button type='button' class='btn btn-primary'>"+i18ndrop+"</button></a>"
-								}
-							});
-						}
+						baguetteBox.run('.gallery', {
+							noScrollbars: true,
+							captions: function(element) {
+								return "<a href='https://shop.koyoshieki.com/wp-admin/edit.php?s="+$(element).find('i').data('sku')+"&post_type=product' target='_blank'><button type='button' class='btn btn-primary'>"+i18ndrop+"</button></a>"
+							}
+						});
 					})
 				}
 			})

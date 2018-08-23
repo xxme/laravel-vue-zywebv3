@@ -37,7 +37,7 @@ class EstimateController extends Controller
         if($type == 1) {
             $init['offers'] = Offer::with(['user', 'event'])->orderBy('updated_at', 'DESC')->paginate(20);
         } else if($type == 2) {
-            $init['offers'] = Offer::with(['user'])->where('user_id', null)->orderBy('updated_at', 'DESC')->paginate(20);
+            $init['offers'] = Offer::with(['user', 'event'])->where('user_id', null)->orderBy('updated_at', 'DESC')->paginate(20);
         } else {
             $init['offers'] = Offer::with(['user', 'event'])->where('user_id', auth()->user()->id)->orderBy('updated_at', 'DESC')->paginate(20);
         }

@@ -9,7 +9,10 @@ return array(
     'log_shopping_list' => 7,
     'log_estimates' => 8,
     'log_repetition' => 9,
+    'log_event_attendance' => 10,
     'log_action_add' => 1,
     'log_action_update' => 2,
     'log_action_del' => 3,
+    'log_action_attendance' => 4,
+    'log_action_vacation' => 5,
 );

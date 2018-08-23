@@ -223,6 +223,11 @@ tr.detail-row.open {
     background-repeat: no-repeat;
     background-position: top right;
 }
+.seal {
+    position: absolute;
+    right: 5%;
+    top: 5%;
+}
 .marginb5 {
     margin-bottom: 5px;
 }
@@ -254,9 +259,26 @@ tr.detail-row.open {
 .inputplaceholder {
     color: rgb(117, 117, 117);
 }
-
+.modal-body {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+.zylogopc {
+    background-image: url('../images/logo_w300.png');
+    background-repeat: no-repeat;
+    background-position: bottom 5px right 75%;
+    background-size:40% auto;
+    height: 120px;
+    display: none;
+}
 @media screen and (min-width: 490px) {
     .costcontrol {
         padding: 8px;
+    }
+    .zylogom {
+        display: none;
+    }
+    .zylogopc {
+        display: block;
     }
 }

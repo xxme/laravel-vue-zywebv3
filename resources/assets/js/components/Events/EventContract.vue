@@ -4,7 +4,7 @@
     <section class="content no-padding">
       <div class="box box-widget">
         <div class="box-header with-border no-padding">
-          <div class="col-xs-12">
+          <div class="col-xs-12 controldiv">
             <label>
               <input type="radio" name="language" value="cn" v-model="language">
               <img src="/images/china.png" width="26" />
@@ -13,59 +13,79 @@
               <input type="radio" name="language" value="ja" v-model="language">
               <img src="/images/japan.png" width="26" />
             </label>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>
+              <input type="radio" name="pagetype" value="1" v-model="pagetype">
+              見積書
+            </label>
+            <label>
+              <input type="radio" name="pagetype" value="2" v-model="pagetype">
+              請求書
+            </label>
+            <label>
+              <input type="radio" name="pagetype" value="3" v-model="pagetype">
+              契約書
+            </label>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label>
+              <input type="checkbox" v-model="shopoff20">
+              8折券
+            </label>
             <button class="btn btn-primary pull-right btn-xs" @click="close">返回</button>
           </div>
           <br /><br /><br />
-          <div class="col-xs-4">{{ $t('contract.workingtime') }}: {{ event.event_date }}</div>
-          <div class="col-xs-4"><h4 class="text-center">{{ $t('contract.title') }}</h4></div>
-          <div class="col-xs-4">
-            <div class="pull-right">
+          <div class="col-xs-12"><h3 class="text-center" @click="printmode = !printmode">{{ title }}</h3></div>
+          <div class="col-xs-6">
+            <h5>{{ $t('contract.workingtime') }}: {{ event.event_date }}</h5><br /><br />
+            <h5>
+              <span class="underline">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                {{ name }}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              </span>御中
+            </h5>
+          </div>
+          <div class="col-xs-6">
+            <div class="pull-right" v-if="pagetype == 1 || pagetype == 2">
               <span>{{ $t('contract.issuedate') }}: {{ today }}</span><br />
               <span class="datepicker">{{ $t('contract.expiration') }}: {{ expiration }}</span>
             </div>
           </div>
-          <div class="col-xs-12">
-            <span class="underline">
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </span>御中
-          </div>
         </div>
         <div class="box-body">
           <div class="col-xs-12 no-padding">
-            <div class="col-xs-7 no-padding">
-              <div class="col-xs-10 border">
+            <div class="contractleft no-padding">
+              <div class="col-xs-12 border">
                 <div class="col-xs-12 no-padding" v-if="event.details && event.details.from_address">
                   <b>{{ $t('event.fromAddress') }}:</b> {{ event.details.from_address }}
                 </div>
                 <div class="col-xs-12 no-padding" v-if="event.details && event.details.to_address">
                   <b>{{ $t('event.toAddress') }}:</b> {{ event.details.to_address }} 
-                  <span v-if="event.details.to_elevator == 1"> {{ $t('event.elevator') }}</span>
-                  <span v-else-if="event.details.to_elevator == 2"> {{ $t('event.stairs') }}</span>
-                  <span v-else-if="event.details.to_elevator == 3"> {{ $t('event.elevatorAndstairs') }}</span>
-                  <span v-if="event.details.to_floor > 0 && event.details.to_floor < 10"> {{ event.details.to_floor }} {{ $t('event.floor') }}</span>
-                  <span v-else-if="event.details.to_floor > 9"> {{ event.details.to_floor }}+ {{ $t('event.floor') }}</span>
+                </div>
+                <div class="col-xs-12 no-padding" v-if="event.details.phone">
+                  <b>{{ $t('contract.tel') }}:</b>
+                  {{ event.details.phone }}
                 </div>
               </div>
-              <div class="col-xs-12 border amount" v-if="event.amount">
-                <h5>
-                  <span v-if="event.amount" class="marginr3"><b>{{ $t('contract.amount') }}{{ event.amount | formatNumberJPY }}{{ $t('contract.taxincluded') }}</b></span>
-                </h5>
-              </div>
             </div>
-            <div class="col-xs-4 border pull-right">
+            <div class="contractright border pull-right zylogopc">
+              <img src="/images/yinz.png" class="seal" />
               子義引越センター<br />
               子義合同会社<br />
+              東京都足立区入谷9丁目28−19<br />
               03-5856-8281<br />
               担当:イトウ
-              <div class="pull-right">
-                <img src="/images/logo_w300.png" width="100" />
-              </div>
+            </div>
+            <div class="contractright border pull-right zylogom">
+              子義引越センター<br />
+              子義合同会社<br />
+              東京都足立区入谷9丁目28−19<br />
+              03-5856-8281<br />
+              担当:イトウ
             </div>
           </div>
           <div class="col-xs-12 border details">
-            <div class="col-xs-6 no-padding" v-if="event.details.from_btype || event.details.from_elevator || event.details.from_floor">
+            <div class="col-xs-6 no-padding" v-if="event.details.from_btype > 0 || event.details.from_elevator > 0 || event.details.from_floor > 0">
               <b>{{ $t('event.fromAddress') }}:</b>
               <template v-if="event.details.from_btype">
                 <span v-if="event.details.from_btype == 1">{{ $t('offer.buildingtype1') }}</span>
@@ -85,7 +105,7 @@
                 <span v-else-if="event.details.from_floor > 9"> {{ event.details.from_floor }}+ {{ $t('event.floor') }}</span>
               </template>
             </div>
-            <div class="col-xs-6 no-padding" v-if="event.details.to_btype || event.details.to_elevator || event.details.to_floor">
+            <div class="col-xs-6 no-padding" v-if="event.details.to_btype > 0 || event.details.to_elevator > 0 || event.details.to_floor > 0">
               <b>{{ $t('event.toAddress') }}:</b>
               <template v-if="event.details.to_btype">
                 <span v-if="event.details.to_btype == 1">{{ $t('offer.buildingtype1') }}</span>
@@ -116,30 +136,57 @@
               <b>{{ $t('contract.careful') }}:</b>
               <span v-for="carefulname in event.carefulnames"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }} </span>
             </div>
-            <div class="col-xs-12 no-padding" v-if="event.details.phone">
-              <b>{{ $t('contract.tel') }}:</b>
-              {{ event.details.phone }}
+            <div class="col-xs-12 no-padding amount" v-if="event.amount">
+              <h5>
+                <span v-if="event.amount" class="marginr3"><b>{{ amounttext }}{{ event.amount | formatNumberJPY }}{{ $t('contract.taxincluded') }}</b></span>
+              </h5>
+              <b>{{ $t('contract.comments') }}:</b>
+              <span v-for="comment in event.comments">{{ comment.content }}<br /></span>
+              <hr />
             </div>
-            <div class="col-xs-8 no-padding">
+            <div class="col-xs-7 no-padding">
               {{ $t('contract.explanation1') }}<br />
               {{ $t('contract.explanation2') }}<br />
               {{ $t('contract.explanation3') }}<br />
               {{ $t('contract.explanation4') }}<br />
               {{ $t('contract.explanation5') }}<br />
               {{ $t('contract.explanation6') }}<br />
-              {{ $t('contract.explanation7') }}
+              {{ $t('contract.explanation7') }}<br />
+              {{ $t('contract.explanation8') }}
+            </div>
+            <div class="col-xs-5 no-padding" v-if="shopoff20">
+              <img src="/images/shop20off240.png" width="240" />
             </div>
           </div>
-          
-          <div class="col-xs-6 no-padding">
-            {{ $t('contract.payee') }}<br />
-            ゆうちょ銀行<br />
-            記号:10010 番号　5221385<br />
-            コヨシ（ド<br /><br />
-            店名00八 店番008 普通<br />
+          <div class="col-xs-12 no-padding details">
+            <div class="col-xs-12 no-padding">
+              {{ $t('contract.commission') }}
+            </div>
+            <div class="col-xs-6 no-padding">
+              <b>{{ $t('contract.payee1') }}</b><br />
+              ゆうちょ銀行<br />
+              支店名:ゼロゼロハチ　店番:008<br />
+              記号:10010　番号:5221385<br />
+              名義:コヨシ（ド　普通預金
+            </div>
+            <div class="col-xs-6 no-padding">
+              <b>{{ $t('contract.payee2') }}</b><br />
+              三菱UFJ銀行<br />
+              支店名:王子駅前支店　店番:763<br />
+              口座番号:0239149<br />
+              名義:コヨシ ゴウドウカイシヤ　普通預金
+            </div>
           </div>
-          <div class="col-xs-6 no-padding" v-if="event.comments && event.comments.length > 0">
-            <span v-for="comment in event.comments">{{ comment.content }}<br /></span>
+          <div class="col-xs-6 no-padding pull-right" v-if="pagetype == 3">
+            <b>署名(サイン):_________________</b>
+          </div>
+        </div>
+      </div>
+      <div class="inputs col-xs-6 form-horizontal controldiv">
+        <div class="form-group">
+          <label for="inputname" class="col-sm-2 control-label">御中人</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="inputname" v-model="name">
           </div>
         </div>
       </div>
@@ -156,13 +203,19 @@ export default {
   data() {
     return {
       language: "cn",
+      pagetype: 1,
+      title: this.$t('contract.quotation'),
+      amounttext: this.$t('contract.amount'),
       hasFile: false,
       showImgs: false,
+      printmode: false,
+      shopoff20: false,
       today: moment().format('YYYY年MM月DD日'),
       expiration: moment().add(7, 'd').format('YYYY年MM月DD日'),
       event: {
         details: {}
       },
+      name: "",
       total: 0
     }
   },
@@ -205,6 +258,18 @@ export default {
       $('.content-header').show();
       this.$emit('close');
     },
+    updatepagetype() {
+      if(this.pagetype == 1){
+        this.title = this.$t('contract.quotation');
+        this.amounttext = this.$t('contract.amount');
+      } else if(this.pagetype == 2) {
+        this.title = this.$t('contract.invoice');
+        this.amounttext = this.$t('contract.invoiceamount');
+      } else {
+        this.title = this.$t('contract.contract');
+        this.amounttext = this.$t('contract.amount');
+      }
+    },
     formatDateWithWeekname(date) {
       var weekname = "";
       if(this.$i18n.locale == 'cn') {
@@ -227,6 +292,32 @@ export default {
   watch: {
     language(lang) {
       this.$i18n.locale = lang;
+      this.updatepagetype();
+    },
+    printmode(isprint) {
+      if(isprint) {
+        $('.controldiv').hide();
+        $('.main-sidebar').hide();
+        $('.content-wrapper').removeClass('content-wrapper').addClass('mleft0');
+        $('.wrapper').css('background-color', '#FFF');
+      } else {
+        $('.controldiv').show();
+        $('.main-sidebar').show();
+        $('.mleft0').removeClass('mleft0').addClass('content-wrapper');
+        $('.wrapper').css('background-color', '#222d32');
+      }
+    },
+    pagetype(num) {
+      if(num == 1){
+        this.title = this.$t('contract.quotation');
+        this.amounttext = this.$t('contract.amount');
+      } else if(num == 2) {
+        this.title = this.$t('contract.invoice');
+        this.amounttext = this.$t('contract.invoiceamount');
+      } else {
+        this.title = this.$t('contract.contract');
+        this.amounttext = this.$t('contract.amount');
+      }
     }
   }
 }
@@ -236,17 +327,27 @@ export default {
 .contract {
   font-size: 12px;
 }
-.content {
-  padding-bottom: 200px!important;
-}
 .details {
   margin-bottom: 50px!important;
+  margin-top: 5px;
+}
+.contractleft {
+  width: 55%;
+  height: 130px;
+  display: inline-grid;
+}
+.contractright {
+  width: 40%;
+  height: 130px;
 }
 .col-xs-4 {
   padding:0 10px;
 }
-.no-padding {
-  padding: 3px 0 !important;
+.inputs {
+  margin-top: 150px;
+}
+.mleft0 {
+  margin-left: 0!important;
 }
 .label, .marginr3 {
   margin-right: 3px;

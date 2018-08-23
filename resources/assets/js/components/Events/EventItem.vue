@@ -157,7 +157,7 @@
                 </div>
               </div>
 
-              <span class="text-muted">{{ event.comments.length }} comments</span>
+              <span class="text-muted">{{ event.comments.length }} {{ $t('event.comments') }}</span>
               <div class="pull-right">
                   <button class="btn btn-xs btn-warning bigger-120" v-if="!comefromfinances" @click="$emit('editevent', event.id)">
                     <i class="fa fa-pencil"></i>
@@ -192,7 +192,7 @@
               <img v-else class="img-responsive img-circle img-sm" src="/images/no-image-available.jpeg">
               <!-- .img-push is used to add margin to elements next to floating images -->
               <div class="img-push input-group">
-                <input type="text" class="form-control" :id="'comment' + event.id" placeholder="Press enter to post comment">
+                <input type="text" class="form-control" :id="'comment' + event.id" :placeholder="$t('event.postcomment')">
                 <span class="input-group-btn">
                   <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
                 </span>

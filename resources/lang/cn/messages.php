@@ -28,6 +28,7 @@ return [
     'usermanage' => '用户管理',
     'logs' => '航行记录',
     'typeofwork' => '工作分类',
+    'onlineshop' => '在线店铺',
     // nav / page titles and sub titles end
 
     // type start
@@ -35,6 +36,11 @@ return [
     'unavailable' => '未启用',
     'areyousuredel' => '确定改变类型的状态吗?',
     // type end
+
+    //errors start
+    'perioderror' => '所选日期区间超过一年或未能识别，请从新设定日期区间后再试',
+    'noeligibledateserror' => '无法添加，请确认设定后再试',
+    //errors end
     
     'profile' => '个人设定',
     'signOut' => '注销',
@@ -57,5 +63,12 @@ return [
     'actionupdate' => '更新',
     'actiondel' => '删除',
     "comment" => "留言",
+    'uploadimg' => '上传头像',
+    'newphoto' => '新头像',
+    'usingphoto' => '当前头像',
+    'password' => '密码',
+    'changepassword' => '修改密码',
+    'nickname' => '昵称',
+    'email' => '邮箱',
     'manageronly' => '舰长Only'
 ];

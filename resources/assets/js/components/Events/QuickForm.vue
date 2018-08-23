@@ -278,7 +278,7 @@
       </div>
     </modal>
     <modal v-if="showTypeModal" @close="showTypeModal = false">
-      <h4 slot="header">{{ typeboxtitle }}</h4>
+      <h4 slot="header">{{ typeboxtitle }}<button type="button" class="close" @click="showTypeModal = false"><span>×</span></button></h4>
       <div slot="body">
         <label class="checkbox-inline" v-for="(type, key) in clicktypes">
           <template v-if="showingType == 1">

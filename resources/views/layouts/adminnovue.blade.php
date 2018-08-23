@@ -31,12 +31,9 @@
   <script src="{{ asset('/js/jquery/jquery.min.js') }}"></script>
   <script src="{{ asset('/js/bootstrap/bootstrap.min.js') }}"></script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="skin-blue sidebar-collapse sidebar-mini">
     <div class="wrapper">
-        
-      
       @include('admin.public.menu')
-
       <!-- Content Wrapper. Contains page content -->
       <div class="content-wrapper">
         <div class="alert alert-success alert-dismissible is-hide">
@@ -62,7 +59,6 @@
           <!-- /.row (main row) -->
         </section>
         <!-- /.content -->
-        
       </div>
       <!-- /.content-wrapper -->
 

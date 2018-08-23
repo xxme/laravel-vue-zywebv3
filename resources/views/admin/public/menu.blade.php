@@ -64,6 +64,12 @@
           <span>{{ __('messages.timeline') }}</span>
         </a>
       </li>
+      <li>
+        <a href="https://shop.koyoshieki.com/wp-admin/edit.php?post_type=product" target="_blank">
+          <i class="fa fa-heart"></i> 
+          <span>{{ __('messages.onlineshop') }}</span>
+        </a>
+      </li>
       <!-- <li class="header">LABELS</li>
       <li><a href="#"><i class="fa fa-circle-o text-red"></i> <span>Important</span></a></li>
       <li><a href="#"><i class="fa fa-circle-o text-yellow"></i> <span>Warning</span></a></li>

@@ -66,6 +66,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/logs', 'AdminController@logsindex');
         Route::get('/logs/{ym}', 'AdminController@logsindex');
         Route::get('/logs/{ym}/{action}', 'AdminController@logsindex');
+        Route::get('/exps', 'EventController@exps');
         // post
         Route::post('/user/uploadprofile', 'UserController@updateprofile');
         Route::post('/user/update', 'UserController@update');
@@ -76,6 +77,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/uploadimg', 'AdminController@updateImage');
         Route::post('/event/complete', 'EventController@complete');
         Route::post('/event/received', 'EventController@setReceived');
+        Route::post('/event/batchattendance', 'EventController@batchAttendance');
     });
     // Route::post('logout', 'LoginController@logout');
 });

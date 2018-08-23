@@ -30,7 +30,7 @@
           <div class="tab-content">
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
-              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
+              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showatte="atteformswitch(true)" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
             </div>
             <!-- /.tab-pane -->
             <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
@@ -103,6 +103,7 @@
         </div>
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
+        <attendance v-if="showAtteFlag" :userlist="user_list" @showform="atteformswitch(true)" @closeform="atteformswitch(false)"></attendance>
       </section>
     </div>
     <loading :loadingShow="loadingShow"></loading>
@@ -114,6 +115,7 @@ import Vue from 'vue'
 import moment from 'moment'
 import Loading from '../Public/Loading'
 import QuickForm from './QuickForm.vue';
+import Attendance from './Attendance.vue';
 import EventItem from './EventItem.vue';
 
 export default {
@@ -140,6 +142,7 @@ export default {
       showQuickForm: false,
       showEventItem: false,
       showformflag: false,
+      showAtteFlag: false,
       loadingShow: false,
       showCalendarFlag: true,
       switchEstimates: true,
@@ -174,6 +177,7 @@ export default {
   components: {
     EventItem,
     Loading,
+    Attendance,
     QuickForm
   },
   methods: {
@@ -697,6 +701,10 @@ export default {
       this.showEventItem = false;
       this.showCalendarFlag = true;
     },
+    atteformswitch(showorhide) {
+      this.showCalendarFlag = !showorhide;
+      this.showAtteFlag = showorhide;
+    },
     quickformswitch(showorhide, date = '') {
       if(showorhide) {
         if(date) {
@@ -775,7 +783,7 @@ Vue.component('todo', {
       height: 1000,
       contentHeight: 1000,
       header: {
-        left: 'title createEventButton reloadEventsButton',
+        left: 'title createEventButton batchEventButton reloadEventsButton',
         right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
       },
       // 日付クリックイベント
@@ -785,7 +793,6 @@ Vue.component('todo', {
       navLinks: true,
       navLinkDayClick: function(date, jsEvent) {
         self.gotoDate(date.format());
-        // self.$emit('showform', true, date.format());
       },
       // イベントクリック
       eventClick: function(calEvent, jsEvent, view) {
@@ -812,20 +819,25 @@ Vue.component('todo', {
           $(".eventdescription").css('display', 'none');
         }
         self.resetHolidays();
-        // $(".eventdescription").removeClass('showdescription');
       },
       eventRender: function(event, element) {
         self.showdescription(event, element);
       },
       customButtons: {
         createEventButton: {
-          text: this.$i18n.t('event.addEvent'),
+          icon: 'fa fa fa-calendar-plus-o',
           click: function() {
             self.$emit('showform', true);
           }
         },
+        batchEventButton: {
+          icon: 'fa fa fa-calendar',
+          click: function() {
+            self.$emit('showatte', true);
+          }
+        },
         reloadEventsButton: {
-          text: this.$i18n.t('global.reload'),
+          icon: 'fa fa fa-refresh',
           click: function() {
             self.$emit('reload');
           }

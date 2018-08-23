@@ -1,7 +1,7 @@
 <template>
     <div>
         <button type="button" class="btn bg-olive btn-sm" @click="uploadimg">
-            <i class="fa fa-image"></i> Upload images
+            <i class="fa fa-image"></i> {{ $t('global.uploadimg') }}
         </button>
         <input type="file" id="file" @change="onFileChange" :accept="fileAccept" multiple="multiple" style="display: none" />
     </div>

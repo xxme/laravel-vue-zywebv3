@@ -12,19 +12,19 @@
       {{ csrf_field() }}
       <div class="box-body">
         <div class="form-group @if(!empty($errors->first('name'))) has-error @endif">
-          <label for="inputName">Name</label>
+          <label for="inputName">{{ __('messages.nickname') }}</label>
           <input type="text" class="form-control" name="name" placeholder="Name" value="@if(!empty(old('name'))){{ old('name') }}@else{{ $user->name }}@endif" required>
           <span class="help-block">{{ $errors->first('name') }}</span>
         </div>
         <div class="form-group @if(!empty($errors->first('email'))) has-error @endif">
-          <label for="inputEmail1">Email address</label>
+          <label for="inputEmail1">{{ __('messages.email') }}</label>
           <input type="email" class="form-control" name="email" placeholder="Enter email" value="@if(!empty(old('email'))){{ old('email') }}@else{{ $user->email }}@endif" required>
           <span class="help-block">{{ $errors->first('email') }}</span>
         </div>
         <input type="hidden" name="changepw" value="@if(!empty(old('changepw'))){{ old('changepw') }}@else 0 @endif" />
-        <button type="button" id="changepw" class="btn btn-sm btn-warning">Change password</button><br /><br />
+        <button type="button" id="changepw" class="btn btn-sm btn-warning">{{ __('messages.changepassword') }}</button><br /><br />
         <div class="form-group is-hide pwddiv @if(!empty($errors->first('password'))) has-error @endif">
-          <label for="inputPassword1">Password</label>
+          <label for="inputPassword1">{{ __('messages.password') }}</label>
           <div class="input-group">
             <input type="password" class="form-control" id="inputPassword1" name="password" placeholder="Password">
           </div>
@@ -51,17 +51,17 @@
         @endif
         @if ($user->profileimg)
         <div class="form-group">
-          <label>Using profile photo</label><br />
+          <label>{{ __('messages.usingphoto') }}</label><br />
           <img src="{{ asset("uploads/profiles") }}/{{ $user->profileimg }}" id="usingimg" />
         </div>
         @endif
         <div class="form-group is-hide newprofile">
-          <label>New profile photo</label><br />
+          <label>{{ __('messages.newphoto') }}</label><br />
           <img src="" id="newprofile" />
         </div>
         <div class="form-group">
           <button type="button" class="btn btn-primary btn-sm" onclick="changeProfile()">
-            <i class="fa fa-smile-o"></i> Upload profile photo
+            <i class="fa fa-smile-o"></i> {{ __('messages.uploadimg') }}
           </button>
 
           <p class="help-block">you can upload the .jpg, .jpeg, .png or .gif file.</p>

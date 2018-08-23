@@ -92,7 +92,7 @@ class EventController extends Controller
             $event['comments'] = json_decode($event->comments, true);
         }
         if($event->total) {
-            $event['totalname'] = $typeArray[$event->total];
+            $event['totalname'] = $this->getTypeNames($event->total, $typeArray);
         }
         if($event->details) {
             if($event->details->aboutgoods) {
@@ -509,4 +509,116 @@ class EventController extends Controller
         $finances = Expense::whereIn('id', $ids)->update(['status' => 2]);
         return $finances;
     }
+
+    /**
+     * Batch attendance.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function batchAttendance(Request $request) {
+        $inputs = $request->all();
+        $datefrom = new Carbon($inputs['eventdatefrom']);
+        $dateto = new Carbon($inputs['eventdateto']);
+        if($dateto->diffInDays($datefrom) < 0 || $dateto->diffInDays($datefrom) > 365) {
+            $return['status'] = 'error';
+            $return['message'] = __('messages.perioderror');
+            return response()->json($return);
+        }
+        $weekNameArray = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        $weekNames = array();
+        foreach($inputs['checkedWeek'] as $weekid) {
+            $weekNames[] = $weekNameArray[$weekid];
+        }
+        $weekNameString = implode(",", $weekNames);
+        $logtype = "";
+        if($inputs['attendance'] == 1) {
+            $logtype = config('const.log_action_attendance');
+        } else {
+            $logtype = config('const.log_action_vacation');
+        }
+        $count = 0;
+        $auth_id = auth()->user()->id;
+        $type = $inputs['attendance'] == 1 ? '["19"]' : '["122"]';
+        while($datefrom <= $dateto) {
+            if(in_array($datefrom->dayOfWeek, $inputs['checkedWeek'])) {
+                foreach($inputs['partner'] as $userid) {
+                    $obj = Event::where('types', $type)->where('user_id', $userid)->where('apm', $inputs['apm'])->first();
+                    if(!$obj) {
+                        $objEvent = new Event();
+                        $objEvent->user_id = $userid;
+                        $objEvent->event_date = $datefrom->format('Y-m-d');
+                        $objEvent->apm = $inputs['apm'];
+                        $objEvent->types = $type;
+                        $objEvent->total = '[]';
+                        if($objEvent->save()) {
+                            $count ++;
+                            $objEventDetail = new EventDetail();
+                            $objEventDetail->event_id = $objEvent->id;
+                            $objEventDetail->trucks = '[]';
+                            $objEventDetail->images = '[]';
+                            $objEventDetail->aboutgoods = '[]';
+                            $objEventDetail->carefully = '[]';
+                            $objEventDetail->save();
+                            if(!empty($inputs['comment'])){
+                                $objComment = new Comment();
+                                $objComment->user_id = $auth_id;
+                                $objComment->event_id = $objEvent->id;
+                                $objComment->content = $inputs['comment'];
+                                $objComment->save();
+                            }
+                        }
+                    }
+                }
+            }
+            $datefrom->addDay();
+        }
+        if($count > 0) {
+            \AdminLog::saveLog($auth_id, config('const.log_event_attendance'), $logtype, $inputs['eventdatefrom'].'〜'.$inputs['eventdateto'].' '.$weekNameString);
+            $return['status'] = 'success';
+            return response()->json($return);
+        } else {
+            $return['status'] = 'error';
+            $return['message'] = __('messages.noeligibledateserror');
+            return response()->json($return);
+        }
+    }
+
+    // public function exps() {
+    //     $rs = array();
+    //     // $finances = Expense::where('finalprice', '>', 0)->with(['event' => function ($query) {
+    //     //     $query->with('deposit');
+    //     // }])->get();
+    //     $date = Carbon::create(2018, 05, 31, 24);
+    //     $finances = Event::where('status', 2)->where('event_date', '<=', $date)->with(['expense' => function ($query) {
+    //         $query->where('finalprice', '>', 0);
+    //     }, 'deposit' => function ($query) {
+    //         $query->where('jpy', '>', 0);
+    //     }])->orderBy('event_date', 'ASC')->get();
+    //     $types = Type::get(['id', 'name']);
+    //     foreach($types as $type) {
+    //         $typeArray[$type->id] = $type->name;
+    //     }
+    //     $html = '';
+    //     foreach($finances as $k=>$value) {
+    //         $rs[$k]['money'] = 0;
+    //         // $rs[$k]['id'] = $value->id;
+    //         // $rs[$k]['event_id'] = $value->event_id;
+    //         if($value->expense) {
+    //             $rs[$k]['money'] += $value->expense->finalprice;
+    //         }
+            
+    //         if($value['deposit']) {
+    //             $rs[$k]['money'] += $value->deposit->jpy;
+    //         }
+    //         if($rs[$k]['money'] == 0) {
+    //             unset($rs[$k]);
+    //         } else {
+    //             $rs[$k]['date'] = $value->event_date;
+    //             $rs[$k]['typenames'] = implode(',', $this->getTypeNames($value->types, $typeArray));
+    //         }
+    //     }
+    //     $data['rs'] = $rs;
+    //     return view('admin.others.test', $data);
+    // }
 }
