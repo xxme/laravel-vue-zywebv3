@@ -30,7 +30,7 @@ Route::group(['middleware' => 'api'], function() {
     Route::get('get_product/{sku}', function($sku) {
         $ch = curl_init();
         $timeout = 5;
-        curl_setopt ($ch, CURLOPT_URL, env('SHOP_URL', '').'/sku/'.$sku.'/');
+        curl_setopt ($ch, CURLOPT_URL, env('SHOP_URL', '').'/sku/'.$sku);
         curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
         $file_contents = curl_exec($ch);

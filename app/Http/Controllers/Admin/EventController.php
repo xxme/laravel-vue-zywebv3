@@ -543,11 +543,12 @@ class EventController extends Controller
         while($datefrom <= $dateto) {
             if(in_array($datefrom->dayOfWeek, $inputs['checkedWeek'])) {
                 foreach($inputs['partner'] as $userid) {
-                    $obj = Event::where('types', $type)->where('user_id', $userid)->where('apm', $inputs['apm'])->first();
+                    $event_date = $datefrom->format('Y-m-d');
+                    $obj = Event::where('types', $type)->where('user_id', $userid)->where('apm', $inputs['apm'])->where('event_date', $event_date)->first();
                     if(!$obj) {
                         $objEvent = new Event();
                         $objEvent->user_id = $userid;
-                        $objEvent->event_date = $datefrom->format('Y-m-d');
+                        $objEvent->event_date = $event_date;
                         $objEvent->apm = $inputs['apm'];
                         $objEvent->types = $type;
                         $objEvent->total = '[]';

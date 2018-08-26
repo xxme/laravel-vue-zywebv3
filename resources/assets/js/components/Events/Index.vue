@@ -540,6 +540,10 @@ export default {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#001f3f';
+        } else if (this.events_list[i].types.indexOf('"122"') > -1) {
+          // 出勤
+          eventObj.title += '('+this.events_list[i].user.name+')';
+          eventObj.color = '#009900';
         } else if (
             this.events_list[i].types.indexOf('"12"') > -1 ||
             this.events_list[i].types.indexOf('"13"') > -1 ||
@@ -699,6 +703,7 @@ export default {
     },
     showCalendar(){
       this.showEventItem = false;
+      this.show_list = [];
       this.showCalendarFlag = true;
     },
     atteformswitch(showorhide) {

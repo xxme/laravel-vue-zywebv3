@@ -320,7 +320,7 @@ export default {
             alert(response.data.message);
           } else {
             alert(this.$t('global.success'));
-            // location.reload();
+            location.reload();
           }
         }).catch(error => {
           this.errors.push(this.$t('global.calltheadministrator'));
