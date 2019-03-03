@@ -140,8 +140,9 @@
               <h5>
                 <span v-if="event.amount" class="marginr3"><b>{{ amounttext }}{{ event.amount | formatNumberJPY }}{{ $t('contract.taxincluded') }}</b></span>
               </h5>
-              <b>{{ $t('contract.comments') }}:</b>
-              <span v-for="comment in event.comments">{{ comment.content }}<br /></span>
+              <hr />
+              <h5><u>{{ $t('contract.comments') }}:</u></h5>
+              <h5 v-for="comment in event.comments">{{ comment.content }}</h5>
               <hr />
             </div>
             <div class="col-xs-7 no-padding">

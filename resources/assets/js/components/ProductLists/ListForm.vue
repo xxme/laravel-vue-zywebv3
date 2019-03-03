@@ -151,7 +151,7 @@ export default {
 				this.loadingShow = true;
 				var submitdata = new Object();
 				submitdata.items = this.rows;
-				submitdata.cost = this.cost;
+				submitdata.cost = parseInt(this.cost);
 				submitdata.totalprice = this.totalprice;
 				submitdata.note = this.note;
 				if(this.id) {
@@ -181,7 +181,7 @@ export default {
         method: 'GET'
       }).then(res =>  {
         this.id = listid;
-				this.cost = res.data.cost;
+				this.cost = parseInt(res.data.cost);
 				this.totalprice = res.data.price;
 				this.note = res.data.note;
         for(var key in res.data.items) {

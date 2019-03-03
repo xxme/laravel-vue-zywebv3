@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.1.3a"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.1.3b"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 
