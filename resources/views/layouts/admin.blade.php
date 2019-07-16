@@ -57,9 +57,9 @@
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                   @if($currentUser->profileimg)
-                  <img src="{{ asset('uploads/profiles') }}/{{ $currentUser->profileimg }}" class="user-image" alt="User Image">
+                  <img src="{{ asset('uploads/profiles') }}/{{ $currentUser->profileimg }}" class="user-image">
                   @else
-                  <img src="{{ asset('images') }}/no-image-available.jpeg" class="user-image" alt="User Image">
+                  <img src="{{ asset('images') }}/no-image-available.jpeg" class="user-image">
                   @endif
                   <span class="hidden-xs">{{ $currentUser->name }}</span>
                 </a>
@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.1.3b"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.1.3fa"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 

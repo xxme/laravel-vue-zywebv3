@@ -24,6 +24,7 @@
           @endif
         </ul>
       </li>
+      @if($currentUser->group_id != 6)
       <li class="treeview @if(Request::is('admin/user/*')) active @endif">
         <a href="#">
           <i class="fa fa-users"></i> 
@@ -40,6 +41,7 @@
           @endif
         </ul>
       </li>
+      @endif
       <li>
         <a href="{{ url('admin/productlist') }}">
           <i class="fa fa-shopping-cart"></i> 
@@ -58,12 +60,14 @@
           </span>
         </a>
       </li>
+      @if($currentUser->group_id != 6)
       <li>
         <a href="{{ url('admin/logs') }}">
           <i class="fa fa-globe"></i> 
           <span>{{ __('messages.timeline') }}</span>
         </a>
       </li>
+      @endif
       <li>
         <a href="https://shop.koyoshieki.com/wp-admin/edit.php?post_type=product" target="_blank">
           <i class="fa fa-heart"></i> 

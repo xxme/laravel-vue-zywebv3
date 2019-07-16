@@ -36,7 +36,7 @@
             <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
               <!-- statistics -->
               <div class="box-header">
-                <h3 class="box-title">{{ showYm }}{{ $t('finance.finance') }}</h3>
+                <h3 class="box-title"><button type="button" class="btn btn-sm btn-default" @click.native="statisticsSwitch(false)"><i class="fa fa-arrow-left"></i></button> {{ showYm }}{{ $t('finance.finance') }}</h3>
               </div>
               <table class="table table-striped">
                 <tbody>
@@ -95,11 +95,6 @@
             <!-- /.tab-pane -->
           </div>
           <!-- /.tab-content -->
-
-          <ul class="nav nav-tabs" v-if="auth && auth.group_id == 1">
-            <li class="active"><a href="#topcalendar" data-toggle="tab" aria-expanded="false">{{ $t('topmenu.eventcalendar') }}</a></li>
-            <li><a href="#statistics" data-toggle="tab" aria-expanded="true">{{ $t('topmenu.statistics') }}</a></li>
-          </ul>
         </div>
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
@@ -253,6 +248,11 @@ export default {
                 // completed
                 this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
                 this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
+                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                  // 定金
+                  this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
+                  this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].deposit.jpy);
+                }
               } else {
                 // undone
                 if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
@@ -281,6 +281,11 @@ export default {
               // completed
               feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].expense.finalprice);
               feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].expense.finalprice);
+              if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                // 定金
+                feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
+                feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].deposit.jpy);
+              }
             } else {
               // undone
               if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
@@ -301,6 +306,9 @@ export default {
             if(this.events_list[i].expense) {
               // completed
               this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
+              if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+                this.fee.finance.total += parseInt(this.events_list[i].deposit.jpy);
+              }
               this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
               this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
               this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
@@ -314,10 +322,10 @@ export default {
               // undone
               if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
                 if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                  this.fee.finance.total += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+                  // this.fee.finance.total += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
                   this.fee.finance.undone += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
                 } else {
-                  this.fee.finance.total += parseInt(this.events_list[i].amount);
+                  // this.fee.finance.total += parseInt(this.events_list[i].amount);
                   this.fee.finance.undone += parseInt(this.events_list[i].amount);
                 }
               }
@@ -783,13 +791,13 @@ Vue.component('todo', {
       defaultView: 'agendaDay',
       events: self.events.ordinaryundone,
       defaultDate: moment().format('YYYY-MM-DD'),
-      minTime: '08:00:00',
-      maxTime: '23:00:00',
+      minTime: '06:00:00',
+      maxTime: '24:00:00',
       height: 1000,
       contentHeight: 1000,
       header: {
-        left: 'title createEventButton batchEventButton reloadEventsButton',
-        right: 'month agendaWeek agendaDay today tomorrowButton prev,next'
+        left: 'title statisticsButton createEventButton batchEventButton reloadEventsButton',
+        right: 'month agendaDay today prev,next'
       },
       // 日付クリックイベント
       // dayClick: function(date, jsEvent, view) {
@@ -810,13 +818,6 @@ Vue.component('todo', {
           self.$emit('update-events', formatdate);
           self.$emit('updateym', formatdate);
           self.showmonth = formatdate;
-        }
-        if(showdate.format('YYYY-MM-DD') == moment().add(1, 'd').format('YYYY-MM-DD')) {
-          $(".fc-tomorrowButton-button").prop("disabled", true);
-          $(".fc-tomorrowButton-button").addClass('fc-state-disabled');
-        } else {
-          $(".fc-tomorrowButton-button").prop("disabled", false);
-          $(".fc-tomorrowButton-button").removeClass('fc-state-disabled');
         }
         if(view.name == 'agendaDay') {
           $(".eventdescription").css('display', 'block');
@@ -847,10 +848,10 @@ Vue.component('todo', {
             self.$emit('reload');
           }
         },
-        tomorrowButton: {
-          text: this.$i18n.t('global.tomorrow'),
+        statisticsButton: {
+          icon: 'fa fa fa-usd',
           click: function() {
-            self.gotoDate();
+            self.statisticsSwitch(true);
           }
         }
       }
@@ -908,6 +909,15 @@ Vue.component('todo', {
       title.append("<br/>" + event.description);
       if(event.completed) {
         title.append(event.completed);
+      }
+    },
+    statisticsSwitch(active) {
+      if (active) {
+        $('#topcalendar').removeClass('active');
+        $('#statistics').addClass('active');
+      } else {
+        $('#statistics').removeClass('active');
+        $('#topcalendar').addClass('active');
       }
     }
   },

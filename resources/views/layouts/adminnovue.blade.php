@@ -80,9 +80,9 @@
               <li class="dropdown user user-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                   @if($currentUser->profileimg)
-                  <img src="{{ asset("uploads/profiles") }}/{{ $currentUser->profileimg }}" class="user-image" alt="User Image">
+                  <img src="{{ asset("uploads/profiles") }}/{{ $currentUser->profileimg }}" class="user-image">
                   @else
-                  <img src="{{ asset("images") }}/no-image-available.jpeg" class="user-image" alt="User Image">
+                  <img src="{{ asset("images") }}/no-image-available.jpeg" class="user-image">
                   @endif
                   <span class="hidden-xs">{{ $currentUser->name }}</span>
                 </a>

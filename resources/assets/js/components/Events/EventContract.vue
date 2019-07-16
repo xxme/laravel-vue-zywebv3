@@ -145,17 +145,45 @@
               <h5 v-for="comment in event.comments">{{ comment.content }}</h5>
               <hr />
             </div>
-            <div class="col-xs-7 no-padding">
-              {{ $t('contract.explanation1') }}<br />
-              {{ $t('contract.explanation2') }}<br />
-              {{ $t('contract.explanation3') }}<br />
-              {{ $t('contract.explanation4') }}<br />
-              {{ $t('contract.explanation5') }}<br />
-              {{ $t('contract.explanation6') }}<br />
-              {{ $t('contract.explanation7') }}<br />
-              {{ $t('contract.explanation8') }}
+            <div class="col-xs-8 no-padding" v-if="pagetype == 1 || pagetype == 2">
+              <b>子義优势:</b><br />
+              ❤{{ $t('contract.explanation1') }}<br />
+              ❤{{ $t('contract.explanation2') }}<br />
+              ❤{{ $t('contract.explanation3') }}<br />
+              ❤{{ $t('contract.explanation4') }}<br />
+              ❤{{ $t('contract.explanation5') }}<br />
+              ❤{{ $t('contract.explanation6') }}<br />
+              ❤{{ $t('contract.explanation7') }}<br />
+              ❤{{ $t('contract.explanation8') }}
             </div>
-            <div class="col-xs-5 no-padding" v-if="shopoff20">
+            <div class="col-xs-8 no-padding" v-if="pagetype == 3">
+              <div class="col-xs-6 no-padding">
+                <b>事前必读:</b><br />
+                ⭐团地入口🔑钥匙一定要提前拿到 <br />
+                ⭐新家钥匙🔑一定随身携带 <br />
+                ⭐空调遥控器务必放在外面  不要打包<br />
+                ⭐冰箱提前3小时断电 里面物品务必清空 <br />
+                ⭐有管理员的建筑最好提前跟管理员打招呼 <br />
+                ⭐预约完成后搬家日前一周以内不能变更日期 希望您能谅解！<br /> 
+                ⭐我们工作人员到之前一定要打包结束 散东西务必装箱！ 箱子务必封口！否则视耽误时间长短追加料金 <br />
+                ⭐我们双方都有法律义务保证契约内容不要有变化   <br />
+                ⭐无论因为什么原因必须要取消  我们都可以表示理解   但是您要支付50%搬家费作为违约金   希望您能谅解(一周内取消80%  一天前取消100%)<br />
+                ⭐由于客人原因造成作业员必须要等30分钟以上开始计费(每人5000/小时)<br />
+                感谢您的合作 我们将尽力给您提供最贴心省心放心的服务！
+              </div>
+              <div class="col-xs-6">
+                <b>子義优势:</b><br />
+                ❤{{ $t('contract.explanation1') }}<br />
+                ❤{{ $t('contract.explanation2') }}<br />
+                ❤{{ $t('contract.explanation3') }}<br />
+                ❤{{ $t('contract.explanation4') }}<br />
+                ❤{{ $t('contract.explanation5') }}<br />
+                ❤{{ $t('contract.explanation6') }}<br />
+                ❤{{ $t('contract.explanation7') }}<br />
+                ❤{{ $t('contract.explanation8') }}
+              </div>
+            </div>
+            <div class="col-xs-4 no-padding" v-if="shopoff20">
               <img src="/images/shop20off240.png" width="240" />
             </div>
           </div>
@@ -329,7 +357,7 @@ export default {
   font-size: 12px;
 }
 .details {
-  margin-bottom: 50px!important;
+  margin-bottom: 25px!important;
   margin-top: 5px;
 }
 .contractleft {

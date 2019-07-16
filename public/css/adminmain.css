@@ -282,3 +282,23 @@ tr.detail-row.open {
         display: block;
     }
 }
+/* fixed sidebar */
+.sidebar {
+    bottom: 50px;
+    position: absolute;
+    width: 230px;
+}
+.main-header .logo{
+    display: none!important;
+}
+.sidebar-collapse .sidebar{
+    width: 50px;
+}
+.sidebar-open .sidebar{
+    width: 230px;
+}
+.navbar-custom-menu>.navbar-nav>li>.dropdown-menu{
+    right: 100px;
+    bottom: 0;
+    top: 0;
+}
