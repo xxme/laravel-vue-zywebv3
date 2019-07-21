@@ -15,7 +15,7 @@
           <!-- box -->
           <div class="box box-widget">
             <!-- box-header -->
-            <div class="box-header with-border">
+            <div class="box-header with-border" v-show="!captureModel">
               <div class="user-block">
                 <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg">
                 <img v-else class="img-circle" src="/images/no-image-available.jpeg">
@@ -31,7 +31,7 @@
                 <button type="button" class="btn btn-box-tool" @click="$emit('copyevent', event.id)">
                   <i class="fa fa-files-o"></i>
                 </button>
-                <button type="button" class="btn btn-box-tool" v-if="!event.expense" @click="contract()">
+                <button type="button" class="btn btn-box-tool" @click="contract()">
                   <i class="fa fa-list-alt"></i>
                 </button>
               </div>
@@ -42,7 +42,7 @@
             <div :class="[event.expense ? 'completedeventbg' : '']">
             <div class="box-body" :data-box="'box' + event.id">
               <h4 class="eventdate">
-                <span :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
+                <span @dblclick="captureModel = !captureModel" :class="[getDateColor(event.event_date) ? getDateColor(event.event_date) == 1 ? 'red' : 'blue' : '']">
                   {{ formatDateWithWeekname(event.event_date) }}
                 </span>
                 
@@ -172,27 +172,28 @@
             <div v-if="event.comments.length > 0" class="box-footer box-comments">
               <div v-for="comment in event.comments" class="box-comment">
                 <!-- User image -->
-                <img v-if="comment.user.profileimg" class="img-circle img-sm" :src="'/uploads/profiles/' + comment.user.profileimg">
-                <img v-else class="img-circle img-sm" src="/images/no-image-available.jpeg">
+                <img v-if="comment.user.profileimg" v-show="!captureModel" class="img-circle img-sm" :src="'/uploads/profiles/' + comment.user.profileimg">
+                <img v-else v-show="!captureModel" class="img-circle img-sm" src="/images/no-image-available.jpeg">
 
                 <div class="comment-text">
-                  <span class="username">
+                  <span class="username" v-show="!captureModel">
                     {{ comment.user.name }} <span class="text-muted">{{ comment.created_at }}</span>
                     <span class="pull-right"><i class="fa fa-trash-o btn-box-tool red" @click="deletecomment(comment.id)"></i></span>
                   </span><!-- /.username -->
-                  {{ comment.content }}
+                  <textarea readonly="readonly" class="form-control" :rows="getRows(comment.content)">{{ comment.content }}</textarea>
                 </div>
                 <!-- /.comment-text -->
               </div>
               <!-- /.box-comment -->
             </div>
             <!-- /.box-footer -->
-            <div class="box-footer">
+            <div class="box-footer" v-show="!captureModel">
               <img v-if="auth.profileimg" class="img-responsive img-circle img-sm" :src="'/uploads/profiles/' + auth.profileimg">
               <img v-else class="img-responsive img-circle img-sm" src="/images/no-image-available.jpeg">
               <!-- .img-push is used to add margin to elements next to floating images -->
               <div class="img-push input-group">
-                <input type="text" class="form-control" :id="'comment' + event.id" :placeholder="$t('event.postcomment')">
+                <textarea class="form-control" :id="'comment' + event.id" rows="4" :placeholder="$t('event.postcomment')">
+                </textarea>
                 <span class="input-group-btn">
                   <button type="button" class="btn btn-info btn-flat" @click="sendcomment(event.id)">{{ $t('global.send') }}</button>
                 </span>
@@ -330,6 +331,7 @@ export default {
       holidays: [],
       showCompleteModal: false,
       showContract: false,
+      captureModel: false,
       completeinfo: {
         eventid: "",
         eventkey: "",
@@ -402,6 +404,10 @@ export default {
       }
 
       return moment(date).format('YYYY年MM月DD日') + ' ' + weekname;
+    },
+    getRows(comment) {
+      var lines = comment.split(/\r*\n/);
+      return lines.length;
     },
     formatNumberJPY(number) {
       if(number) {
@@ -560,6 +566,7 @@ export default {
       }
     },
     contract(id) {
+      this.$i18n.locale = 'ja';
       this.showContract = true;
       $('.marginb5').hide();
       $('.content-header').hide();

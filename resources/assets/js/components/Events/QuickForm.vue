@@ -177,7 +177,7 @@
           </span>
         </div>
         <div class="form-group">
-          <textarea class="form-control" rows="3" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
+          <textarea class="form-control" rows="4" name="comment" v-model="event.comment" :placeholder="$t('event.comment')"></textarea>
         </div>
         <div v-show="hasFile" class='col-xs-12 no-padding'>
           <div class="gallery">
@@ -965,5 +965,8 @@ Vue.component('modal', {
 .label {
   font-size: 13px;
   margin: 1px;
+}
+.xdsoft_datetimepicker .xdsoft_timepicker.active {
+  display: none;
 }
 </style>

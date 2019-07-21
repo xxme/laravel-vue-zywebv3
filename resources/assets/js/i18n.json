@@ -49,7 +49,8 @@
             "estimateslist" : "見積",
             "tasklist" : "任务",
             "recycle" : "回收站",
-            "money": "入金"
+            "money": "入金",
+            "statistics": "收支"
         },
         "quicknav" : {
             "typeofwork" : "工作分类"
@@ -103,9 +104,9 @@
             "shoppingListId": "购物单ID",
             "fromAddress": "出发地",
             "toAddress": "目的地",
-            "comment": "留言",
-            "comments": "条留言",
-            "postcomment": "请输入留言内容",
+            "comment": "特别注意事项",
+            "comments": "条特别注意事项",
+            "postcomment": "请输入特别注意事项内容",
             "eventdate": "预定日期",
             "eventdatefrom": "预定开始日期",
             "eventdateto": "预定结束日期",

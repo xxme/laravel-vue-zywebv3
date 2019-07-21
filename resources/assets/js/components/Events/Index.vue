@@ -19,6 +19,7 @@
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
           <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
           <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
+          <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" v-show="showCalendarFlag" @click="showstatistics(true)"><i class="fa fa-usd"></i> {{ $t('nav.statistics') }}</button>
           <span v-show="!showEventItem && !showformflag" class="pull-right">
             <div class="switchestimates">
               <input id="switchestimates" v-model="switchEstimates" type="checkbox">
@@ -26,79 +27,19 @@
             </div>
           </span>
         </div>
-        <div class="nav-tabs-custom" v-show="!showformflag && showCalendarFlag">
+        <div class="nav-tabs-custom" v-show="!showformflag && !showStatisticsFlag && showCalendarFlag">
           <div class="tab-content">
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
-              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showatte="atteformswitch(true)" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
+              <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showstatistics="showstatistics(true)" @showatte="atteformswitch(true)" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
             </div>
-            <!-- /.tab-pane -->
-            <div class="tab-pane" id="statistics" v-if="auth && auth.group_id == 1">
-              <!-- statistics -->
-              <div class="box-header">
-                <h3 class="box-title"><button type="button" class="btn btn-sm btn-default" @click.native="statisticsSwitch(false)"><i class="fa fa-arrow-left"></i></button> {{ showYm }}{{ $t('finance.finance') }}</h3>
-              </div>
-              <table class="table table-striped">
-                <tbody>
-                  <tr v-if="fee.finance.total || fee.finance.expenditure">
-                    <td style="width: 50%">{{ $t('finance.total') }}:{{ fee.finance.total | formatNumberJPY }}</td>
-                    <td>{{ $t('finance.expenditure') }}:{{ fee.finance.expenditure | formatNumberJPY }}</td>
-                  </tr>
-                  <tr v-if="fee.finance.zcgaosu || fee.finance.zcjiayou">
-                    <td>{{ $t('finance.zcgaosu') }}:{{ fee.finance.zcgaosu | formatNumberJPY }}</td>
-                    <td>{{ $t('finance.zcjiayou') }}:{{ fee.finance.zcjiayou | formatNumberJPY }}</td>
-                  </tr>
-                  <tr v-if="fee.finance.zctingche || fee.finance.zccanyin">
-                    <td>{{ $t('finance.zctingche') }}:{{ fee.finance.zctingche | formatNumberJPY }}</td>
-                    <td>{{ $t('finance.zccanyin') }}:{{ fee.finance.zccanyin | formatNumberJPY }}</td>
-                  </tr>
-                  <tr v-if="fee.finance.zcmaihuo || fee.finance.zcother">
-                    <td>{{ $t('finance.zcmaihuo') }}:{{ fee.finance.zcmaihuo | formatNumberJPY }}</td>
-                    <td>{{ $t('finance.zcother') }}:{{ fee.finance.zcother | formatNumberJPY }}</td>
-                  </tr>
-                  <tr v-if="fee.finance.fxjpy || fee.finance.fxrmb">
-                    <td>{{ $t('event.fxjpy') }}:{{ fee.finance.fxjpy | formatNumberJPY }}</td>
-                    <td>{{ $t('event.fxrmb') }}:{{ fee.finance.fxrmb | formatNumberJPY }}</td>
-                  </tr>
-                  <tr>
-                    <td v-if="fee.finance.undone" colspan="2">{{ $t('finance.undone') }}:{{ fee.finance.undone | formatNumberJPY }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="box-header">
-                <h3 class="box-title">{{ showYm }}{{ $t('finance.proceeds') }}</h3>
-              </div>
-              <table class="table table-striped">
-                <tbody>
-                  <tr>
-                    <th style="width: 50px">{{ $t('finance.ranking') }}</th>
-                    <th style="width: 150px">{{ $t('finance.name') }}</th>
-                    <th>{{ $t('finance.amount') }}</th>
-                    <th>{{ $t('finance.completed') }}</th>
-                    <th style="width: 80px">{{ $t('finance.percentage') }}</th>
-                  </tr>
-                  <tr v-for="(user, key) in orderedFeeUsers" :key="user.id">
-                    <td :class="'medals'+key"><span v-if="key > 2">{{ key + 1}}.</span><span v-else>.</span></td>
-                    <td>
-                      <img v-if="user.profileimg" class="img-circle" width="30" :src="'/uploads/profiles/' + user.profileimg"> 
-                      <img v-else class="img-circle" width="30" src="/images/no-image-available.jpeg"> 
-                      {{ user.name }}
-                    </td>
-                    <td>{{ user.total | formatNumberJPY }}</td>
-                    <td>{{ user.completed | formatNumberJPY }}</td>
-                    <td><span :class="['badge', { 'bg-red': key == 0, 'bg-light-blue': key == 1, 'bg-green': key == 2, '': key > 2 }]">{{ percentage(user.total) }}</span></td>
-                  </tr>
-                </tbody>
-              </table>
-              <!-- ./statistics -->
-            </div>
-            <!-- /.tab-pane -->
           </div>
           <!-- /.tab-content -->
         </div>
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
         <attendance v-if="showAtteFlag" :userlist="user_list" @showform="atteformswitch(true)" @closeform="atteformswitch(false)"></attendance>
+        <statistics v-if="showStatisticsFlag" :fee="fee" :showYm="showYm" @closeform="showstatistics(false)"></statistics>
       </section>
     </div>
     <loading :loadingShow="loadingShow"></loading>
@@ -112,6 +53,7 @@ import Loading from '../Public/Loading'
 import QuickForm from './QuickForm.vue';
 import Attendance from './Attendance.vue';
 import EventItem from './EventItem.vue';
+import Statistics from './Statistics.vue'
 
 export default {
   mounted() {
@@ -138,6 +80,7 @@ export default {
       showEventItem: false,
       showformflag: false,
       showAtteFlag: false,
+      showStatisticsFlag: false,
       loadingShow: false,
       showCalendarFlag: true,
       switchEstimates: true,
@@ -173,7 +116,8 @@ export default {
     EventItem,
     Loading,
     Attendance,
-    QuickForm
+    QuickForm,
+    Statistics
   },
   methods: {
     get_events(ym, ymd = "") {
@@ -199,6 +143,9 @@ export default {
             this.setEvents();
           }
           this.setFee();
+          if (this.auth && this.auth.group_id != 1) {
+            $('.fc-statisticsButton-button').hide();
+          }
           this.loadingShow = false;
       })
     },
@@ -740,6 +687,9 @@ export default {
         this.checkCountShowList();
       }
       this.showformflag = showorhide;
+    },
+    showstatistics(showorhide) {
+      this.showStatisticsFlag = showorhide;
     }
   },
   filters: {
@@ -796,7 +746,7 @@ Vue.component('todo', {
       height: 1000,
       contentHeight: 1000,
       header: {
-        left: 'title statisticsButton createEventButton batchEventButton reloadEventsButton',
+        left: 'title createEventButton batchEventButton reloadEventsButton',
         right: 'month agendaDay today prev,next'
       },
       // 日付クリックイベント
@@ -846,12 +796,6 @@ Vue.component('todo', {
           icon: 'fa fa fa-refresh',
           click: function() {
             self.$emit('reload');
-          }
-        },
-        statisticsButton: {
-          icon: 'fa fa fa-usd',
-          click: function() {
-            self.statisticsSwitch(true);
           }
         }
       }

@@ -6,12 +6,12 @@
         <div class="box-header with-border no-padding">
           <div class="col-xs-12 controldiv">
             <label>
-              <input type="radio" name="language" value="cn" v-model="language">
-              <img src="/images/china.png" width="26" />
-            </label>
-            <label>
               <input type="radio" name="language" value="ja" v-model="language">
               <img src="/images/japan.png" width="26" />
+            </label>
+            <label>
+              <input type="radio" name="language" value="cn" v-model="language">
+              <img src="/images/china.png" width="26" />
             </label>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <label>
@@ -137,15 +137,20 @@
               <span v-for="carefulname in event.carefulnames"><i class="fa fa-exclamation-triangle"></i> {{ carefulname }} </span>
             </div>
             <div class="col-xs-12 no-padding amount" v-if="event.amount">
+              <h5 v-if="pagetype == 2">
+                下记の通り、<span class="underline">{{ name }}</span>ご請求申し上げます。
+              </h5>
               <h5>
                 <span v-if="event.amount" class="marginr3"><b>{{ amounttext }}{{ event.amount | formatNumberJPY }}{{ $t('contract.taxincluded') }}</b></span>
               </h5>
-              <hr />
-              <h5><u>{{ $t('contract.comments') }}:</u></h5>
-              <h5 v-for="comment in event.comments">{{ comment.content }}</h5>
-              <hr />
+              <div v-if="pagetype != 2">
+                <hr />
+                <h5><u>{{ $t('contract.comments') }}:</u></h5>
+                <h5 v-for="comment in event.comments">{{ comment.content }}</h5>
+                <hr />
+              </div>
             </div>
-            <div class="col-xs-8 no-padding" v-if="pagetype == 1 || pagetype == 2">
+            <div class="col-xs-8 no-padding" v-if="pagetype == 1">
               <b>子義优势:</b><br />
               ❤{{ $t('contract.explanation1') }}<br />
               ❤{{ $t('contract.explanation2') }}<br />
@@ -213,7 +218,7 @@
       </div>
       <div class="inputs col-xs-6 form-horizontal controldiv">
         <div class="form-group">
-          <label for="inputname" class="col-sm-2 control-label">御中人</label>
+          <label for="inputname" class="col-sm-2 control-label">客户名称</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" id="inputname" v-model="name">
           </div>
@@ -231,7 +236,7 @@ export default {
   props: ['eventdata'],
   data() {
     return {
-      language: "cn",
+      language: "ja",
       pagetype: 1,
       title: this.$t('contract.quotation'),
       amounttext: this.$t('contract.amount'),

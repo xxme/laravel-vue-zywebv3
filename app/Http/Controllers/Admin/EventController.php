@@ -211,7 +211,7 @@ class EventController extends Controller
             $objEventDetail->to_elevator = $inputs['to']['elevator'];
             $objEventDetail->to_floor = $inputs['to']['floors'];
             $objEventDetail->to_btype = $inputs['to']['btype'];
-            $objEventDetail->phone = $inputs['phone'];
+            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)/', '', mb_convert_kana($inputs['phone'], "n"));
             $objEventDetail->wechat = $inputs['wechat'];
             $objEventDetail->save();
             if(!empty($inputs['comment'])){
@@ -339,7 +339,7 @@ class EventController extends Controller
             $objEventDetail->to_elevator = $inputs['to']['elevator'];
             $objEventDetail->to_floor = $inputs['to']['floors'];
             $objEventDetail->to_btype = $inputs['to']['btype'];
-            $objEventDetail->phone = $inputs['phone'];
+            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)/', '', mb_convert_kana($inputs['phone'], "n"));
             $objEventDetail->wechat = $inputs['wechat'];
             $objEventDetail->save();
             if(!empty($inputs['comment'])){
