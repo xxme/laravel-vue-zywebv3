@@ -26,6 +26,7 @@
         </tr>
         @if($types)
           @foreach ($types as $type)
+            @if($type->status == 1)
             <tr>
               <td>{{ $type->id }}</td>
               <td>
@@ -36,6 +37,7 @@
               </td>
               <td>@if($type->status == 1)<span class="label label-success" id="label{{ $type->id }}" onclick="changestatus('{{ $type->id }}', 2)">{{__('messages.available')}} @else <span class="label label-danger" id="label{{ $type->id }}" onclick="changestatus('{{ $type->id }}', 1)">{{__('messages.unavailable')}} @endif</span></td>
             </tr>
+            @endif
           @endforeach
         @endif
       </tbody></table>

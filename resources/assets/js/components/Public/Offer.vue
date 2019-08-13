@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper wrapper-style2 wlast">
-    <template v-if="!reservationNo">
+    <template v-if="!reservationNo && !disabled">
     <article id="contact">
       <header>
         <h2 v-if="step < 4">亲,一分钟搞定</h2>
@@ -1096,13 +1096,23 @@
       </fieldset>
     </article>
     </template>
-    <div v-else class="col-xs-12 text-center">
+    <div v-else-if="!disabled" class="col-xs-12 text-center">
       <h2 class="colory">亲 您辛苦了</h2>
       <span>我们立志于帮您解决问题,打造一站式服务。</span>
       <p>You need We can.</p>
       <h2 class="colory">您的预约编号<br /><span style="color: #4abcc5;font-size: 40px">{{ reservationNo }}</span></h2>
       <h4 style="margin-top: 40px">稍等一下哈,我们的小伙伴马上就会跟您联系.</h4>
       <p style="margin-bottom: 120px">客服直通电话:<a href="tel:080-4188-3379">080-4188-3379</a>  感谢您选择子義駅</p>
+    </div>
+    <div v-else class="col-xs-12 text-center">
+      <br /><br />
+      <h2 class="colory">感谢您的关注</h2>
+      <p>由于网络估价会存在很多误差</p>
+      <p>所以公司目前暂时关闭在线估价系统</p>
+      <p>子義合同会社</p>
+      <h4 style="margin-top: 40px">您可以跟我们的客服人员联系</h4>
+      <p>08041883379 微信ziyijiazheng</p>
+      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
     </div>
     <loading :loadingShow="loadingShow"></loading>
   </div>
@@ -1127,6 +1137,7 @@ export default {
     return {
       step: 1,
       gotonext: this.$t('offer.gonext'),
+      disabled: true,
       loadingShow: false,
       reservationNo: "",
       floors: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '30', '40', '50'],

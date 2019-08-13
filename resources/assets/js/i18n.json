@@ -140,7 +140,12 @@
             "Friday": "星期五",
             "Saturday": "星期六",
             "Sunday": "星期日",
-            "listWellBeDel": "注意:关联的购物单也将会被删除."
+            "listWellBeDel": "注意:关联的购物单也将会被删除.",
+            "search": "搜索",
+            "clearSearch": "清空",
+            "clearSearchConfirm": "确认清空检索条件吗?",
+            "noKeyOrFrom": "请输入关键词和检索开始时间后再试",
+            "noDataFind": "没能找到任何相关日程"
         },
         "finance": {
             "thismonth": "本月",

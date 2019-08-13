@@ -15,8 +15,8 @@
           <!-- box -->
           <div class="box box-widget">
             <!-- box-header -->
-            <div class="box-header with-border" v-show="!captureModel">
-              <div class="user-block">
+            <div class="box-header with-border">
+              <div class="user-block" v-show="!captureModel">
                 <img v-if="event.user.profileimg" class="img-circle" :src="'/uploads/profiles/' + event.user.profileimg">
                 <img v-else class="img-circle" src="/images/no-image-available.jpeg">
                 <span class="username">{{ event.user.name }}</span>
@@ -28,6 +28,9 @@
               </div>
               <!-- /.user-block -->
               <div class="box-tools">
+                <button type="button" class="btn btn-box-tool" @click="captureModel = !captureModel">
+                  <i class="fa fa-eye-slash"></i>
+                </button>
                 <button type="button" class="btn btn-box-tool" @click="$emit('copyevent', event.id)">
                   <i class="fa fa-files-o"></i>
                 </button>

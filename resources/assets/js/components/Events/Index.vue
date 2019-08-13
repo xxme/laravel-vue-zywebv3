@@ -32,6 +32,32 @@
             <!-- /.tab-pane -->
             <div class="active tab-pane" id="topcalendar">
               <todo :events="eventDataSources" :showCompleted="showCompleted" :switchEstimates="switchEstimates" :showYmd="showYmd" :holidays="holidays" @updateym="updateym" @update-events="get_events" @showform="quickformswitch" @showstatistics="showstatistics(true)" @showatte="atteformswitch(true)" @showitem="showitem" @reload="reloadEvents" id="calendartodo"></todo>
+              
+              <div class="box-body col-xs-12" style="float:none">
+                <div class="form-group col-xs-6" style="line-height: 35px;">
+                  <label for="inputSearch" class="col-sm-2 control-label">{{ $t('event.search') }}</label>
+                  <div class="col-sm-7">
+                    <input type="text" class="form-control" id="inputSearch" v-model="keyword" placeholder="Key word">
+                  </div>
+                </div>
+                <div class="form-group col-xs-6">
+                  <div class="col-sm-10">
+                    <div class="col-sm-5">
+                      <input type="text" id="searchFrom" v-model="searchFrom" />
+                    </div>
+                    <div class="col-sm-1"> 
+                      〜
+                    </div> 
+                    <div class="col-sm-5">
+                      <input type="text" id="searchTo" v-model="searchTo" />
+                    </div>
+                  </div>
+                  <span class="input-group-btn col-sm-2">
+                    <button type="button" class="btn btn-default" @click="clearSearch">{{ $t('event.clearSearch') }}</button>
+                    <button type="button" class="btn btn-info" @click="searchGo">{{ $t('event.search') }}</button>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <!-- /.tab-content -->
@@ -39,7 +65,7 @@
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
         <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
         <attendance v-if="showAtteFlag" :userlist="user_list" @showform="atteformswitch(true)" @closeform="atteformswitch(false)"></attendance>
-        <statistics v-if="showStatisticsFlag" :fee="fee" :showYm="showYm" @closeform="showstatistics(false)"></statistics>
+        <statistics v-if="showStatisticsFlag" :fee="fee" :showYm="showYm" :LastYearSales="LastYearSales" :ThisYearSales="ThisYearSales" @closeform="showstatistics(false)"></statistics>
       </section>
     </div>
     <loading :loadingShow="loadingShow"></loading>
@@ -54,10 +80,12 @@ import QuickForm from './QuickForm.vue';
 import Attendance from './Attendance.vue';
 import EventItem from './EventItem.vue';
 import Statistics from './Statistics.vue'
+import datetimepicker from 'jquery-datetimepicker'
 
 export default {
   mounted() {
     this.get_formtypes()
+    this.setDatePicker()
   },
   data() {
     return {
@@ -86,6 +114,11 @@ export default {
       switchEstimates: true,
       showYmd: moment().format('YYYY-MM-DD'),
       showYm: moment().format('YYYY年MM月'),
+      searchFrom: "",
+      searchTo: "",
+      keyword: "",
+      LastYearSales: [],
+      ThisYearSales: [],
       formoptions: {
         worktype: [],
         careful: [],
@@ -689,7 +722,147 @@ export default {
       this.showformflag = showorhide;
     },
     showstatistics(showorhide) {
-      this.showStatisticsFlag = showorhide;
+      if(showorhide && this.LastYearSales.length == 0) {
+        this.loadingShow = true;
+        this.$http({
+          url: '/admin/events/getsales/1',
+          method: 'GET'
+        }).then(res =>  {
+          for (var i = 1; i < 13; i++) {
+            this.LastYearSales.push(res.data.lastyear[i]);
+            this.ThisYearSales.push(res.data.thisyear[i]);
+          }
+          this.loadingShow = false;
+          this.showStatisticsFlag = showorhide;
+        })
+      } else {
+        this.showStatisticsFlag = showorhide;
+      }
+    },
+    setDatePicker() {
+      const self = this
+ 
+      $.datetimepicker.setLocale('zh')
+      $('#searchFrom').datetimepicker({dayOfWeekStart: 1, timepicker:false, format:'Y-m-d'})
+      $('#searchTo').datetimepicker({dayOfWeekStart: 1, timepicker:false, format:'Y-m-d'})
+      $('#searchFrom').on('change', (e) => {
+        if($(e.target).val() != ''){
+          self.searchFrom = moment($(e.target).val()).format('YYYY-MM-DD')
+        } else {
+          self.searchFrom = '';
+        }
+      })
+      $('#searchTo').on('change', (e) => {
+        if($(e.target).val() != ''){
+          self.searchTo = moment($(e.target).val()).format('YYYY-MM-DD')
+        } else {
+          self.searchTo = '';
+        }
+      })
+    },
+    clearSearch() {
+      var message = this.$t('event.clearSearchConfirm');
+      if(window.confirm(message)) {
+        this.searchFrom = "";
+        this.searchTo = "";
+        this.keyword = "";
+        // this.reloadEvents();
+      }
+    },
+    searchGo() {
+      if (!this.keyword || !this.searchFrom) {
+        alert(this.$i18n.t('event.noKeyOrFrom'));
+      } else {
+        this.loadingShow = true;
+        var formData = new FormData();
+        formData.append("keyword", this.keyword);
+        formData.append("from", this.searchFrom);
+        formData.append("to", this.searchTo);
+        this.$http.post('/admin/event/search', formData).then(response => {
+          if (response.data.events.length > 0) {
+            var responsedata = response.data;
+            var filterdata = [];
+            for(var index in response.data.events) {
+              var eventid = "";
+              for(var cf in response.data.events[index].carefulnames) {
+                if (eventid == "" && response.data.events[index].carefulnames[cf].indexOf(this.keyword) !== -1) {
+                  filterdata.push(response.data.events[index]);
+                  eventid = response.data.events[index].id;
+                }
+              }
+              if (eventid == "") {
+                for(var cm in response.data.events[index].comments) {
+                  if (eventid == "" && response.data.events[index].comments[cm].content.indexOf(this.keyword) !== -1) {
+                    filterdata.push(response.data.events[index]);
+                    eventid = response.data.events[index].id;
+                  }
+                }
+              }
+
+              if (eventid == "") {
+                if ((response.data.events[index].details.from_address &&
+                    response.data.events[index].details.from_address.indexOf(this.keyword) !== -1)
+                    || (response.data.events[index].details.to_address && 
+                    response.data.events[index].details.to_address.indexOf(this.keyword) !== -1)
+                    || (response.data.events[index].details.phone &&
+                    response.data.events[index].details.phone.indexOf(this.keyword) !== -1)
+                    || (response.data.events[index].details.wechat &&
+                    response.data.events[index].details.wechat.indexOf(this.keyword) !== -1)) {
+                  filterdata.push(response.data.events[index]);
+                  eventid = response.data.events[index].id;
+                }
+              }
+              if (eventid == "") {
+                for(var gd in response.data.events[index].goods) {
+                  if (eventid == "" && response.data.events[index].goods[gd].indexOf(this.keyword) !== -1) {
+                    filterdata.push(response.data.events[index]);
+                    eventid = response.data.events[index].id;
+                  }
+                }
+              }
+              if (eventid == "") {
+                for(var tt in response.data.events[index].totalname) {
+                  if (eventid == "" && response.data.events[index].totalname[tt].indexOf(this.keyword) !== -1) {
+                    filterdata.push(response.data.events[index]);
+                    eventid = response.data.events[index].id;
+                  }
+                }
+              }
+              if (eventid == "") {
+                for(var tn in response.data.events[index].typenames) {
+                  if (eventid == "" && response.data.events[index].typenames[tn].indexOf(this.keyword) !== -1) {
+                    filterdata.push(response.data.events[index]);
+                    eventid = response.data.events[index].id;
+                  }
+                }
+              }
+              if (eventid == "") {
+                if (response.data.events[index].user.name.indexOf(this.keyword) !== -1) {
+                  filterdata.push(response.data.events[index]);
+                  eventid = response.data.events[index].id;
+                }
+              }
+              if (eventid == "") {
+                if (response.data.events[index].amount == this.keyword) {
+                  filterdata.push(response.data.events[index]);
+                  eventid = response.data.events[index].id;
+                }
+              }
+            }
+            if (filterdata.length > 0) {
+              this.show_list = filterdata;
+              this.checkCountShowList();
+              window.scrollTo(0,0);
+            } else {
+              alert(this.$i18n.t('event.noDataFind'));
+            }
+          } else {
+            alert(this.$i18n.t('event.noDataFind'));
+          }
+
+          this.loadingShow = false;
+        })
+      }
     }
   },
   filters: {
@@ -716,11 +889,11 @@ export default {
     toBiggerImg(filename) {
       return filename.replace("_thumb", "");
     }
-  },
-  computed: {
-    orderedFeeUsers: function () {
-        return _.orderBy(this.fee.users, 'total', 'desc')
-    }
+  // },
+  // computed: {
+  //   orderedFeeUsers: function () {
+  //       return _.orderBy(this.fee.users, 'total', 'desc')
+  //   }
   }
 }
 

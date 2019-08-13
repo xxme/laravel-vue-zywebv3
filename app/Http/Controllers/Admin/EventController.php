@@ -25,16 +25,47 @@ class EventController extends Controller
      */
     public function index($ym)
     {
-        $init['events'] = Event::where('event_date', 'LIKE', "$ym%")
-            ->orderBy('event_date', 'ASC')
-            ->orderBy('status', 'ASC')
-            ->orderBy('apm', 'ASC')
-            ->orderBy('id', 'ASC')
-            ->with(['comments' => function ($query) {
-                $query->with('user');
-            }, 'expense' => function ($query) {
-                $query->with('user');
-            }, 'user', 'details', 'productlist', 'deposit'])->get();
+        $user = auth()->user();
+        $detailswhere = [
+            ['carefully', 'LIKE', '%']
+        ];
+        if($user->group_id == 6) {
+            $user->group_id = null;
+            $detailswhere = [
+                ['carefully', 'NOT LIKE', '%"130"%']
+            ];
+        }
+
+        $whereData = [
+            ['event_date', 'LIKE', "$ym%"]
+        ];
+        $ymd = explode("-", $ym);
+        $fromto = explode("|", $ym);
+        if(count($fromto) > 1){
+            //From - To
+            $whereData = [
+                ['event_date', '>=', "$fromto[0]"],
+                ['event_date', '<=', "$fromto[1]"]
+            ];
+        } else if (count($ymd) > 2) {
+            $whereData = [
+                ['event_date', '>=', "$ym"]
+            ];
+        }
+
+        $init['events'] = Event::where($whereData)
+        ->whereHas('details', function ($query) use ($detailswhere) {
+            $query->where($detailswhere);
+        })
+        ->orderBy('event_date', 'DESC')
+        // ->orderBy('status', 'ASC')
+        ->orderBy('apm', 'ASC')
+        // ->orderBy('id', 'ASC')
+        ->with(['comments' => function ($query) {
+            $query->with('user');
+        }, 'expense' => function ($query) {
+            $query->with('user');
+        }, 'user', 'details', 'productlist', 'deposit'])->get();
         $types = Type::get(['id', 'name']);
         foreach($types as $type) {
             $typeArray[$type->id] = $type->name;
@@ -69,11 +100,93 @@ class EventController extends Controller
             }
         }
 
-        $init['auth'] = auth()->user();
-        $init['users'] = User::where('group_id', '<', 3)->get(['id', 'name', 'profileimg']);
+        $init['auth'] = $user;
+        $init['users'] = User::where('group_id', '<', 3)->orWhere('group_id', '=', 6)
+            ->get(['id', 'name', 'profileimg']);
         $init['holidays'] = $this->getHolidays($ym);
         
         return $init;
+    }
+
+    /**
+     * get events with area.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function search(Request $request) {
+        $fromto = "";
+        if ($request->from) {
+            $fromto = $request->from;
+        }
+        if ($request->to) {
+            $fromto .= "|" . $request->to;
+        }
+        $objEvent = $this->index($fromto);
+
+        return response()->json($objEvent);
+    }
+
+    public function getsales() {
+        $dt = Carbon::today();
+        $whereData = [
+            ['event_date', '>=', $dt->subYear()->year.'-01-01'],
+            ['event_date', '<=', $dt->addYear()->year.'-12-31']
+        ];
+        $events = Event::where($whereData)
+        ->whereHas('expense')
+        ->orderBy('event_date', 'ASC')
+        ->with(['deposit', 'expense'])->get();
+        $sales['lastyear'][1] = 
+        $sales['lastyear'][2] = 
+        $sales['lastyear'][3] = 
+        $sales['lastyear'][4] = 
+        $sales['lastyear'][5] = 
+        $sales['lastyear'][6] = 
+        $sales['lastyear'][7] = 
+        $sales['lastyear'][8] = 
+        $sales['lastyear'][9] = 
+        $sales['lastyear'][10] = 
+        $sales['lastyear'][11] = 
+        $sales['lastyear'][12] = 
+        $sales['thisyear'][1] = 
+        $sales['thisyear'][2] = 
+        $sales['thisyear'][3] = 
+        $sales['thisyear'][4] = 
+        $sales['thisyear'][5] = 
+        $sales['thisyear'][6] = 
+        $sales['thisyear'][7] = 
+        $sales['thisyear'][8] = 
+        $sales['thisyear'][9] = 
+        $sales['thisyear'][10] = 
+        $sales['thisyear'][11] = 
+        $sales['thisyear'][12] = 0;
+        foreach($events as $key=>$event) {
+            $eventdt = new Carbon($event->event_date);
+            //定金
+            if ($event->deposit && $event->deposit->jpy > 0) {
+                $dt = Carbon::today();
+                //去年
+                if ($eventdt->year == $dt->subYear()->year) {
+                    $sales['lastyear'][$eventdt->month] += $event->deposit->jpy;
+                } else {
+                    $sales['thisyear'][$eventdt->month] += $event->deposit->jpy;
+                }
+            }
+
+            //最终收款
+            if ($event->expense && $event->expense->finalprice > 0) {
+                $dt = Carbon::today();
+                //去年
+                if ($eventdt->year == $dt->subYear()->year) {
+                    $sales['lastyear'][$eventdt->month] += $event->expense->finalprice;
+                } else {
+                    // echo $eventdt->month;
+                    $sales['thisyear'][$eventdt->month] += $event->expense->finalprice;
+                }
+            }
+        }
+        return response()->json($sales);
     }
 
     public function item($id)
@@ -339,7 +452,7 @@ class EventController extends Controller
             $objEventDetail->to_elevator = $inputs['to']['elevator'];
             $objEventDetail->to_floor = $inputs['to']['floors'];
             $objEventDetail->to_btype = $inputs['to']['btype'];
-            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)/', '', mb_convert_kana($inputs['phone'], "n"));
+            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)| |　/', '', mb_convert_kana($inputs['phone'], "n"));
             $objEventDetail->wechat = $inputs['wechat'];
             $objEventDetail->save();
             if(!empty($inputs['comment'])){

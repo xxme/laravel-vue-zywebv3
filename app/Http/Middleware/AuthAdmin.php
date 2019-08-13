@@ -17,7 +17,7 @@ class AuthAdmin
     public function handle($request, Closure $next)
     {
         if(auth()->guard('web')->check()){
-            if(Auth::user()->group_id > 2){
+            if(Auth::user()->group_id > 2 && Auth::user()->group_id != 6){
                 return redirect('/admin/login');
             }
             return $next($request);

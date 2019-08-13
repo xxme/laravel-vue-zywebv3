@@ -31,30 +31,23 @@
                 </tr>
             </tbody>
         </table>
-        <div class="box-header">
-            <h3 class="box-title">{{ showYm }}{{ $t('finance.proceeds') }}</h3>
+        <div>
+            <chart-component :LastYearSales="LastYearSales" :ThisYearSales="ThisYearSales"  />
         </div>
-        <table class="table table-striped">
-            <tbody>
-                <tr>
-                    <th style="width: 50px">{{ $t('finance.ranking') }}</th>
-                    <th style="width: 150px">{{ $t('finance.name') }}</th>
-                    <th>{{ $t('finance.amount') }}</th>
-                    <th>{{ $t('finance.completed') }}</th>
-                    <th style="width: 80px">{{ $t('finance.percentage') }}</th>
-                </tr>
-            </tbody>
-        </table>
         <!-- ./statistics -->
     </div>
 </template>
 <script>
 import Vue from 'vue'
+import LineChart from './LineChart'
 
 export default {
-    props: ['fee', 'showYm'],
+    props: ['fee', 'showYm', 'LastYearSales', 'ThisYearSales'],
     mounted() {
         var self = this;
+    },
+    components: {
+        LineChart
     },
     data() {
         return {
@@ -70,4 +63,5 @@ export default {
         }
     }
 }
+Vue.component('chart-component', LineChart)
 </script>

@@ -49,6 +49,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
 
         // get
         Route::get('/events/{ym}', 'EventController@index');
+        Route::get('/events/getsales/{id}', 'EventController@getsales');
         Route::get('/events/finances/{type}', 'EventController@finances');
         Route::get('/event/showbycontract/{id}', 'EventController@showbycontract');
         Route::get('/event/item/{id}', 'EventController@item');
@@ -78,6 +79,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/event/complete', 'EventController@complete');
         Route::post('/event/received', 'EventController@setReceived');
         Route::post('/event/batchattendance', 'EventController@batchAttendance');
+        Route::post('/event/search', 'EventController@search');
     });
     // Route::post('logout', 'LoginController@logout');
 });

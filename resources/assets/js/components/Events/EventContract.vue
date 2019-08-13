@@ -138,7 +138,7 @@
             </div>
             <div class="col-xs-12 no-padding amount" v-if="event.amount">
               <h5 v-if="pagetype == 2">
-                下记の通り、<span class="underline">{{ name }}</span>ご請求申し上げます。
+                下记の通り、<span class="underline">{{ byname }}</span>ご請求申し上げます。
               </h5>
               <h5>
                 <span v-if="event.amount" class="marginr3"><b>{{ amounttext }}{{ event.amount | formatNumberJPY }}{{ $t('contract.taxincluded') }}</b></span>
@@ -197,13 +197,6 @@
               {{ $t('contract.commission') }}
             </div>
             <div class="col-xs-6 no-padding">
-              <b>{{ $t('contract.payee1') }}</b><br />
-              ゆうちょ銀行<br />
-              支店名:ゼロゼロハチ　店番:008<br />
-              記号:10010　番号:5221385<br />
-              名義:コヨシ（ド　普通預金
-            </div>
-            <div class="col-xs-6 no-padding">
               <b>{{ $t('contract.payee2') }}</b><br />
               三菱UFJ銀行<br />
               支店名:王子駅前支店　店番:763<br />
@@ -221,6 +214,14 @@
           <label for="inputname" class="col-sm-2 control-label">客户名称</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" id="inputname" v-model="name">
+          </div>
+        </div>
+      </div>
+      <div class="inputs col-xs-6 form-horizontal controldiv" v-show="pagetype == 2">
+        <div class="form-group">
+          <label for="byname" class="col-sm-2 control-label">请求名义</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="byname" v-model="byname">
           </div>
         </div>
       </div>
@@ -250,6 +251,7 @@ export default {
         details: {}
       },
       name: "",
+      byname: "",
       total: 0
     }
   },

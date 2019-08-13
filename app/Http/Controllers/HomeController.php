@@ -28,6 +28,7 @@ class HomeController extends Controller
         switch ($user->group_id) {
             case 1:
             case 2:
+            case 6:
                 return redirect('admin');
                 break;
             default:
