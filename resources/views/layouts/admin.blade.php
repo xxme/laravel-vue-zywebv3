@@ -19,7 +19,7 @@
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="/dist/css/skins/skin-blue.min.css">
   <!-- admin main -->
-  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.2.2c">
+  <link rel="stylesheet" href="/css/adminmain.css?v=3.1.2.2d">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -47,7 +47,7 @@
           <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
             <span class="sr-only">Toggle navigation</span>
           </a>
-          <span class="version">V3.2.1</span>
+          <span class="version">V3.3.2</span>
 
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
@@ -91,7 +91,7 @@
 
       <!-- /.control-sidebar -->
     </div>
-    <script src="{{ mix('js/app.js') }}?v=3.2.0bb"></script>
+    <script src="{{ mix('js/app.js') }}?v=3.3.2"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.min.js') }}"></script> 
     <script src="{{ asset('/js/datetimepicker/jquery.datetimepicker.full.min.js') }}"></script> 

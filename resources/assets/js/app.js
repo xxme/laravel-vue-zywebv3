@@ -27,6 +27,11 @@ import Offer from './components/Public/Offer.vue';
  */
 
 Vue.prototype.$http = axios;
+Vue.prototype.FatalError = function (response){
+    this.$http.post('/admin/savelog', response).then().catch(error => {
+        console.log(error.response.data.message);
+    });
+}
 Vue.use(VueRouter);
 Vue.use(VueI18n);
 // Vue.component('example-component', require('./components/ExampleComponent.vue'));

@@ -33,3 +33,4 @@ public/js/bootstrap/
 public/js/app.js
 
 storage/framework/cache/data/*
+config/database.php

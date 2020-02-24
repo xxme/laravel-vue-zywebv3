@@ -8,7 +8,7 @@
             <tbody>
                 <tr v-if="fee.finance.total || fee.finance.expenditure">
                     <td style="width: 50%">{{ $t('finance.total') }}:{{ fee.finance.total | formatNumberJPY }}</td>
-                    <td>{{ $t('finance.expenditure') }}:{{ fee.finance.expenditure | formatNumberJPY }}</td>
+                    <td>{{ $t('finance.undone') }}:{{ fee.finance.undone | formatNumberJPY }}</td>
                 </tr>
                 <tr v-if="fee.finance.zcgaosu || fee.finance.zcjiayou">
                     <td>{{ $t('finance.zcgaosu') }}:{{ fee.finance.zcgaosu | formatNumberJPY }}</td>
@@ -27,7 +27,7 @@
                     <td>{{ $t('event.fxrmb') }}:{{ fee.finance.fxrmb | formatNumberJPY }}</td>
                 </tr>
                 <tr>
-                    <td v-if="fee.finance.undone" colspan="2">{{ $t('finance.undone') }}:{{ fee.finance.undone | formatNumberJPY }}</td>
+                    <td v-if="fee.finance.expenditure" colspan="2">{{ $t('finance.expenditure') }}:{{ fee.finance.expenditure | formatNumberJPY }}</td>
                 </tr>
             </tbody>
         </table>

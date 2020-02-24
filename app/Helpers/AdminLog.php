@@ -19,7 +19,7 @@ class AdminLog
      * @param  string  $details
      * @return $obj->id or false
      */
-    public static function saveWithLog($obj, $type, $log_type) {
+    public static function saveWithLog($obj, $type, $log_type, $updatedcontent = array()) {
         if($obj->save()) {
             $log = [];
             $log['obj_id'] = $obj->id;
@@ -29,10 +29,15 @@ class AdminLog
             $details['method'] = Request::method();
             $details['ip'] = Request::ip();
             $details['agent'] = Request::header('user-agent');
+            $details['details'] = $obj;
             $log['user_id'] = auth()->user()->id;
             $log['details'] = json_encode($details);
-            if($type == config('const.log_event')) {
-                $log['content'] = $obj->event_date;
+            if($type == config('const.log_event') || $type == config('const.log_event_detail') ) {
+                if ($log_type == config('const.log_action_update') && !empty($updatedcontent)) {
+                    $log['content'] = json_encode($updatedcontent, JSON_UNESCAPED_UNICODE);
+                } else {
+                    $log['content'] = $obj->event_date;
+                }
             } else if($type == config('const.log_comment')) {
                 $objcomment = Comment::with(['event'])->findOrFail($obj->id);
                 $log['content'] = $objcomment->event->event_date.' '.__('messages.event').' #'.$objcomment->event->id.' '.$obj->content;

@@ -68,6 +68,8 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::get('/logs/{ym}', 'AdminController@logsindex');
         Route::get('/logs/{ym}/{action}', 'AdminController@logsindex');
         Route::get('/exps', 'EventController@exps');
+        Route::get('/income', 'EventController@getIncomeStatisics');
+        Route::get('/income/{ym}', 'EventController@getIncomeStatisics');
         // post
         Route::post('/user/uploadprofile', 'UserController@updateprofile');
         Route::post('/user/update', 'UserController@update');
@@ -78,8 +80,10 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
         Route::post('/uploadimg', 'AdminController@updateImage');
         Route::post('/event/complete', 'EventController@complete');
         Route::post('/event/received', 'EventController@setReceived');
+        Route::post('/event/receivedDeposit', 'EventController@setReceivedDeposit');
         Route::post('/event/batchattendance', 'EventController@batchAttendance');
         Route::post('/event/search', 'EventController@search');
+        Route::post('/savelog', 'AdminController@saveLog');
     });
     // Route::post('logout', 'LoginController@logout');
 });

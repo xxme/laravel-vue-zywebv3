@@ -16,16 +16,25 @@
       <!-- Main content -->
       <section class="content">
         <div class="marginb5">
-          <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</button>
-          <button type="button" class="btn btn-outline-primary" @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</button>
-          <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</button>
-          <button type="button" class="btn btn-outline-primary" v-if="auth && auth.group_id == 1" v-show="showCalendarFlag" @click="showstatistics(true)"><i class="fa fa-usd"></i> {{ $t('nav.statistics') }}</button>
-          <span v-show="!showEventItem && !showformflag" class="pull-right">
-            <div class="switchestimates">
-              <input id="switchestimates" v-model="switchEstimates" type="checkbox">
-              <label for="switchestimates"></label>
-            </div>
-          </span>
+          <div class="navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li class="dropdown">
+                <button href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" role="button"><i class="fa fa-list"></i> {{ $t('topmenu.quicknav') }}<span class="caret"></span></button>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a @click="$router.push('/admin/estimate')"><i class="fa fa-comments-o"></i> {{ $t('nav.estimateslist') }}</a></li>
+                  <li><a @click="$router.push('/admin/productlist')"><i class="fa fa-shopping-cart"></i> {{ $t('nav.shoppinglist') }}</a></li>
+                  <li><a v-if="auth && auth.group_id == 1" @click="$router.push('/admin/finances')"><i class="fa fa-money"></i> {{ $t('nav.money') }}</a></li>
+                  <li><a v-if="auth && auth.group_id == 1" v-show="showCalendarFlag" @click="showstatistics(true)"><i class="fa fa-usd"></i> {{ $t('nav.statistics') }}</a></li>
+                </ul>
+              </li>
+            </ul>
+            <span v-show="!showEventItem && !showformflag" class="pull-right">
+              <div class="switchestimates">
+                <input id="switchestimates" v-model="switchEstimates" type="checkbox">
+                <label for="switchestimates"></label>
+              </div>
+            </span>
+          </div>
         </div>
         <div class="nav-tabs-custom" v-show="!showformflag && !showStatisticsFlag && showCalendarFlag">
           <div class="tab-content">
@@ -125,6 +134,7 @@ export default {
         total: [],
         aboutgoods: [],
         truck: [],
+        expenditure: [],
         product_list: []
       },
       fee: {
@@ -175,7 +185,7 @@ export default {
             this.events_list = res.data.events;
             this.setEvents();
           }
-          this.setFee();
+          this.setFee(ym);
           if (this.auth && this.auth.group_id != 1) {
             $('.fc-statisticsButton-button').hide();
           }
@@ -216,103 +226,127 @@ export default {
       this.fee.finance.fxjpy = 0;
     },
     // nav finance
-    setFee() {
+    setFee(ym) {
       this.resetFee();
-      for(var i in this.events_list) {
-        if(this.events_list[i].amount || this.events_list[i].expense || (this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0)) {
-          var hasuserdata = false;
-          for(var index in this.fee.users) {
-            if(this.fee.users[index].id == this.events_list[i].user.id) {
-              hasuserdata = true;
-              if(this.events_list[i].expense) {
-                // completed
-                this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
-                this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
-                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                  // 定金
-                  this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
-                  this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].deposit.jpy);
-                }
-              } else {
-                // undone
-                if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                  if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                    // 定金
-                    this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
-                    this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
-                  } else {
-                    this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
-                  }
-                }
-              }
-            }
-          }
-          if(!hasuserdata && (this.events_list[i].amount || this.events_list[i].expense)) {
-            var feeuser = new Object();
-            feeuser.id = this.events_list[i].user.id;
-            feeuser.name = this.events_list[i].user.name;
-            feeuser.total = 0;
-            feeuser.completed = 0;
-            if(this.events_list[i].user.profileimg) {
-              feeuser.profileimg = this.events_list[i].user.profileimg;
-            }
-            
-            if(this.events_list[i].expense) {
-              // completed
-              feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].expense.finalprice);
-              feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].expense.finalprice);
-              if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                // 定金
-                feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
-                feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].deposit.jpy);
-              }
+      this.$http({
+          url: '/admin/income/' + ym,
+          method: 'GET'
+      }).then(res =>  {
+        for (var index in res.data) {
+          // 报价
+          var amount = parseInt(res.data[index].amount);
+          // 定金
+          var jpy = parseInt(res.data[index].jpy);
+          // 最后收款
+          var finalprice = parseInt(res.data[index].finalprice);
+          if (finalprice == 0) {
+            // 未完成或没有最终收钱的日程
+            if (amount > jpy) {
+              this.fee.finance.total += amount;
+              this.fee.finance.undone += amount - jpy;
             } else {
-              // undone
-              if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                  // 定金
-                  feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
-                  feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
-                } else {
-                  feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount);
-                }
-              }
+              this.fee.finance.total += jpy;
             }
-            this.fee.users.push(feeuser);
-          }
-
-          // finance
-          if(this.events_list[i].amount || this.events_list[i].expense) {
-            if(this.events_list[i].expense) {
-              // completed
-              this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
-              if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                this.fee.finance.total += parseInt(this.events_list[i].deposit.jpy);
-              }
-              this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
-              this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
-              this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
-              this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
-              this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
-              this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
-              this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
-              this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
-              this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
-            } else {
-              // undone
-              if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
-                if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
-                  // this.fee.finance.total += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
-                  this.fee.finance.undone += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
-                } else {
-                  // this.fee.finance.total += parseInt(this.events_list[i].amount);
-                  this.fee.finance.undone += parseInt(this.events_list[i].amount);
-                }
-              }
-            }
+          } else {
+            this.fee.finance.total += finalprice + jpy;
           }
         }
-      }
+      })
+      // for(var i in this.events_list) {
+      //   if(this.events_list[i].amount || this.events_list[i].expense || (this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0)) {
+      //     var hasuserdata = false;
+      //     for(var index in this.fee.users) {
+      //       if(this.fee.users[index].id == this.events_list[i].user.id) {
+      //         hasuserdata = true;
+      //         if(this.events_list[i].expense) {
+      //           // completed
+      //           this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].expense.finalprice);
+      //           this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].expense.finalprice);
+      //           if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //             // 定金
+      //             this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
+      //             this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].deposit.jpy);
+      //           }
+      //         } else {
+      //           // undone
+      //           if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+      //             if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //               // 定金
+      //               this.fee.users[index].completed = parseInt(this.fee.users[index].completed) + parseInt(this.events_list[i].deposit.jpy);
+      //               this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+      //             } else {
+      //               this.fee.users[index].total = parseInt(this.fee.users[index].total) + parseInt(this.events_list[i].amount);
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //     if(!hasuserdata && (this.events_list[i].amount || this.events_list[i].expense)) {
+      //       var feeuser = new Object();
+      //       feeuser.id = this.events_list[i].user.id;
+      //       feeuser.name = this.events_list[i].user.name;
+      //       feeuser.total = 0;
+      //       feeuser.completed = 0;
+      //       if(this.events_list[i].user.profileimg) {
+      //         feeuser.profileimg = this.events_list[i].user.profileimg;
+      //       }
+            
+      //       if(this.events_list[i].expense) {
+      //         // completed
+      //         feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].expense.finalprice);
+      //         feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].expense.finalprice);
+      //         if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //           // 定金
+      //           feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
+      //           feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].deposit.jpy);
+      //         }
+      //       } else {
+      //         // undone
+      //         if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+      //           if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //             // 定金
+      //             feeuser.completed = parseInt(feeuser.completed) + parseInt(this.events_list[i].deposit.jpy);
+      //             feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+      //           } else {
+      //             feeuser.total = parseInt(feeuser.total) + parseInt(this.events_list[i].amount);
+      //           }
+      //         }
+      //       }
+      //       this.fee.users.push(feeuser);
+      //     }
+
+      //     // finance
+      //     if(this.events_list[i].amount || this.events_list[i].expense) {
+      //       if(this.events_list[i].expense) {
+      //         // completed
+      //         this.fee.finance.total += parseInt(this.events_list[i].expense.finalprice);
+      //         if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //           this.fee.finance.total += parseInt(this.events_list[i].deposit.jpy);
+      //         }
+      //         this.fee.finance.expenditure += parseInt(this.events_list[i].expense.expenditure);
+      //         this.fee.finance.zctingche += parseInt(this.events_list[i].expense.zctingche);
+      //         this.fee.finance.zccanyin += parseInt(this.events_list[i].expense.zccanyin);
+      //         this.fee.finance.zcgaosu += parseInt(this.events_list[i].expense.zcgaosu);
+      //         this.fee.finance.zcjiayou += parseInt(this.events_list[i].expense.zcjiayou);
+      //         this.fee.finance.zcmaihuo += parseInt(this.events_list[i].expense.zcmaihuo);
+      //         this.fee.finance.zcother += parseInt(this.events_list[i].expense.zcother);
+      //         this.fee.finance.fxrmb += parseInt(this.events_list[i].expense.fxrmb);
+      //         this.fee.finance.fxjpy += parseInt(this.events_list[i].expense.fxjpy);
+      //       } else {
+      //         // undone
+      //         if(this.events_list[i].types.indexOf('"5"') === -1 && this.events_list[i].types.indexOf('"4"') === -1) {
+      //           if(this.events_list[i].deposit && this.events_list[i].deposit.jpy > 0) {
+      //             // this.fee.finance.total += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+      //             this.fee.finance.undone += parseInt(this.events_list[i].amount) - parseInt(this.events_list[i].deposit.jpy);
+      //           } else {
+      //             // this.fee.finance.total += parseInt(this.events_list[i].amount);
+      //             this.fee.finance.undone += parseInt(this.events_list[i].amount);
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // }
     },
     // type 1 未完成 2 全部
     // eventswitch 1 普通任务 2 見積
@@ -380,8 +414,8 @@ export default {
           var typenames = '<i class="fa fa-tag"></i> '+this.events_list[i].typenames.join(", ")+'<br/>';
         }
         
-        if(this.events_list[i].status == 1) {
-          // 未完成
+        if(this.events_list[i].status == 1 || this.events_list[i].status == 3) {
+          // 未完成及支出任务
           // description well show on agendaDay view only.
           // completed well show on any views.
           var description = '<div class="eventdescription">';
@@ -501,7 +535,10 @@ export default {
           // 完成
           eventObj.completed = '<i class="ace-icon fa fa-check-square-o"></i> ';
           
-          if(this.events_list[i].partner && this.events_list[i].expense.fxrmb == 0 && this.events_list[i].expense.fxjpy == 0) {
+          if (this.events_list[i].expense == null) {
+            // 未知错误
+            console.log(this.events_list[i]);
+          } else if(this.events_list[i].partner && this.events_list[i].expense.fxrmb == 0 && this.events_list[i].expense.fxjpy == 0) {
             eventObj.completed += '<span style="color:#ffff4d">'+ this.$t('event.unpaid') +'</span>';
           } else if(this.events_list[i].expense.finalprice > 0 || this.events_list[i].expense.expenditure > 0) {
             if(this.events_list[i].expense.finalprice > 0) {
@@ -518,57 +555,61 @@ export default {
           eventObj.description = truck + typenames;
         }
         
-        if (this.events_list[i].types.indexOf('"4"') > -1 || this.events_list[i].status == 2) {
+        if (this.events_list[i].status == 3) {
+          // 支出
+          eventObj.color = '#d81b60';
+        } else if (this.events_list[i].types.indexOf('"4"') > -1 || this.events_list[i].status == 2) {
           // 見積もり已完成  正在考虑  || 完成
           eventObj.color = '#A9A9A9';
         } else if(this.events_list[i].types.indexOf('"5"') > -1) {
           // 見積
-          eventObj.color = '#d81b60';
+          eventObj.color = '#f39c12';
         } else if (this.events_list[i].types.indexOf('"19"') > -1) {
           // 休み
           eventObj.title += '('+this.events_list[i].user.name+')';
-          eventObj.color = '#001f3f';
-        } else if (this.events_list[i].types.indexOf('"122"') > -1) {
-          // 出勤
-          eventObj.title += '('+this.events_list[i].user.name+')';
           eventObj.color = '#009900';
-        } else if (
-            this.events_list[i].types.indexOf('"12"') > -1 ||
-            this.events_list[i].types.indexOf('"13"') > -1 ||
-            this.events_list[i].types.indexOf('"14"') > -1 ||
-            this.events_list[i].types.indexOf('"15"') > -1 ||
-            this.events_list[i].types.indexOf('"16"') > -1
-          ) {
-          // 店内工作(邮寄纸箱)
-          eventObj.color = '#66aac9';
-          if(this.events_list[i].apm != 4) {
-            eventObj.start = this.events_list[i].event_date + 'T21:00:00';
-            eventObj.end = this.events_list[i].event_date + 'T23:59:59';
-          }
+        // } else if (this.events_list[i].types.indexOf('"122"') > -1) {
+        //   // 出勤
+        //   eventObj.title += '('+this.events_list[i].user.name+')';
+        //   eventObj.color = '#009900';
+        // } else if (
+        //     this.events_list[i].types.indexOf('"12"') > -1 ||
+        //     this.events_list[i].types.indexOf('"13"') > -1 ||
+        //     this.events_list[i].types.indexOf('"14"') > -1 ||
+        //     this.events_list[i].types.indexOf('"15"') > -1 ||
+        //     this.events_list[i].types.indexOf('"16"') > -1
+        //   ) {
+        //   // 店内工作(邮寄纸箱)
+        //   eventObj.color = '#66aac9';
+        //   if(this.events_list[i].apm != 4) {
+        //     eventObj.start = this.events_list[i].event_date + 'T21:00:00';
+        //     eventObj.end = this.events_list[i].event_date + 'T23:59:59';
+        //   }
         } else if(this.events_list[i].types.indexOf('"18"') > -1) {
           // 店内工作(客人来店)
           eventObj.color = '#66aac9';
         }
         
         if(eventObj){
-          if(this.events_list[i].status == 1) {
+          if(this.events_list[i].status == 1 || this.events_list[i].status == 3) {
+            // 以下为未完成的各种任务
             if(this.events_list[i].types.indexOf('"5"') > -1) {
               // 見積
               this.eventDataSources.estimateundone.push(eventObj);
             } else if(this.events_list[i].types.indexOf('"4"') > -1) {
-              // 見積完成
+              // 見積完成考虑中
               this.eventDataSources.estimatecompleted.push(eventObj);
             } else {
               // 普通任务
               this.eventDataSources.ordinaryundone.push(eventObj);
             }
           } else {
-            // 已完成
+            // 以下为已完成的各种任务
             if(this.events_list[i].types.indexOf('"5"') > -1) {
               // 見積
               this.eventDataSources.estimatecompleted.push(eventObj);
             } else if(this.events_list[i].types.indexOf('"4"') > -1) {
-              // 見積
+              // 見積完成考虑中
               this.eventDataSources.estimatecompleted.push(eventObj);
             } else {
               // 普通任务
@@ -578,9 +619,9 @@ export default {
         }
       }
     },
-    percentage(usertotal) {
-        return Math.round(usertotal / this.fee.finance.total * 100) + '%';
-    },
+    // percentage(usertotal) {
+    //     return Math.round(usertotal / this.fee.finance.total * 100) + '%';
+    // },
     updateym(showymd) {
       var formated = moment(showymd).format('YYYY年MM月');
       if(formated == moment().format('YYYY年MM月')) {
@@ -628,7 +669,7 @@ export default {
     },
     get_formtypes() {
       this.$http({
-        url: '/api/get_types/',
+        url: '/api/get_types',
         method: 'GET'
       }).then(res =>  {
         for (var index in res.data.types) {
@@ -651,6 +692,9 @@ export default {
               break;
             case 5:
               this.formoptions.truck.push(option);
+              break;
+            case 6:
+              this.formoptions.expenditure.push(option);
               break;
             default:
               break;
@@ -800,14 +844,17 @@ export default {
               }
 
               if (eventid == "") {
-                if ((response.data.events[index].details.from_address &&
+                if (this.keyword == response.data.events[index].id
+                    || (response.data.events[index].details.from_address &&
                     response.data.events[index].details.from_address.indexOf(this.keyword) !== -1)
                     || (response.data.events[index].details.to_address && 
                     response.data.events[index].details.to_address.indexOf(this.keyword) !== -1)
                     || (response.data.events[index].details.phone &&
                     response.data.events[index].details.phone.indexOf(this.keyword) !== -1)
                     || (response.data.events[index].details.wechat &&
-                    response.data.events[index].details.wechat.indexOf(this.keyword) !== -1)) {
+                    response.data.events[index].details.wechat.indexOf(this.keyword) !== -1)
+                    || (response.data.events[index].partner &&
+                    response.data.events[index].partner.indexOf(this.keyword) !== -1)) {
                   filterdata.push(response.data.events[index]);
                   eventid = response.data.events[index].id;
                 }
@@ -1115,5 +1162,19 @@ Vue.component('todo', {
 }
 .medals2 {
     background-position: -69px 0;
+}
+.navbar-collapse {
+  padding: 0;
+}
+.dropdown-menu i {
+  width: 30px;
+}
+.navbar-nav {
+  float: left;
+  margin: 0;
+}
+.navbar-nav .open .dropdown-menu {
+  position: absolute;
+  background-color: #FFF;
 }
 </style>

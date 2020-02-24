@@ -21,6 +21,7 @@ class Event extends Model
     {
         return $this->hasOne('App\EventDetail');
     }
+    // 收支管理，最终收入也用于入金管理
     public function expense()
     {
         return $this->hasOne('App\Expense');
@@ -28,7 +29,7 @@ class Event extends Model
     public function productlist(){
         return $this->hasOne('App\ProductList');
     }
-    //定金 押金
+    //定金 押金，定金也用于入金管理
     public function deposit()
     {
         return $this->hasOne('App\Deposit');

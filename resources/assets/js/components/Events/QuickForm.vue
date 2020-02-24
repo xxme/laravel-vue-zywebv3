@@ -3,10 +3,19 @@
     <div class="box box-primary">
       <div class="box-header">
         <a id="boxtitle"></a>
-        <h3 class="box-title">{{ boxtitle }} <small v-if="eventid">#{{ eventid }}</small></h3>
+        <h3 class="box-title">
+          {{ boxtitle }} 
+          <small v-if="eventid">#{{ eventid }}</small>
+        </h3>
+        <div v-if="!eventid" class="pull-right">
+          <button type="button" class="btn btn-primary btn-xs" @click="expenditureEvent = !expenditureEvent">
+            <span v-show="expenditureEvent">{{ $t('event.pagetitle') }}</span>
+            <span v-show="!expenditureEvent">{{ $t('event.expenditureEvent') }}</span>
+          </button>
+        </div>
       </div>
       <div class="box-body">
-        <div class="col-xs-12 no-padding">
+        <div class="col-xs-12 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-tags"></i></span>
             <div class="checkedgroup" @click="showType(1)">
@@ -19,7 +28,20 @@
             </div>
           </div>
         </div>
-        <div class="col-xs-12 no-padding">
+        <div class="col-xs-12 no-padding" v-show="expenditureEvent">
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-tags"></i></span>
+            <div class="checkedgroup" @click="showType(6)">
+              <template v-if="selected.worktype.length > 0">
+                <span class="label label-success" v-for="(type, key) in selected.worktype"><i class="fa fa-tag"></i> {{ type }}</span>
+              </template>
+              <template v-else>
+                <span class="inputplaceholder">{{ $t('event.typeofexpenditure') }}</span>
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-12 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-cube"></i></span>
             <div class="checkedgroup" @click="showType(2)">
@@ -32,7 +54,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xs-12 no-padding">
+        <div class="col-xs-12 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-exclamation-triangle"></i></span>
             <div class="checkedgroup" @click="showType(3)">
@@ -46,7 +68,7 @@
           </div>
         </div>
         <div class="col-xs-12 no-padding"> 
-          <div class="col-xs-6 no-padding">
+          <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-cubes"></i></span>
               <div class="checkedgroup" @click="showType(4)">
@@ -59,7 +81,7 @@
               </div>
             </div>
           </div>
-          <div class="col-xs-6 no-padding">
+          <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-truck"></i></span>
               <div class="checkedgroup" @click="showType(5)">
@@ -79,10 +101,10 @@
             <div class="input-group-addon"> 
               <i class="fa fa-calendar"></i> 
             </div> 
-            <input type="text" name="eventdate" class="form-control datepicker" v-model="event.eventdate" :placeholder="$t('event.eventdate')" readonly /> 
+            <input type="text" id="eventdate" name="eventdate" class="form-control datepicker" v-model="event.eventdate" :placeholder="$t('event.eventdate')" readonly /> 
           </div>
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group"> 
             <div class="radio padding-left3">
               <label>
@@ -104,7 +126,7 @@
             </div>
           </div> 
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group"> 
             <div class="input-group-addon"> 
               <input type="radio" name="apm" value="5" v-model="event.apm" /> 
@@ -116,7 +138,7 @@
             <input type="text" id="ttime" class="form-control datepickertime" disabled v-model="event.to.time" /> 
           </div> 
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-male"></i></span>
             <input type="text" class="form-control" name="partner" v-model="event.partner" :placeholder="$t('event.partner')">
@@ -125,28 +147,29 @@
         <div class="col-xs-6 no-padding">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-jpy"></i></span>
-            <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')">
+            <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.amount')" v-show="!expenditureEvent">
+            <input type="number" class="form-control" name="amount" v-model.number="event.amount" :placeholder="$t('event.expenditureEvent')+$t('finance.amount')" v-show="expenditureEvent">
           </div>
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-shopping-cart"></i></span>
             <select2 :options="options.product_list" :change="true" @change="getProductlist" id="product_list_id" :selected="event.product_list_id" :placeholder="$t('event.shoppingListId')" :multiple="false"></select2>
           </div>
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-phone"></i></span>
             <input type="text" class="form-control" name="phone" v-model="event.phone" :placeholder="$t('event.phoneNumber')">
           </div>
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-wechat"></i></span>
             <input type="text" class="form-control" name="wechat" v-model="event.wechat" :placeholder="$t('event.wechat')">
           </div>
         </div>
-        <div class="col-xs-6 no-padding">
+        <div class="col-xs-6 no-padding" v-show="!expenditureEvent">
           <div class="input-group">
             <span class="input-group-addon deposit">{{ $t('event.depositjpy') }}</span>
             <input type="number" class="form-control" v-model.number="event.deposit_jpy">
@@ -155,21 +178,47 @@
         </div>
         </div>
         <div class="col-xs-6 no-padding">
-        <div class="input-group">
+          <div class="input-group" v-show="!expenditureEvent">
             <span class="input-group-addon deposit">{{ $t('event.depositrmb') }}</span>
             <input type="number" class="form-control" v-model.number="event.deposit_rmb">
             <span class="input-group-addon" @click="event.deposit_rmb += 100"><i class="fa fa-plus blue"></i></span>
             <span class="input-group-addon" @click="event.deposit_rmb > 100 ? event.deposit_rmb -= 100 : event.deposit_rmb = 0"><i class="fa fa-minus blue"></i></span>
           </div>
         </div>
-        <div class="input-group">
+        <div v-show="event.deposit_jpy > 0">
+          <div class="col-xs-6 no-padding">
+            <div class="input-group">
+              <span class="input-group-addon deposit">{{ $t('event.receipt') }}</span>
+              <input type="text" id="receipted_at" name="receipted_at" class="form-control datepicker" v-model="event.receipted_at" :placeholder="$t('event.receipted_at')" readonly />
+            </div>
+          </div>
+          <div class="col-xs-6 no-padding">
+            <div class="input-group"> 
+              <div class="radio padding-left3">
+                <label>
+                  <input type="radio" name="deposit_type" value="1" v-model="event.deposit_type">
+                  {{ $t('event.payment1') }} 
+                </label>
+                <label>
+                  <input type="radio" name="deposit_type" value="2" v-model="event.deposit_type">
+                  {{ $t('event.payment2') }} 
+                </label>
+                <label>
+                  <input type="radio" name="deposit_type" value="3" v-model="event.deposit_type">
+                  {{ $t('event.payment3') }} 
+                </label>
+              </div>
+            </div> 
+          </div>
+        </div>
+        <div class="input-group" v-show="!expenditureEvent">
           <span class="input-group-addon"><i class="fa fa-sign-out"></i></span>
           <input type="text" class="form-control" name="fromadd" v-model="event.from.address" :placeholder="$t('event.fromAddress')">
           <span class="input-group-btn">
             <button type="button" class="btn bg-olive btn-flat" @click="showModal = true">{{ setDetailsFrom }}</button>
           </span>
         </div>
-        <div class="input-group">
+        <div class="input-group" v-show="!expenditureEvent">
           <span class="input-group-addon"><i class="fa fa-sign-in"></i></span>
           <input type="text" class="form-control" name="toadd" v-model="event.to.address" :placeholder="$t('event.toAddress')">
           <span class="input-group-btn">
@@ -296,6 +345,9 @@
           <template v-else-if="showingType == 5">
             <input type="checkbox" v-model="clickedtruck" :value="type"> {{ type.text }}
           </template>
+          <template v-else-if="showingType == 6">
+            <input type="checkbox" v-model="clickedexpenditure" :value="type"> {{ type.text }}
+          </template>
         </label>
       </div>
       <div slot="footer">
@@ -385,6 +437,7 @@ export default {
       showConfirmModal: false,
       showTypeModal: false,
       loadingShow: false,
+      expenditureEvent: false,
       warning: {
         message: "",
         action: "",
@@ -395,7 +448,7 @@ export default {
       setDetailsTo: this.$t('event.setDetails'),
       hasFile: false,
       fileAccept: "image/*",
-      boxtitle: this.eventid ? this.$t('global.edit') : this.$t('global.add'),
+      boxtitle: this.eventid ? this.$t('global.edit') : this.$t('global.add') + this.$t('event.pagetitle'),
       typeboxtitle: "",
       clicktypes: [],
       showingType: 0,
@@ -412,6 +465,7 @@ export default {
         id: "",
         eventdate: "",
         apm: "",
+        status: 1,
         from: {
           time: "",
           address: "",
@@ -431,6 +485,7 @@ export default {
         careful: [],
         total: [],
         truck: [],
+        expenditure: [],
         wechat: "",
         phone: "",
         partner: null,
@@ -442,6 +497,8 @@ export default {
         productlistimgs: [],
         deposit_jpy: 0,
         deposit_rmb: 0,
+        deposit_type: 0,
+        receipted_at: "",
         comment: ""
       },
       selected: {
@@ -449,13 +506,15 @@ export default {
         aboutgoods: [],
         careful: [],
         total: [],
-        truck: []
+        truck: [],
+        expenditure: []
       },
       clickedworktype: [],
       clickedaboutgoods: [],
       clickedcareful: [],
       clickedtotal: [],
-      clickedtruck: []
+      clickedtruck: [],
+      clickedexpenditure: []
     }
   },
   watch: {
@@ -514,6 +573,27 @@ export default {
         listtext.push(val[i].text);
       }
       this.setType(listvalue, listtext);
+    },
+    clickedexpenditure: function(val) {
+      var listvalue = [];
+      var listtext = [];
+      for(var i in val) {
+        listvalue.push(val[i].id.toString());
+        listtext.push(val[i].text);
+      }
+      this.setType(listvalue, listtext);
+    },
+    expenditureEvent(bool) {
+      if (!this.event.id) {
+        this.event.worktype = this.selected.worktype = this.clickedworktype = this.clickedexpenditure = [];
+        if (bool) {
+          // 支出日程
+          this.boxtitle = this.$t('global.add') + this.$t('event.expenditureEvent');
+        } else {
+          // 工作计划
+          this.boxtitle = this.$t('global.add') + this.$t('event.pagetitle');
+        }
+      }
     }
   },
   computed: {
@@ -541,11 +621,18 @@ export default {
       $.datetimepicker.setLocale('zh')
       $('.datepicker').datetimepicker({dayOfWeekStart: 1, timepicker:false, format:'Y-m-d'})
       $('.datepickertime').datetimepicker({datepicker:false, format:'H:i'})
-      $('.datepicker').on('change', (e) => {
+      $('#eventdate').on('change', (e) => {
         if($(e.target).val() != ''){
           self.event.eventdate = moment($(e.target).val()).format('YYYY-MM-DD')
         } else {
           self.event.eventdate = '';
+        }
+      })
+      $('#receipted_at').on('change', (e) => {
+        if($(e.target).val() != ''){
+          self.event.receipted_at = moment($(e.target).val()).format('YYYY-MM-DD')
+        } else {
+          self.event.receipted_at = '';
         }
       })
       $('#ttime').on('change', (e) => {
@@ -573,25 +660,42 @@ export default {
         this.errors.push(this.$t('event.workType') + this.$t('global.required'));
         return;
       }
-      if(!this.event.apm){
-        this.errors.push(this.$t('event.apmAllDayOrTime') + this.$t('global.moreThanOne'));
+      if (this.event.deposit_jpy > 0 && (this.event.receipted_at == "" || this.event.deposit_type == 0)) {
+        // 有定金时则必须输入收款日期和类型
+        this.errors.push(this.$t('event.receipted_at_and_type') + this.$t('global.required'));
         return;
       }
-      if(this.event.apm == 5 && !this.event.from.time && !this.event.to.time){
-        this.errors.push(this.$t('event.eventtimeChecked') + this.$t('event.eventtime') + this.$t('global.required'));
-        return;
-      }
-      if(this.event.from.time && this.event.to.time && moment(this.event.eventdate+' '+this.event.from.time) > moment(this.event.eventdate+' '+this.event.to.time)) {
-        this.errors.push(this.$t('event.timereverse'));
-        return;
-      }
-      if(!this.event.wechat && !this.event.phone) {
-        this.warning.sure = false;
-        this.showConfirmModal = true;
-        return;
+      if (!this.expenditureEvent) {
+        if(!this.event.apm){
+          this.errors.push(this.$t('event.apmAllDayOrTime') + this.$t('global.moreThanOne'));
+          return;
+        }
+        if(this.event.apm == 5 && !this.event.from.time && !this.event.to.time){
+          this.errors.push(this.$t('event.eventtimeChecked') + this.$t('event.eventtime') + this.$t('global.required'));
+          return;
+        }
+        if(this.event.from.time && this.event.to.time && moment(this.event.eventdate+' '+this.event.from.time) > moment(this.event.eventdate+' '+this.event.to.time)) {
+          this.errors.push(this.$t('event.timereverse'));
+          return;
+        }
+        if(!this.event.wechat && !this.event.phone) {
+          this.warning.sure = false;
+          this.showConfirmModal = true;
+          return;
+        } else {
+          this.warning.sure = true;
+        }
       } else {
-        this.warning.sure = true;
+        //支出
+        if(!this.event.amount){
+          this.errors.push(this.$t('event.expenditureEvent') + this.$t('global.required'));
+          return;
+        }
+        // 默认时间为全天
+        this.event.apm = 4;
+        this.event.status = 3;
       }
+      
       if(this.warning.sure) {
         this.submitForm();
       }
@@ -605,27 +709,32 @@ export default {
       this.event.product_list_id = $('#product_list_id').val();
       this.loadingShow = true;
       if(this.event.id) {
+        //更新
         this.$http.put('/admin/event/' + this.event.id, this.event).then(response => {
           var ymd = response.data.event_date;
           this.$emit('addedevent', ymd);
           this.loadingShow = false;
         }).catch(error => {
+          this.FatalError(error.response);
           this.errors.push(this.$t('global.calltheadministrator'));
           this.loadingShow = false;
         });
       } else {
+        //新建
         this.$http.post('/admin/event', this.event).then(response => {
           var ymd = response.data.event_date;
           this.$emit('addedevent', ymd);
           this.loadingShow = false;
         }).catch(error => {
+          this.FatalError(error.response);
           this.errors.push(this.$t('global.calltheadministrator'));
           this.loadingShow = false;
         });
       }
     },
     resetDetails() {
-      if(window.confirm('Are you sure ?')) {
+      var message = this.$t('global.areYouSure') + this.$t('event.resetDetails');
+      if(window.confirm(message)) {
         this.event.from.elevator = "";
         this.event.to.elevator = "";
         this.event.from.floors = "0";
@@ -655,6 +764,10 @@ export default {
         case 5:
           this.event.truck = listvalue;
           this.selected.truck = listtext;
+          break;
+        case 6:
+          this.event.worktype = listvalue;
+          this.selected.worktype = listtext;
           break;
       }
     },
@@ -691,7 +804,7 @@ export default {
       }
     },
     showType(type) {
-      // 1 worktype 2 aboutgoods 3 careful 4 total 5 truck
+      // 1 worktype 2 aboutgoods 3 careful 4 total 5 truck 6 expenditure
       this.showingType = type;
       switch (type) {
         case 1:
@@ -713,6 +826,10 @@ export default {
         case 5:
           this.typeboxtitle = this.$i18n.t('event.typeoftruck');
           this.clicktypes = this.options.truck;
+          break;
+        case 6:
+          this.typeboxtitle = this.$i18n.t('event.typeofexpenditure');
+          this.clicktypes = this.options.expenditure;
           break;
       }
       this.showTypeModal = true;
@@ -751,18 +868,25 @@ export default {
         url: '/admin/event/' + eventid,
         method: 'GET'
       }).then(res =>  {
+        this.event.status = res.data.status;
+        var wktype = this.options.worktype;
+        if (this.event.status == 3) {
+          //支出任务
+          this.expenditureEvent = true;
+          wktype = this.options.expenditure;
+        }
         if(!iscopy) {
           this.event.id = eventid;
           this.event.worktype = JSON.parse(res.data.types);
           var listtext = [];
           for(var i in this.event.worktype) {
-            for(var key in this.options.worktype) {
-              if(this.options.worktype[key].id == this.event.worktype[i]) {
+            for(var key in wktype) {
+              if(wktype[key].id == this.event.worktype[i]) {
                 var type = new Object();
                 type.id = this.event.worktype[i];
-                type.text = this.options.worktype[key].text;
+                type.text = wktype[key].text;
                 this.clickedworktype.push(type);
-                listtext.push(this.options.worktype[key].text);
+                listtext.push(wktype[key].text);
               }
             }
           }
@@ -834,8 +958,10 @@ export default {
         this.event.product_list_id = res.data.product_list_id;
         this.event.order_id = res.data.order_id;
         if(res.data.deposit) {
-          this.event.deposit_rmb = res.data.deposit.rmb;
-          this.event.deposit_jpy = res.data.deposit.jpy;
+          this.event.deposit_rmb = parseInt(res.data.deposit.rmb);
+          this.event.deposit_jpy = parseInt(res.data.deposit.jpy);
+          this.event.receipted_at = res.data.deposit.receipted_at;
+          this.event.deposit_type = res.data.deposit.type;
         }
         var filethumbs = JSON.parse(res.data.details.images);
         for(var key in filethumbs) {
