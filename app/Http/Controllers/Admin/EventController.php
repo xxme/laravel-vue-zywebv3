@@ -15,6 +15,7 @@ use App\Offer;
 use App\Expense;
 use App\Holidays;
 use App\Deposit;
+use App\IncomeView;
 
 class EventController extends Controller
 {
@@ -66,10 +67,7 @@ class EventController extends Controller
         }, 'expense' => function ($query) {
             $query->with('user');
         }, 'user', 'details', 'productlist', 'deposit'])->get();
-        $types = Type::get(['id', 'name']);
-        foreach($types as $type) {
-            $typeArray[$type->id] = $type->name;
-        }
+        $typeArray = $this->getTypeArray();
         foreach($init['events'] as $key=>$event) {
             $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
             if($event->comments) {
@@ -133,10 +131,24 @@ class EventController extends Controller
             ['event_date', '>=', $dt->subYear()->year.'-01-01'],
             ['event_date', '<=', $dt->addYear()->year.'-12-31']
         ];
-        $events = Event::where($whereData)
-        ->whereHas('expense')
-        ->orderBy('event_date', 'ASC')
-        ->with(['deposit', 'expense'])->get();
+        $user = auth()->user();
+        $detailswhere = [
+            ['carefully', 'LIKE', '%']
+        ];
+        if($user->group_id == 6) {
+            $detailswhere = [
+                ['carefully', 'NOT LIKE', '%"130"%']
+            ];
+        }
+        $events = IncomeView::where($whereData)->where($detailswhere)->get();
+
+        // $events = Event::where($whereData)
+        // ->whereHas('details', function ($query) use ($detailswhere) {
+        //     $query->where($detailswhere);
+        // })
+        // ->whereHas('expense')
+        // ->orderBy('event_date', 'ASC')
+        // ->with(['deposit', 'expense'])->get();
         $sales['lastyear'][1] = 
         $sales['lastyear'][2] = 
         $sales['lastyear'][3] = 
@@ -162,29 +174,51 @@ class EventController extends Controller
         $sales['thisyear'][11] = 
         $sales['thisyear'][12] = 0;
         foreach($events as $key=>$event) {
+            $dt = Carbon::today();
             $eventdt = new Carbon($event->event_date);
+            // 报价
+            $amount = $event->amount;
+            // 定金
+            $jpy = $event->jpy;
+            // 最后收款
+            $finalprice = $event->finalprice;
+            // 年度Flag
+            $yearFlag = "thisyear";
+            if ($eventdt->year == $dt->subYear()->year) {
+                $yearFlag = "lastyear";
+            }
+            if ($finalprice == 0) {
+                // 未完成或没有最终收钱的日程
+                if ($amount > $jpy) {
+                    $sales[$yearFlag][$eventdt->month] += $amount;
+                } else {
+                    $sales[$yearFlag][$eventdt->month] += $jpy;
+                }
+            } else {
+                $sales[$yearFlag][$eventdt->month] += $finalprice + $jpy;
+            }
             //定金
-            if ($event->deposit && $event->deposit->jpy > 0) {
-                $dt = Carbon::today();
-                //去年
-                if ($eventdt->year == $dt->subYear()->year) {
-                    $sales['lastyear'][$eventdt->month] += $event->deposit->jpy;
-                } else {
-                    $sales['thisyear'][$eventdt->month] += $event->deposit->jpy;
-                }
-            }
+            // if ($event->deposit && $event->deposit->jpy > 0) {
+            //     $dt = Carbon::today();
+            //     //去年
+            //     if ($eventdt->year == $dt->subYear()->year) {
+            //         $sales['lastyear'][$eventdt->month] += $event->deposit->jpy;
+            //     } else {
+            //         $sales['thisyear'][$eventdt->month] += $event->deposit->jpy;
+            //     }
+            // }
 
-            //最终收款
-            if ($event->expense && $event->expense->finalprice > 0) {
-                $dt = Carbon::today();
-                //去年
-                if ($eventdt->year == $dt->subYear()->year) {
-                    $sales['lastyear'][$eventdt->month] += $event->expense->finalprice;
-                } else {
-                    // echo $eventdt->month;
-                    $sales['thisyear'][$eventdt->month] += $event->expense->finalprice;
-                }
-            }
+            // //最终收款
+            // if ($event->expense && $event->expense->finalprice > 0) {
+            //     $dt = Carbon::today();
+            //     //去年
+            //     if ($eventdt->year == $dt->subYear()->year) {
+            //         $sales['lastyear'][$eventdt->month] += $event->expense->finalprice;
+            //     } else {
+            //         // echo $eventdt->month;
+            //         $sales['thisyear'][$eventdt->month] += $event->expense->finalprice;
+            //     }
+            // }
         }
         return response()->json($sales);
     }
@@ -196,10 +230,7 @@ class EventController extends Controller
             }, 'expense' => function ($query) {
                 $query->with('user');
             }, 'user', 'details', 'productlist', 'deposit'])->find($id);
-        $types = Type::get(['id', 'name']);
-        foreach($types as $type) {
-            $typeArray[$type->id] = $type->name;
-        }
+        $typeArray = $this->getTypeArray();
         $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
         if($event->comments) {
             $event['comments'] = json_decode($event->comments, true);
@@ -294,64 +325,89 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $inputs = $request->all();
-        $objEvent = new Event();
-        $user_id = auth()->user()->id;
-        $objEvent->user_id = $user_id;
-        $objEvent->product_list_id = $inputs['product_list_id'];
-        $objEvent->order_id = $inputs['order_id'];
-        $objEvent->partner = $inputs['partner'];
-        $objEvent->amount = $inputs['amount'];
-        $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
-        $objEvent->event_date = $inputs['eventdate'];
-        $objEvent->apm = $inputs['apm'];
-        $objEvent->start_time = $inputs['from']['time'];
-        $objEvent->end_time = $inputs['to']['time'];
-        $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-        $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_add'));
+        \DB::beginTransaction();
+        try {
+            $objEvent = new Event();
+            $user_id = auth()->user()->id;
+            $objEvent->user_id = $user_id;
+            $objEvent->product_list_id = $inputs['product_list_id'];
+            $objEvent->order_id = $inputs['order_id'];
+            $objEvent->partner = $inputs['partner'];
+            $objEvent->amount = $inputs['amount'];
+            $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
+            $objEvent->event_date = $inputs['eventdate'];
+            $objEvent->apm = $inputs['apm'];
+            // 3为支出任务，sataus除了3以外，全部为普通未完成任务
+            $objEvent->status = $inputs['status'] == 3 ? 3 : 1;
+            $objEvent->start_time = $inputs['from']['time'];
+            $objEvent->end_time = $inputs['to']['time'];
+            $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
+            $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_add'));
 
-        if($event_id) {
-            $objEventDetail = new EventDetail();
-            $objEventDetail->event_id = $event_id;
-            $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
-            $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->from_address = $inputs['from']['address'];
-            $objEventDetail->from_elevator = $inputs['from']['elevator'];
-            $objEventDetail->from_floor = $inputs['from']['floors'];
-            $objEventDetail->from_btype = $inputs['from']['btype'];
-            $objEventDetail->to_address = $inputs['to']['address'];
-            $objEventDetail->to_elevator = $inputs['to']['elevator'];
-            $objEventDetail->to_floor = $inputs['to']['floors'];
-            $objEventDetail->to_btype = $inputs['to']['btype'];
-            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)/', '', mb_convert_kana($inputs['phone'], "n"));
-            $objEventDetail->wechat = $inputs['wechat'];
-            $objEventDetail->save();
-            if(!empty($inputs['comment'])){
-                $objComment = new Comment();
-                $objComment->user_id = $user_id;
-                $objComment->event_id = $event_id;
-                $objComment->content = $inputs['comment'];
-                \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+            if($event_id) {
+                $objEventDetail = new EventDetail();
+                $objEventDetail->event_id = $event_id;
+                $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
+                $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->from_address = $inputs['from']['address'];
+                $objEventDetail->from_elevator = $inputs['from']['elevator'];
+                $objEventDetail->from_floor = $inputs['from']['floors'];
+                $objEventDetail->from_btype = $inputs['from']['btype'];
+                $objEventDetail->to_address = $inputs['to']['address'];
+                $objEventDetail->to_elevator = $inputs['to']['elevator'];
+                $objEventDetail->to_floor = $inputs['to']['floors'];
+                $objEventDetail->to_btype = $inputs['to']['btype'];
+                $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)/', '', mb_convert_kana($inputs['phone'], "n"));
+                $objEventDetail->wechat = $inputs['wechat'];
+                $objEventDetail->save();
+                if(!empty($inputs['comment'])){
+                    $objComment = new Comment();
+                    $objComment->user_id = $user_id;
+                    $objComment->event_id = $event_id;
+                    $objComment->content = $inputs['comment'];
+                    \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+                }
+                if($inputs['product_list_id']) {
+                    $objProductList = ProductList::find($inputs['product_list_id']);
+                    $objProductList->event_id = $event_id;
+                    $objProductList->save();
+                }
+                if($inputs['order_id']) {
+                    $objOffer = Offer::find($inputs['order_id']);
+                    $objOffer->event_id = $event_id;
+                    $objOffer->save();
+                }
+                if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
+                    $objDeposit = new Deposit();
+                    $objDeposit->event_id = $event_id;
+                    $objDeposit->jpy = $inputs['deposit_jpy'];
+                    $objDeposit->rmb = $inputs['deposit_rmb'];
+                    if ($inputs['deposit_jpy'] > 0) {
+                        $objDeposit->receipted_at = $inputs['receipted_at'];
+                        $objDeposit->deposit_type = $inputs['deposit_type'];
+                    }
+                    $objDeposit->save();
+                }
+
+                // 创建支出Expense
+                if ($objEvent->status == 3) {
+                    $typeArray = $this->getTypeArray();
+                    $action = config('const.log_action_add');
+                    $objExpense = new Expense();
+                    $objExpense->event_id = $event_id;
+                    $objExpense->user_id = $user_id;
+                    $objExpense->expenditure = $objEvent->amount;
+                    $objExpense->cause = implode(",", $this->getTypeNames($objEvent->types, $typeArray));
+                    \AdminLog::saveWithLog($objExpense, config('const.log_event_complete'), $action);
+                }
             }
-            if($inputs['product_list_id']) {
-                $objProductList = ProductList::find($inputs['product_list_id']);
-                $objProductList->event_id = $event_id;
-                $objProductList->save();
-            }
-            if($inputs['order_id']) {
-                $objOffer = Offer::find($inputs['order_id']);
-                $objOffer->event_id = $event_id;
-                $objOffer->save();
-            }
-            if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
-                $objDeposit = new Deposit();
-                $objDeposit->event_id = $event_id;
-                $objDeposit->jpy = $inputs['deposit_jpy'];
-                $objDeposit->rmb = $inputs['deposit_rmb'];
-                $objDeposit->save();
-            }
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollback();
         }
+        
         return response()->json($objEvent);
     }
 
@@ -369,10 +425,7 @@ class EventController extends Controller
     public function showbycontract($id)
     {
         $event = Event::with(['details', 'deposit'])->findOrFail($id);
-        $types = Type::get(['id', 'name']);
-        foreach($types as $type) {
-            $typeArray[$type->id] = $type->name;
-        }
+        $typeArray = $this->getTypeArray();
         $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
         if($event->comments) {
             $event['comments'] = json_decode($event->comments, true);
@@ -418,95 +471,203 @@ class EventController extends Controller
     public function update(Request $request, $id)
     {
         $inputs = $request->all();
-        $objEvent = Event::with(['details'])->findOrFail($id);
-        if($objEvent->product_list_id && (!$inputs['product_list_id'] || $objEvent->product_list_id != $inputs['product_list_id'])){
-            $objList = ProductList::find($objEvent->product_list_id);
-            if($objList) {
-                $objList->event_id = null;
-                $objList->save();
-            }
-        }
-        $objEvent->product_list_id = $inputs['product_list_id'];
-        $objEvent->partner = $inputs['partner'];
-        $objEvent->amount = $inputs['amount'];
-        $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
-        $objEvent->event_date = $inputs['eventdate'];
-        $objEvent->apm = $inputs['apm'];
-        $objEvent->start_time = $inputs['from']['time'];
-        $objEvent->end_time = $inputs['to']['time'];
-        $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
-        $event_id = \AdminLog::saveWithLog($objEvent, config('const.log_event'), config('const.log_action_update'));
-
-        if($event_id) {
-            $objEventDetail = EventDetail::findOrFail($objEvent->details->id);
-            $objEventDetail->event_id = $event_id;
-            $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
-            $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
-            $objEventDetail->from_address = $inputs['from']['address'];
-            $objEventDetail->from_elevator = $inputs['from']['elevator'];
-            $objEventDetail->from_floor = $inputs['from']['floors'];
-            $objEventDetail->from_btype = $inputs['from']['btype'];
-            $objEventDetail->to_address = $inputs['to']['address'];
-            $objEventDetail->to_elevator = $inputs['to']['elevator'];
-            $objEventDetail->to_floor = $inputs['to']['floors'];
-            $objEventDetail->to_btype = $inputs['to']['btype'];
-            $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)| |　/', '', mb_convert_kana($inputs['phone'], "n"));
-            $objEventDetail->wechat = $inputs['wechat'];
-            $objEventDetail->save();
-            if(!empty($inputs['comment'])){
-                $objComment = new Comment();
-                $objComment->user_id = auth()->user()->id;
-                $objComment->event_id = $event_id;
-                $objComment->content = $inputs['comment'];
-                \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
-            }
-            if($inputs['product_list_id']) {
-                $objList = ProductList::find($inputs['product_list_id']);
-                $objList->event_id = $event_id;
-                $objList->save();
-            }
-            if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
-                $objDeposit = Deposit::where('event_id', $event_id)->first();
-                if(!$objDeposit) {
-                    $objDeposit = new Deposit();
+        \DB::beginTransaction();
+        try {
+            $objEvent = Event::with(['details'])->findOrFail($id);
+            if($objEvent->product_list_id && (!$inputs['product_list_id'] || $objEvent->product_list_id != $inputs['product_list_id'])){
+                $objList = ProductList::find($objEvent->product_list_id);
+                if($objList) {
+                    $objList->event_id = null;
+                    $objList->save();
                 }
-                $objDeposit->event_id = $event_id;
-                $objDeposit->jpy = $inputs['deposit_jpy'];
-                $objDeposit->rmb = $inputs['deposit_rmb'];
-                $objDeposit->save();
             }
-        }
-        $event = Event::with(['comments' => function ($query) {
-                $query->with('user');
-            }, 'expense' => function ($query) {
-                $query->with('user');
-            }, 'user', 'details', 'productlist'])->findOrFail($id);
-        $types = Type::get(['id', 'name']);
-        foreach($types as $type) {
-            $typeArray[$type->id] = $type->name;
-        }
-        $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
-        if($event->comments) {
-            $event['comments'] = json_decode($event->comments, true);
-        }
-        if($event->total) {
-            $event['totalname'] = $this->getTypeNames($event->total, $typeArray);
-        }
-        if($event->details) {
-            if($event->details->aboutgoods) {
-                $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+
+            $updatedcontent = array();
+            // 获取全部类型信息，id转名称使用
+            $typeArray = $this->getTypeArray();
+            // 记录日程内容变化
+            if ($objEvent->product_list_id != $inputs['product_list_id']) {
+                $updatedcontent[config('const.product_list_id')] = $objEvent->product_list_id.' ==> '.$inputs['product_list_id'];
             }
-            if($event->details->carefully) {
-                $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
+            if ($objEvent->partner != $inputs['partner']) {
+                $updatedcontent[config('const.partner')] = $objEvent->partner.' ==> '.$inputs['partner'];
             }
-            if($event->details->trucks) {
-                $event['trucks'] = $this->getTypeNames($event->details->trucks, $typeArray);
+            if ($objEvent->amount != $inputs['amount']) {
+                $updatedcontent[config('const.amount')] = $objEvent->amount.' ==> '.$inputs['amount'];
             }
-            if($event->details->images) {
-                $event['images'] = json_decode($event->details->images, true);
+            if ($objEvent->total != json_encode($inputs['total'], JSON_UNESCAPED_UNICODE)) {
+                $oldTotal = $this->getTypeNames($objEvent->total, $typeArray);
+                $newTotal = $this->getTypeNames(json_encode($inputs['total'], JSON_UNESCAPED_UNICODE), $typeArray);
+                $updatedcontent[config('const.total')] = implode(",", $oldTotal).' ==> '.implode(",", $newTotal);
             }
+            if ($objEvent->event_date != $inputs['eventdate']) {
+                $updatedcontent[config('const.event_date')] = $objEvent->event_date.' ==> '.$inputs['eventdate'];
+            }
+            if ($objEvent->apm != $inputs['apm']) {
+                $updatedcontent[config('const.apm')] = ($objEvent->apm == null ? config('const.unset') : config('const.apm'.$objEvent->apm)).' ==> '.config('const.apm'.$inputs['apm']);
+            }
+            if ($objEvent->start_time != $inputs['from']['time']) {
+                $updatedcontent[config('const.start_time')] = $objEvent->start_time.' ==> '.$inputs['from']['time'];
+            }
+            if ($objEvent->end_time != $inputs['to']['time']) {
+                $updatedcontent[config('const.end_time')] = $objEvent->end_time.' ==> '.$inputs['to']['time'];
+            }
+            if ($objEvent->types != json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE)) {
+                $oldTypes = $this->getTypeNames($objEvent->types, $typeArray);
+                $newTypes = $this->getTypeNames(json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE), $typeArray);
+                $updatedcontent[config('const.worktype')] = implode(",", $oldTypes).' ==> '.implode(",", $newTypes);
+            }
+            $objEvent->product_list_id = $inputs['product_list_id'];
+            $objEvent->partner = $inputs['partner'];
+            $objEvent->amount = $inputs['amount'];
+            $objEvent->total = json_encode($inputs['total'], JSON_UNESCAPED_UNICODE);
+            $objEvent->event_date = $inputs['eventdate'];
+            $objEvent->apm = $inputs['apm'];
+            $objEvent->start_time = $inputs['from']['time'];
+            $objEvent->end_time = $inputs['to']['time'];
+            $objEvent->types = json_encode($inputs['worktype'], JSON_UNESCAPED_UNICODE);
+
+            if($objEvent->save()) {
+                $objEventDetail = EventDetail::findOrFail($objEvent->details->id);
+                $objEventDetail->event_id = $id;
+                if ($objEventDetail->trucks != json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE)) {
+                    $oldTrucks = $this->getTypeNames($objEventDetail->trucks, $typeArray);
+                    $newTrucks = $this->getTypeNames(json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE), $typeArray);
+                    $updatedcontent[config('const.trucks')] = implode(",", $oldTrucks).' ==> '.implode(",", $newTrucks);
+                }
+                if ($objEventDetail->aboutgoods != json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE)) {
+                    $oldAboutgoods = $this->getTypeNames($objEventDetail->aboutgoods, $typeArray);
+                    $newAboutgoods = $this->getTypeNames(json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE), $typeArray);
+                    $updatedcontent[config('const.aboutgoods')] = implode(",", $oldAboutgoods).' ==> '.implode(",", $newAboutgoods);
+                }
+                if ($objEventDetail->carefully != json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE)) {
+                    $oldCareful = $this->getTypeNames($objEventDetail->carefully, $typeArray);
+                    $newCareful = $this->getTypeNames(json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE), $typeArray);
+                    $updatedcontent[config('const.carefully')] = implode(",", $oldCareful).' ==> '.implode(",", $newCareful);
+                }
+                if ($objEventDetail->from_address != $inputs['from']['address']) {
+                    $updatedcontent[config('const.from_address')] = $objEventDetail->from_address.' ==> '.$inputs['from']['address'];
+                }
+                if ($objEventDetail->from_elevator != $inputs['from']['elevator']) {
+                    $updatedcontent[config('const.from_elevator')] = ($objEventDetail->from_elevator == null ? config('const.unset') : config('const.elevator'.$objEventDetail->from_elevator)).' ==> '.($inputs['from']['elevator'] == "0" ? config('const.unset') : config('const.elevator'.$inputs['from']['elevator']));
+                }
+                if ($objEventDetail->from_floor != $inputs['from']['floors']) {
+                    $updatedcontent[config('const.from_floor')] = $objEventDetail->from_floor.' ==> '.$inputs['from']['floors'];
+                }
+                if ($objEventDetail->from_btype != $inputs['from']['btype']) {
+                    $updatedcontent[config('const.from_btype')] = ($objEventDetail->from_btype == null ? config('const.unset') : config('const.btype'.$objEventDetail->from_btype)).' ==> '.($inputs['from']['btype'] == "0" ? config('const.unset') : config('const.btype'.$inputs['from']['btype']));
+                }
+                if ($objEventDetail->to_address != $inputs['to']['address']) {
+                    $updatedcontent[config('const.to_address')] = $objEventDetail->to_address.' ==> '.$inputs['to']['address'];
+                }
+                if ($objEventDetail->to_elevator != $inputs['to']['elevator']) {
+                    $updatedcontent[config('const.to_elevator')] = ($objEventDetail->to_elevator == null ? config('const.unset') : config('const.elevator'.$objEventDetail->to_elevator)).' ==> '.($inputs['to']['elevator'] == "0" ? config('const.unset') : config('const.elevator'.$inputs['to']['elevator']));
+                }
+                if ($objEventDetail->to_floor != $inputs['to']['floors']) {
+                    $updatedcontent[config('const.to_floor')] = $objEventDetail->to_floor.' ==> '.$inputs['to']['floors'];
+                }
+                if ($objEventDetail->to_btype != $inputs['to']['btype']) {
+                    $updatedcontent[config('const.to_btype')] = ($objEventDetail->to_btype == null ? config('const.unset') : config('const.btype'.$objEventDetail->to_btype)).' ==> '.($inputs['to']['btype'] == "0" ? config('const.unset') : config('const.btype'.$inputs['to']['btype']));
+                }
+                if ($objEventDetail->phone != preg_replace('/ー|-|（|）|(|)| |　/', '', mb_convert_kana($inputs['phone'], "n"))) {
+                    $updatedcontent[config('const.phone')] = $objEventDetail->phone.' ==> '.preg_replace('/ー|-|（|）|(|)| |　/', '', mb_convert_kana($inputs['phone'], "n"));
+                }
+                if ($objEventDetail->wechat != $inputs['wechat']) {
+                    $updatedcontent[config('const.wechat')] = $objEventDetail->wechat.' ==> '.$inputs['wechat'];
+                }
+                $objEventDetail->trucks = json_encode($inputs['truck'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->images = json_encode(array_merge($inputs['filethumbs'], $inputs['productlistimgs']), JSON_UNESCAPED_UNICODE);
+                $objEventDetail->aboutgoods = json_encode($inputs['aboutgoods'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->carefully = json_encode($inputs['careful'], JSON_UNESCAPED_UNICODE);
+                $objEventDetail->from_address = $inputs['from']['address'];
+                $objEventDetail->from_elevator = $inputs['from']['elevator'];
+                $objEventDetail->from_floor = $inputs['from']['floors'];
+                $objEventDetail->from_btype = $inputs['from']['btype'];
+                $objEventDetail->to_address = $inputs['to']['address'];
+                $objEventDetail->to_elevator = $inputs['to']['elevator'];
+                $objEventDetail->to_floor = $inputs['to']['floors'];
+                $objEventDetail->to_btype = $inputs['to']['btype'];
+                $objEventDetail->phone = preg_replace('/ー|-|（|）|(|)| |　/', '', mb_convert_kana($inputs['phone'], "n"));
+                $objEventDetail->wechat = $inputs['wechat'];
+                $objEventDetail->save();
+
+                if(!empty($inputs['comment'])){
+                    $objComment = new Comment();
+                    $objComment->user_id = auth()->user()->id;
+                    $objComment->event_id = $id;
+                    $objComment->content = $inputs['comment'];
+                    \AdminLog::saveWithLog($objComment, config('const.log_comment'), config('const.log_action_add'));
+                }
+                if($inputs['product_list_id']) {
+                    $objList = ProductList::find($inputs['product_list_id']);
+                    $objList->event_id = $id;
+                    $objList->save();
+                }
+                if($inputs['deposit_jpy'] > 0 || $inputs['deposit_rmb'] > 0) {
+                    $objDeposit = Deposit::where('event_id', $id)->first();
+                    if(!$objDeposit) {
+                        $objDeposit = new Deposit();
+                    } else {
+                        if ($objDeposit->jpy != $inputs['deposit_jpy']) {
+                            $updatedcontent[config('const.deposit_jpy')] = $objDeposit->jpy.' ==> '.$inputs['deposit_jpy'];
+                        }
+                        if ($objDeposit->rmb != $inputs['deposit_rmb']) {
+                            $updatedcontent[config('const.deposit_rmb')] = $objDeposit->rmb.' ==> '.$inputs['deposit_rmb'];
+                        }
+                        if ($inputs['deposit_jpy'] > 0) {
+                            // 定金收款日期或类型被更改
+                            if ($objDeposit->receipted_at != $inputs['receipted_at']) {
+                                $updatedcontent[config('const.receipted_at')] = $objDeposit->receipted_at.' ==> '.$inputs['receipted_at'];
+                            }
+                            if ($objDeposit->type != $inputs['deposit_type']) {
+                                $updatedcontent[config('const.deposit_type')] = ($objDeposit->type == null ? config('const.unset') : config('const.deposit_type'.$objDeposit->type)).' ==> '.config('const.deposit_type'.$inputs['deposit_type']);
+                            }
+                        }
+                    }
+                    $objDeposit->event_id = $id;
+                    $objDeposit->jpy = $inputs['deposit_jpy'];
+                    $objDeposit->rmb = $inputs['deposit_rmb'];
+                    if ($inputs['deposit_jpy'] > 0) {
+                        $objDeposit->receipted_at = $inputs['receipted_at'];
+                        $objDeposit->type = $inputs['deposit_type'];
+                    }
+                    
+                    $objDeposit->save();
+                }
+            }
+
+            \AdminLog::saveLog($id, config('const.log_event'), config('const.log_action_update'), json_encode($updatedcontent, JSON_UNESCAPED_UNICODE));
+
+            $event = Event::with(['comments' => function ($query) {
+                    $query->with('user');
+                }, 'expense' => function ($query) {
+                    $query->with('user');
+                }, 'user', 'details', 'productlist'])->findOrFail($id);
+            
+            $event['typenames'] = $this->getTypeNames($event->types, $typeArray);
+            if($event->comments) {
+                $event['comments'] = json_decode($event->comments, true);
+            }
+            if($event->total) {
+                $event['totalname'] = $this->getTypeNames($event->total, $typeArray);
+            }
+            if($event->details) {
+                if($event->details->aboutgoods) {
+                    $event['goods'] = $this->getTypeNames($event->details->aboutgoods, $typeArray);
+                }
+                if($event->details->carefully) {
+                    $event['carefulnames'] = $this->getTypeNames($event->details->carefully, $typeArray);
+                }
+                if($event->details->trucks) {
+                    $event['trucks'] = $this->getTypeNames($event->details->trucks, $typeArray);
+                }
+                if($event->details->images) {
+                    $event['images'] = json_decode($event->details->images, true);
+                }
+            }
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollback();
         }
 
         return response()->json($event);
@@ -587,40 +748,94 @@ class EventController extends Controller
         }
         
         if($type == 1) {
-            //未入金
-            $finances['data'] = Expense::where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->with(['user'])->paginate(20);
-            $userprice = Expense::where('finalprice', '>', 0)->where('status', $type)
-            ->groupBy('user_id')
-            ->selectRaw('sum(finalprice) as sum, user_id')
-            ->pluck('sum','user_id');
+            //最终收款未入金
+            $finances['data'] = Expense::with(['event', 'user'])->where('finalprice', '>', 0)->where('status', $type)->orderBy('created_at', 'DESC')->paginate(20);
+
+            // $finances['data'] = Event::orderBy('event_date', 'DESC')->whereHas('expense', function ($query) use ($type) {
+            //     $query->where('finalprice', '>', 0)->where('status', $type);
+            // })->orWhereHas('deposit', function ($query) use ($type) {
+            //     $query->whereNotNull('type')->where([
+            //         ['jpy', '>', 0],
+            //         ['type', '=', 1]
+            //     ]);
+            // })->with(['expense' => function($query) {
+            //     $query->with(['user']);
+            // }, 'deposit'])->paginate(20);
+
+            $userprice = Expense::with(['event'])->where('finalprice', '>', 0)->where('status', $type)->get();
+            // ->groupBy('user_id')
+            // ->selectRaw('sum(finalprice) as sum, user_id')
+            // ->pluck('sum','user_id');
             
+            // $uname = User::find($key,['name']);
+            $uname = User::get(['id', 'name']);
             $user = array();
+            $userWithPrice = array();
+            foreach ($uname as $value) {
+                $user[$value->id] = $value->name;
+            }
             foreach($userprice as $key=>$up) {
-                $uname = User::find($key,['name']);
-                $user[$uname['name']] = $up;
+                if (!array_key_exists($user[$up->user_id], $userWithPrice)) {
+                    $userWithPrice[$user[$up->user_id]] = 0;
+                }
+                if ($up->event->status == 3) {
+                    $userWithPrice[$user[$up->user_id]] -= $up->expenditure;
+                } else {
+                    $userWithPrice[$user[$up->user_id]] += $up->finalprice;
+                }
+                // $uname = User::find($key,['name']);
+                // $user[$uname['name']] = $up;
             }
-            if($user) {
-                $finances['user'] = $user;
+            if($userWithPrice) {
+                $finances['user'] = $userWithPrice;
             }
-        } else {
-            //已入金
+        } else if ($type == 2) {
+            //最终收款已入金
             $finances['data'] = Event::orderBy('event_date', 'DESC')->whereHas('expense', function ($query) use ($type) {
                 $query->where('finalprice', '>', 0)->where('status', $type);
             })->orWhereHas('deposit', function ($query) use ($type) {
-                $query->where('jpy', '>', 0);
+                $query->where('jpy', '>', 0)->whereIn('type', [2, 3]);
             })->with(['expense' => function($query) {
                 $query->with(['user']);
             }, 'deposit'])->paginate(20);
+        } else if ($type == 3) {
+            // 定金未入金List
+            $finances['data'] = Deposit::with(['event'])->where([
+                ['status', '=', 0],
+                ['jpy', '>', 0],
+                ['type', '=', 1]
+            ])->orderBy('receipted_at', 'DESC')->paginate(20);
+
+            // 定金未入金SUM
+            $finances['sum'] = Deposit::with(['event'])->where([
+                ['status', '=', 0],
+                ['jpy', '>', 0],
+                ['type', '=', 1]
+            ])->sum('jpy');
+        } else {
+            // 定金已入金 type == 4
+            $finances['data'] = Deposit::with(['event'])->where([
+                ['status', '=', 1],
+                ['jpy', '>', 0],
+                ['type', '=', 1]
+            ])->orderBy('receipted_at', 'DESC')->paginate(20);
         }
 
         return $finances;
     }
 
-    //入金操作
+    //最终收款入金操作
     public function setReceived(Request $request) {
         $ids = $request->all();
-        $finances = Expense::whereIn('id', $ids)->update(['status' => 2]);
-        return $finances;
+        $return = Expense::whereIn('id', $ids)->update(['status' => 2]);
+        return $return;
+    }
+
+    //定金(现金)入金操作
+    public function setReceivedDeposit(Request $request) {
+        $ids = $request->all();
+        $return = Deposit::whereIn('id', $ids)->update(['status' => 1]);
+        return $return;
     }
 
     /**
@@ -698,6 +913,40 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * 从view获取月间收入情报
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getIncomeStatisics($ym = null) {
+        $auth = auth()->user();
+        if($auth->group_id != 1) {
+            return "403";
+        }
+        if(!isset($ym)) {
+            // 获取当月日志
+            $dt = Carbon::now();
+            $month = $dt->month < 10 ? '0'.$dt->month:$dt->month;
+            $ym = $dt->year.'-'.$month;
+        }
+        $objEvent = IncomeView::where('event_date', 'LIKE', "$ym%")->get();
+
+        return response()->json($objEvent);
+    }
+
+    /**
+     * 从Type表获取全部类型的配列
+     *
+     * @return array 
+     */
+    private function getTypeArray() {
+        $typeArray = array();
+        $types = Type::get(['id', 'name']);
+        foreach($types as $type) {
+            $typeArray[$type->id] = $type->name;
+        }
+        return $typeArray;
+    }
     // public function exps() {
     //     $rs = array();
     //     // $finances = Expense::where('finalprice', '>', 0)->with(['event' => function ($query) {

@@ -108,6 +108,10 @@ class AdminController extends Controller
         $whereData = [
             ['created_at', 'LIKE', "$ym%"]
         ];
+
+        if (Auth::user()->group_id != 1) {
+            array_push($whereData, ['type', '!=', 11]);
+        }
         if($action) {
             array_push($whereData, ['log_type', $action]);
         }
@@ -116,5 +120,12 @@ class AdminController extends Controller
         ->with(['user'])->paginate(20);
 
         return view('admin.others.logs', $data);
+    }
+
+    // save system log for ajax
+    public function saveLog(Request $request) {
+        $errordata = json_decode($request['config']['data'], true);
+        \AdminLog::saveLog($errordata['id'], config('const.log_system_error'), 
+                config('const.log_action_add'), $request['data']['message']. ' #data:' .$request['config']['data']);
     }
 }

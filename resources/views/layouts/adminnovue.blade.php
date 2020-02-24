@@ -70,7 +70,7 @@
           <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
             <span class="sr-only">Toggle navigation</span>
           </a>
-          <span class="version">V3.2.1</span>
+          <span class="version">V3.3.2</span>
 
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">

@@ -228,7 +228,7 @@ export default {
 		},
     get_formtypes() {
       this.$http({
-        url: '/api/get_types/',
+        url: '/api/get_types',
         method: 'GET'
       }).then(res =>  {
         for (var index in res.data.types) {

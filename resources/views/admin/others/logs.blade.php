@@ -55,12 +55,12 @@
                 @endif
               </td>
               <td>
-                @if($log->type == 1 || $log->type == 6)
-                  {{ $log->content }} {{ __('messages.event') }}
+                @if($log->type == 1 || $log->type == 6 || $log->type == 11)
+                  {!! str_replace('==>', '<i class="fa fa-arrow-right"></i>', str_replace(',', '<br>', $log->content)) !!} {{ __('messages.event') }}
                 @elseif($log->type == 2)
                   {{ __('messages.typeofwork') }}
                 @elseif($log->type == 3)
-                  {{ __('messages.comment') }}
+                  {{ __('messages.comment') }} ({{ $log->content }})
                 @elseif($log->type == 7)
                   {{ __('messages.menushoppinglist') }}
                 @elseif($log->type == 8)

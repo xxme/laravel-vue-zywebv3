@@ -27,7 +27,7 @@
                 </span>
               </div>
               <!-- /.user-block -->
-              <div class="box-tools">
+              <div class="box-tools" v-if="event.status != 3">
                 <button type="button" class="btn btn-box-tool" @click="captureModel = !captureModel">
                   <i class="fa fa-eye-slash"></i>
                 </button>
@@ -75,7 +75,15 @@
                 <span v-if="event.deposit">
                   <span v-if="event.deposit.jpy > 0" class="marginr3">{{ $t('event.depositjpyL') }}{{ formatNumberJPY(event.deposit.jpy) }}</span>
                   <span v-if="event.deposit.rmb > 0" class="marginr3">{{ $t('event.depositrmbL') }}{{ formatNumberJPY(event.deposit.rmb) }}</span>
+                  <small>
+                    <span v-if="event.deposit.receipted_at" class="marginr3">{{ event.deposit.receipted_at }}</span>
+                    <span v-if="event.deposit.type && event.deposit.type == 1" class="marginr3">{{ $t('event.payment1') }}</span>
+                    <span v-else-if="event.deposit.type && event.deposit.type == 2" class="marginr3">{{ $t('event.payment2') }}</span>
+                    <span v-else-if="event.deposit.type && event.deposit.type == 3" class="marginr3">{{ $t('event.payment3') }}</span>
+                  </small>
                 </span>
+              </h4>
+              <h4>
                 <small>
                   <span v-if="event.partner" class="marginr3"><i class="fa fa-male"></i> {{ event.partner }}</span>
                   <span v-if="event.product_list_id && event.productlist" class="marginr3"><i class="fa fa-shopping-cart"></i><router-link :to="'/admin/productlist/'+event.product_list_id+'/edit'"> #{{ event.product_list_id }} {{ formatNumberJPY(event.productlist.price) }}</router-link></span>
@@ -165,7 +173,7 @@
                   <button class="btn btn-xs btn-warning bigger-120" v-if="!comefromfinances" @click="$emit('editevent', event.id)">
                     <i class="fa fa-pencil"></i>
                   </button>
-                  <button class="btn btn-xs btn-success bigger-120" v-if="auth.group_id == 1 || !event.expense" @click="completeEvent(event.id)">
+                  <button class="btn btn-xs btn-success bigger-120" v-if="(auth.group_id == 1 || !event.expense) && event.status != 3" @click="completeEvent(event.id)">
                     <i class="ace-icon fa fa-check-square-o"></i>
                   </button>
               </div>
@@ -649,6 +657,9 @@ export default {
 }
 .bigger-120 {
   margin-left: 10px;
+}
+.modal-body {
+  overflow-x: hidden;
 }
 h5 {
   margin:3px 0;

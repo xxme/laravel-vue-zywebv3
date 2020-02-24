@@ -216,39 +216,6 @@
 </div>
 <!-- /container -->
 
-<!-- ==== TEAM MEMBERS ==== -->
-<div id="team" name="team">
-  <div class="container">
-    <div class="row centered">
-      <h2 class="centered" id="kfry">联系客服</h2>
-      <hr>
-      <div class="col-lg-3 centered kfwk"> <img class="img img-circle" src="{{ asset('/images') }}/team/guo.jpg" height="120px" width="120px" alt="">
-        <h4>担当 小五</h4>
-        <a href="javascript:;" class="bind_hover_card" data-toggle="popover" data-placement="bottom" data-trigger="hover"><i class="fa fa-weixin"></i></a>
-        <a href="tel:070-3666-0508"><i class="fa fa-phone"></i></a>
-      </div>
-      <div class="col-lg-3 centered kfwk"> <img class="img img-circle" src="{{ asset('/images') }}/team/xing.jpg" height="120px" width="120px" alt="">
-        <h4>担当 小刘</h4>
-        <a href="javascript:;" class="bind_hover_card" data-toggle="popover2" data-placement="bottom" data-trigger="hover"><i class="fa fa-weixin"></i></a>
-        <a href="tel:080-3539-1314"><i class="fa fa-phone"></i></a>
-      </div>
-      <div class="col-lg-3 centered kfwk"> <img class="img img-circle" src="{{ asset('/images') }}/team/xue.jpg" height="120px" width="120px" alt="">
-        <h4>担当 小薛</h4>
-        <a href="javascript:;" class="bind_hover_card" data-toggle="popover3" data-placement="bottom" data-trigger="hover"><i class="fa fa-weixin"></i></a>
-        <a href="tel:080-4188-3379"><i class="fa fa-phone"></i></a>
-      </div>
-      <div class="col-lg-3 centered kfwk"> <img class="img img-circle" src="{{ asset('/images') }}/team/xu.jpg" height="120px" width="120px" alt="">
-        <h4>担当 小旭</h4>
-        <a href="javascript:;" class="bind_hover_card" data-toggle="popover4" data-placement="bottom" data-trigger="hover"><i class="fa fa-weixin"></i></a>
-        <a href="tel:080-4422-9001"><i class="fa fa-phone"></i></a>
-      </div>
-      <div class="col-lg-8 col-lg-offset-2 centered">
-        <p class="large">You need We can.</p>
-      </div>
-    </div>
-  </div>
-  <!-- row -->
-</div>
 <!-- container -->
 
 <!-- ==== CONTACT ==== -->

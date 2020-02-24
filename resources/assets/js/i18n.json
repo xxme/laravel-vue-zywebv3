@@ -39,7 +39,7 @@
             "areYouSure": "确认要这样做吗?"
         },
         "topmenu": {
-            "quicknav" : "宇宙导航",
+            "quicknav" : "快速导航",
             "eventcalendar" : "占领星球",
             "timeline" : "航行记录",
             "statistics" : "探索数据"
@@ -60,6 +60,7 @@
             "subtitle": "凡事预则立　不预则废",
             "complete": "完成",
             "finalprice": "实际收款",
+            "expenditureEvent": "支出",
             "zctingche": "停车支出",
             "zccanyin": "餐饮支出",
             "zcgaosu": "高速支出",
@@ -91,6 +92,7 @@
             "typeofhanger": "带挂衣量",
             "typeofquilt": "被子套数",
             "typeoftruck": "车辆信息",
+            "typeofexpenditure": "支出分类",
             "aboutgoods": "物品情况",
             "morning": "上午",
             "afternoon": "下午",
@@ -144,8 +146,14 @@
             "search": "搜索",
             "clearSearch": "清空",
             "clearSearchConfirm": "确认清空检索条件吗?",
+            "resetDetails": "重置详情设置会清空相关设定",
             "noKeyOrFrom": "请输入关键词和检索开始时间后再试",
-            "noDataFind": "没能找到任何相关日程"
+            "noDataFind": "没能找到任何相关日程",
+            "receipted_at": "定金收款日期",
+            "receipted_at_and_type": "定金收款日期和类型(现金/汇款等)",
+            "payment1": "现金",
+            "payment2": "汇款",
+            "payment3": "PayPay"
         },
         "finance": {
             "thismonth": "本月",
@@ -164,6 +172,7 @@
             "zccanyin": "餐饮支出",
             "zcmaihuo": "买货支出",
             "zcother": "其它支出",
+            "zcbyday": "按天统计支出合计",
             "undone": "未完成收入预计",
             "completeDate": "完成时间",
             "checked": "已选",
