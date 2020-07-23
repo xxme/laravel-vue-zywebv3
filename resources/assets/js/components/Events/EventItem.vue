@@ -191,7 +191,7 @@
                     {{ comment.user.name }} <span class="text-muted">{{ comment.created_at }}</span>
                     <span class="pull-right"><i class="fa fa-trash-o btn-box-tool red" @click="deletecomment(comment.id)"></i></span>
                   </span><!-- /.username -->
-                  <textarea readonly="readonly" class="form-control" :rows="getRows(comment.content)">{{ comment.content }}</textarea>
+                  <div class="contentbox">{{ comment.content }}</div>
                 </div>
                 <!-- /.comment-text -->
               </div>
@@ -666,5 +666,14 @@ h5 {
 }
 label {
   margin-bottom: 0;
+}
+.contentbox {
+  padding: 0.5em 1em;
+  margin: 5px 0;
+  color: #5d627b;
+  background: white;
+  border-left: solid 10px #5d627b;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
+  white-space:pre-wrap;
 }
 </style>

@@ -386,7 +386,7 @@ class EventController extends Controller
                     $objDeposit->rmb = $inputs['deposit_rmb'];
                     if ($inputs['deposit_jpy'] > 0) {
                         $objDeposit->receipted_at = $inputs['receipted_at'];
-                        $objDeposit->deposit_type = $inputs['deposit_type'];
+                        $objDeposit->type = $inputs['deposit_type'];
                     }
                     $objDeposit->save();
                 }
