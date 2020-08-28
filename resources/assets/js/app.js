@@ -11,6 +11,8 @@ require('./bootstrap');
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueI18n from 'vue-i18n';
+import AWS from 'aws-sdk';
+// import S3 from 'aws-sdk/clients/s3';
 import EventsIndex from './components/Events/Index.vue';
 import EventForm from './components/Events/EventForm.vue';
 import EventContract from './components/Events/EventContract.vue';
@@ -20,6 +22,9 @@ import EstimateIndex from './components/Estimates/Index.vue';
 import Finances from './components/Events/Money.vue';
 import Offer from './components/Public/Offer.vue';
 
+AWS.config.accessKeyId = "AKIAQPXYC2SAWTKM7OYE";
+AWS.config.secretAccessKey = "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";
+AWS.config.update({region: 'ap-northeast-1'});
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -32,8 +37,28 @@ Vue.prototype.FatalError = function (response){
         console.log(error.response.data.message);
     });
 }
+Vue.prototype.getS3Url = function (keylist) {
+    const s3 = new AWS.S3();
+    const bucket = 's3-koyoshieki';
+    var imgs = [];
+
+    for (var key in keylist) {
+        if (keylist[key].indexOf('AWSAccessKeyId') > -1) {
+            imgs.push(keylist[key]);
+        } else {
+            var s3key = 'uploads/' + keylist[key].replace("_thumb", "");
+            var params = {Bucket: bucket, Key: s3key, Expires: 60 * 30};  // Expires:有効期限(秒)
+            var url = s3.getSignedUrl('getObject', params);
+            // console.log(url);
+            imgs.push(url);
+            console.log("s3----get--------")
+        }
+    }
+    return imgs;
+}
 Vue.use(VueRouter);
 Vue.use(VueI18n);
+// Vue.use(AWS);
 // Vue.component('example-component', require('./components/ExampleComponent.vue'));
 
 const router = new VueRouter({

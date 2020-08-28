@@ -10,30 +10,32 @@
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "devDependencies": {
-    "ajv": "^6.10.2",
-    "axios": "^0.17",
-    "baguettebox.js": "^1.11.0",
+    "ajv": "^6.12.3",
+    "axios": "^0.19.2",
+    "baguettebox.js": "^1.11.1",
     "bootstrap-sass": "^3.4.1",
-    "cross-env": "^5.2.0",
-    "jquery": "^3.4.1",
+    "cross-env": "^5.2.1",
+    "jquery": "^3.5.1",
     "jquery-datetimepicker": "^2.5.21",
     "laravel-mix": "^1.0",
-    "lodash": "^4.17.15",
-    "select2": "^4.0.8",
-    "vue": "^2.6.10",
-    "vue-template-compiler": "^2.6.10"
+    "lodash": "^4.17.19",
+    "node-sass": "^4.14.1",
+    "select2": "^4.0.13",
+    "vue": "^2.6.11",
+    "vue-template-compiler": "^2.6.11"
   },
   "dependencies": {
-    "chart.js": "^2.8.0",
-    "daterangepicker": "^3.0.5",
+    "aws-sdk": "^2.726.0",
+    "chart.js": "^2.9.3",
+    "daterangepicker": "^3.1.0",
     "font-awesome": "^4.7.0",
-    "fullcalendar": "^3.10.1",
+    "fullcalendar": "^3.10.2",
     "laravel-vue-pagination": "^1.2.0",
-    "moment": "^2.22.2",
+    "moment": "^2.27.0",
     "npm": "^5.10.0",
-    "raphael": "^2.2.8",
-    "vue-chartjs": "^3.4.2",
+    "raphael": "^2.3.0",
+    "vue-chartjs": "^3.5.0",
     "vue-i18n": "^7.8.0",
-    "vue-router": "^3.1.2"
+    "vue-router": "^3.3.4"
   }
 }

@@ -72,7 +72,7 @@
           <!-- /.tab-content -->
         </div>
         <event-item :eventdata="show_list" :auth="auth" :userlist="user_list" :showflag="showEventItem" :showCompleted="showCompleted" @editevent="editevent" @showCalendar="showCalendar" @completedevent="completedevent" @deleteevent="deleteevent" @copyevent="copyEvent"></event-item>
-        <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
+        <quick-form v-if="showformflag" :formoptions="formoptions" :eventdate="eventdate" :eventid="eventid" :copyid="copyid" :eventimgs="eventimgs" @closeform="quickformswitch(false)" @addedevent="addedevent"></quick-form>
         <attendance v-if="showAtteFlag" :userlist="user_list" @showform="atteformswitch(true)" @closeform="atteformswitch(false)"></attendance>
         <statistics v-if="showStatisticsFlag" :fee="fee" :showYm="showYm" :LastYearSales="LastYearSales" :ThisYearSales="ThisYearSales" @closeform="showstatistics(false)"></statistics>
       </section>
@@ -111,6 +111,7 @@ export default {
       eventdate: "",
       eventid: 0,
       copyid: 0,
+      eventimgs: [],
       holidays: [],
       showCompleted: false,
       showQuickForm: false,
@@ -200,6 +201,7 @@ export default {
       this.show_list = [];
       for(var index in this.events_list) {
         if(this.events_list[index].id == id) {
+          // console.log(this.events_list[index].images);
           this.show_list.push(this.events_list[index]);
         }
       }
@@ -636,9 +638,10 @@ export default {
       this.showformflag = false;
       this.showCalendarFlag = true;
     },
-    editevent(id, date = '') {
+    editevent(id, eventimgs = [], date = '') {
       this.copyid = 0;
       this.eventid = id;
+      this.eventimgs = eventimgs;
       if(date) {
         this.eventdate = date;
       }
@@ -735,7 +738,7 @@ export default {
     },
     showCalendar(){
       this.showEventItem = false;
-      this.show_list = [];
+      // this.show_list = [];
       this.showCalendarFlag = true;
     },
     atteformswitch(showorhide) {

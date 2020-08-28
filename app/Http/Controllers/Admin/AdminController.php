@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Intervention\Image\ImageManagerStatic as Image;
 use Carbon\Carbon;
 use App\AdminLog;
+use Storage;
+use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
 
 class AdminController extends Controller
 {
@@ -58,13 +61,18 @@ class AdminController extends Controller
             );
         $files = $request->file('file');
         $thumbs = array();
+
+        $disk = Storage::disk('s3');
+        $s3client = $disk->getDriver()->getAdapter()->getClient();
+        $bucket = \Config::get('filesystems.disks.s3.bucket');
+
         foreach($files as $file) {
             $extension = $file->getClientOriginalExtension();
             $filename = $file->getClientOriginalName();
-            $image = $imgThumb = Image::make($file->getRealPath())->orientate();
+            $image = Image::make($file->getRealPath())->orientate();
             $width = $height = 1080;
-            $widthThumb = 70;
-            $heightThumb = 80;
+            // $widthThumb = 70;
+            // $heightThumb = 80;
             $image->height() > $image->width() ? $width = $widthThumb = null : $height = $heightThumb = null;
 
             \File::exists(public_path() . '/uploads/'.$dt->year.$dt->month .'/') or \File::makeDirectory(public_path() . '/uploads/'.$dt->year.$dt->month .'/', 0777, true);
@@ -74,11 +82,34 @@ class AdminController extends Controller
             $image->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
             })->save(public_path() . '/uploads/'. $fileNameWithPath . '.' . $extension);
-            $thumbname = $fileNameWithPath . '_thumb.' . $extension;
-            array_push($thumbs, $thumbname);
-            $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
-                $constraint->aspectRatio();
-            })->save(public_path() . '/uploads/'. $thumbname);
+
+            // $contents = Storage::get(public_path() . '/uploads/'. $fileNameWithPath . '.' . $extension); //ファイルを読み取る
+            // Storage::disk('s3')->put('/uploads/'. $fileNameWithPath . '.' . $extension, $image, 'public'); // Ｓ３にアップ
+            $s3key = 'uploads/'. $fileNameWithPath . '.' . $extension;
+            $result = $s3client->putObject([
+                'Bucket' => $bucket,
+                'Key'    => $s3key,
+                'Body'   => $image
+            ]);
+            // $thumbname = $fileNameWithPath . '_thumb.' . $extension;
+            array_push($thumbs, $fileNameWithPath . '.' . $extension);
+
+            // if ($disk->exists($s3key)) {
+            //     $command = $s3client->getCommand('GetObject', [
+            //         'Bucket'   => $bucket,
+            //         'Key'=> $s3key,
+            //     ]);
+
+            //     $request = $s3client->createPresignedRequest($command, '+30 minutes');
+            //     $url = (string)$request->getUri();
+            //     $presignedUrl = str_replace("s3-koyoshieki.s3-ap-northeast-1.amazonaws", "s3.koyoshieki", $url);
+            //     array_push($s3bigimgs, $presignedUrl);
+            // }
+            // array_push($thumbs['s3url'], $result);
+
+            // $imgThumb->resize($widthThumb, $heightThumb, function ($constraint) {
+            //     $constraint->aspectRatio();
+            // })->save(public_path() . '/uploads/'. $thumbname);
 
         }
         

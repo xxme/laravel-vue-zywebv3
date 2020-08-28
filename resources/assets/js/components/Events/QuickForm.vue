@@ -230,12 +230,22 @@
         </div>
         <div v-show="hasFile" class='col-xs-12 no-padding'>
           <div class="gallery">
+            <!--
             <div v-for="(file, key) in event.files" class="col-xs-2 no-padding marginb8">
               <a :href="'/uploads/' + file" class="thumbnail" :title="file | truncate(25)">
                 <img :src="'/uploads/' + event.filethumbs[key]" :alt="file">
               </a>
               <div class='text-right'>
                 <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.filethumbs[key])">{{ $t('global.remove') }}</button>
+              </div>
+            </div>
+            -->
+            <div v-for="(file, key) in event.files" class="col-xs-2 no-padding marginb8 imgdiv">
+              <a :href="file" class="thumbnail">
+                <img :src="file">
+              </a>
+              <div class='text-right'>
+                <button type="button" class="btn btn-xs btn-default" @click="removeFile(event.files[key])">{{ $t('global.remove') }}</button>
               </div>
             </div>
             <div v-for="(img, key) in event.productlistimgs" class="col-xs-2 no-padding marginb8">
@@ -403,11 +413,12 @@ import datetimepicker from 'jquery-datetimepicker'
 import baguetteBox from 'baguettebox.js'
 
 export default {
-  props: ['eventdate', 'eventid', 'copyid', 'formoptions', 'productlistid', 'estimatedate'],
+  props: ['eventdate', 'eventid', 'copyid', 'formoptions', 'productlistid', 'estimatedate', 'eventimgs'],
   mounted() {
     var self = this;
     this.setDatePicker()
     this.options = this.formoptions;
+    this.event.files = self.eventimgs;
     
     if(self.eventid) {
       this.getEvent(self.eventid)
@@ -779,11 +790,19 @@ export default {
       this.loadingShow = switchTF;
     },
     updateFiles(file) {
-      for(var i in file) {
-        var bigfile = file[i].replace("_thumb", "");
-        this.event.files.push(bigfile);
+      // for(var i in file) {
+      //   // var bigfile = file[i].replace("_thumb", "");
+      //   // this.event.files.push(bigfile);
+      //   // this.event.filethumbs.push(file[i]);
+      //   // this.event.files.push(this.getS3Url(file[i]));
+      // }
+      var imgs = this.getS3Url(file);
+      // console.log(imgs);
+      for(var i in imgs) {
+        this.event.files.push(imgs[i]);
         this.event.filethumbs.push(file[i]);
       }
+      // console.log(this.event.filethumbs);
       if(this.event.files.length > 0) {
         this.hasFile = true;
       } else {
@@ -963,15 +982,15 @@ export default {
           this.event.receipted_at = res.data.deposit.receipted_at;
           this.event.deposit_type = res.data.deposit.type;
         }
-        var filethumbs = JSON.parse(res.data.details.images);
-        for(var key in filethumbs) {
-          if(this.shopImg(filethumbs[key])) {
-            this.event.productlistimgs.push(filethumbs[key]);
-          } else {
-            this.event.filethumbs.push(filethumbs[key]);
-            this.event.files.push(filethumbs[key].replace("_thumb", ""));
-          }
-        }
+        // var filethumbs = JSON.parse(res.data.details.images);
+        // for(var key in filethumbs) {
+        //   if(this.shopImg(filethumbs[key])) {
+        //     this.event.productlistimgs.push(filethumbs[key]);
+        //   } else {
+        //     this.event.filethumbs.push(filethumbs[key]);
+        //     this.event.files.push(filethumbs[key].replace("_thumb", ""));
+        //   }
+        // }
         if(this.event.files.length > 0) {
           this.hasFile = true;
         }
@@ -1033,7 +1052,8 @@ export default {
         }
         for(var key in data.images) {
           this.event.filethumbs.push(data.images[key]);
-          this.event.files.push(data.images[key].replace("_thumb", ""));
+          // this.event.files.push(data.images[key].replace("_thumb", ""));
+          this.event.files.push(data.images[key]);
         }
         if(this.event.files.length > 0) {
           this.hasFile = true;
@@ -1094,5 +1114,11 @@ Vue.component('modal', {
 }
 .xdsoft_datetimepicker .xdsoft_timepicker.active {
   display: none;
+}
+.imgdiv {
+  width: 80px;
+}
+.imgdiv img {
+  max-width: 100%;
 }
 </style>

@@ -12,13 +12,14 @@
         props: ['fileAccept'], 
         data() {
             return {
-                postFormData: new FormData(),
+                // postFormData: new FormData(),
             };
         },
         methods: {
             onFileChange(event) {
                 var self = this; //*** very important if can't call parent update fun
                 self.$emit('update-loading', true);
+                this.postFormData = new FormData();
                 for(var i in event.target.files) {
                     this.postFormData.append('file[]', event.target.files[i]);
                 }

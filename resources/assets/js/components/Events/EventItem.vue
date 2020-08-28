@@ -5,7 +5,7 @@
         <div v-for="(event, key) in events_list" :key="event.id">
           <div v-if="!events_list[key - 1] || event.event_date != events_list[key - 1].event_date" class="box-header with-border">
             <h4>
-              <button class="btn btn-primary btn-xs" v-if="!comefromfinances" @click="$emit('editevent', 0, event.event_date)"><i class="fa fa-plus"></i></button>
+              <button class="btn btn-primary btn-xs" v-if="!comefromfinances" @click="$emit('editevent', 0, [], event.event_date)"><i class="fa fa-plus"></i></button>
               {{ formatDateWithWeekname(event.event_date) }} <span v-show="events_list.length == 1"># {{ event.id }}</span>
               <button class="btn btn-primary pull-right bigger-120" v-if="!comefromfinances" @click="$emit('showCalendar')">{{ $t('global.goback') }}</button>
               <button class="btn btn-primary pull-right bigger-140" v-else @click="$emit('showFinances')"><i class="fa fa-money"></i></button>
@@ -136,7 +136,8 @@
                 <!-- /.col -->
               </div>
               <div v-if="event.images && event.images.length > 0" class="gallery col-xs-12 no-padding">
-                <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8">
+                <div v-for="imgfile in event.images" class="col-xs-2 no-padding marginb8 imgdiv">
+                  <!--
                   <template v-if="shopImg(imgfile)">
                     <a :href="imgfile" class="thumbnail" :title="imgfile | truncate(25)">
                       <img :src="imgfile" :alt="imgfile">
@@ -147,6 +148,10 @@
                       <img :src="'/uploads/' + imgfile" :alt="imgfile">
                     </a>
                   </template>
+                  -->
+                  <a :href="imgfile" class="thumbnail">
+                    <img :src="imgfile">
+                  </a>
                 </div>
               </div>
               <div v-if="event.expense">
@@ -170,7 +175,7 @@
 
               <span class="text-muted">{{ event.comments.length }} {{ $t('event.comments') }}</span>
               <div class="pull-right">
-                  <button class="btn btn-xs btn-warning bigger-120" v-if="!comefromfinances" @click="$emit('editevent', event.id)">
+                  <button class="btn btn-xs btn-warning bigger-120" v-if="!comefromfinances" @click="$emit('editevent', event.id, event.images)">
                     <i class="fa fa-pencil"></i>
                   </button>
                   <button class="btn btn-xs btn-success bigger-120" v-if="(auth.group_id == 1 || !event.expense) && event.status != 3" @click="completeEvent(event.id)">
@@ -334,12 +339,15 @@ import baguetteBox from 'baguettebox.js'
 import Contract from './EventContract.vue'
 import Select2 from './Select2'
 
+// const aws_upload_domain = "https://s3-koyoshieki.s3-ap-northeast-1.amazonaws.com";
 export default {
   props: ['auth', 'eventdata', 'showflag', 'userlist', 'showCompleted', 'comefromfinances'],
   data() {
     return {
+      // aws_upload_domain,
       events_list: [],
       holidays: [],
+      imgurl: "",
       showCompleteModal: false,
       showContract: false,
       captureModel: false,
@@ -393,11 +401,29 @@ export default {
       //   $(window).scrollTop(pos);
       //   this.eventdate = "";
       // }
-    })
+    });
+    // s3.listObjects({Bucket: 's3-koyoshieki'}, function(error, data) {
+    //   if (error) {
+    //     console.log("S3 Error : " + error);
+    //   } else {
+    //     for(var i = 0 ; i < data.Contents.length ; i++){
+    //       var params = {Bucket: 's3-koyoshieki', Key: data.Contents[i].Key};
+    //       console.log(s3.getSignedUrl('getObject', params));
+    //       // s3list_vue.s3list_vue_parts.push({
+    //       //   url: s3.getSignedUrl('getObject', params) ,
+    //       //   filename: data.Contents[i].Key ,
+    //       // });
+    //     }
+
+    //   }
+    // });
   },
   components: {
     Select2,
     Contract
+  },
+  computed: {
+
   },
   methods: {
     formatDateWithWeekname(date) {
@@ -581,37 +607,62 @@ export default {
       this.showContract = true;
       $('.marginb5').hide();
       $('.content-header').hide();
-    },
-    shopImg(img) {
-      if(img.substring(0, 4) === 'http'){
-        return true
-      } else {
-        return false
-      }
     }
+    // ,
+    // shopImg(img) {
+    //   if(img.substring(0, 4) === 'http'){
+    //     return true
+    //   } else {
+    //     return false
+    //   }
+    // }
+    // ,
+    // getS3Url(keylist) {
+    //   const s3 = new AWS.S3();
+    //   const bucket = 's3-koyoshieki';
+    //   var imgs = [];
+
+    //   for (var key in keylist) {
+    //     if (keylist[key].indexOf('AWSAccessKeyId') > -1) {
+    //       imgs.push(keylist[key]);
+    //     } else {
+    //       var s3key = 'uploads/' + keylist[key].replace("_thumb", "");
+    //       var params = {Bucket: bucket, Key: s3key, Expires: 60 * 30};  // Expires:有効期限(秒)
+    //       var url = s3.getSignedUrl('getObject', params);
+    //       imgs.push(url);
+    //       console.log("s3----get--------")
+    //     }
+    //   }
+    //   return imgs;
+    // }
   },
   watch: {
     eventdata() {
       this.events_list = this.eventdata;
+      for(var index in this.events_list) {
+        if (this.events_list[index].images.length > 0) {
+          this.events_list[index].images = this.getS3Url(this.events_list[index].images);
+        }
+      }
     }
   },
   filters: {
     formatTime(time, date) {
       return moment(date+' '+time).format('HH:mm');
-    },
-    truncate: function (value, length) {
-      if (!value) return ''
-      var length = length ? parseInt(length, 10) : 20
-      if(value.length <= length) {
-        return value
-      }
-      else {
-        return '...' + value.substring(value.length - length)
-      }
-    },
-    toBiggerImg(filename) {
-      return filename.replace("_thumb", "");
     }
+    // truncate: function (value, length) {
+    //   if (!value) return ''
+    //   var length = length ? parseInt(length, 10) : 20
+    //   if(value.length <= length) {
+    //     return value
+    //   }
+    //   else {
+    //     return '...' + value.substring(value.length - length)
+    //   }
+    // },
+    // toBiggerImg(filename) {
+    //   return filename.replace("_thumb", "");
+    // }
   }
 }
 </script>
@@ -675,5 +726,11 @@ label {
   border-left: solid 10px #5d627b;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
   white-space:pre-wrap;
+}
+.imgdiv {
+  width: 80px;
+}
+.imgdiv img {
+  max-width: 100%;
 }
 </style>
